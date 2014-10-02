@@ -425,7 +425,7 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
         Z3_sort_kind sk = Z3_get_sort_kind(ctx, s);
         Z3_func_decl d = Z3_get_app_decl(ctx, Z3_to_app(ctx, n));
         if (sk == Z3_BOOL_SORT) {
-          if (d == td->Contains || d == td->StartsWith || d == td->EndsWith) {
+          if (d == td->Contains || d == td->StartsWith || d == td->EndsWith || d == td->Matches) {
             return my_Z3_Func;
           } else {
             return my_Z3_ConstBool;
@@ -4682,6 +4682,73 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
   }
 }
 
+Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
+  Z3_context ctx = Z3_theory_get_context(t);
+  std::size_t openBracket = regexStr.find('[');
+  if (openBracket != std::string::npos){
+    std::size_t closeBracket = regexStr.find(']', openBracket);
+    Z3_ast assert[3], result[3];
+
+    std::string firstStr = regexStr.substr(0, openBracket);
+    result[0] = regex_break_down(t, firstStr, assert[0]);
+    std::string lastStr = regexStr.substr(closeBracket + 1);
+    result[2] = regex_break_down(t, lastStr, assert[2]);
+
+    std::string listChar = regexStr.substr(openBracket + 1, closeBracket - openBracket - 1);
+    Z3_ast or_items[100];//TODO
+    unsigned int pos = 0;
+    Z3_ast character = my_mk_internal_string_var(t);
+    for (unsigned int id = 0; id < listChar.length(); ++ id){
+      if (id == 0 && listChar[id] == '^'){
+        continue;
+      }
+      if ((id < listChar.length() - 1) && (listChar[id + 1] == '-')){
+	char charId[1];
+        for (charId[0] = listChar[id]; charId[0] <= listChar[id + 2]; ++ charId[0]){
+          or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, charId)); 
+        }
+	id += 2;
+      } else {
+        or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, listChar.substr(id, 1).c_str()));
+      }
+    }
+    result[1] = character; assert[1] = Z3_mk_or(ctx, pos, or_items);
+    if (listChar[0] == '^'){
+      Z3_ast charLen_eq_one = Z3_mk_eq(ctx, mk_int(ctx, 1), mk_length(t, character));
+      assert[1] = mk_2_and(t, charLen_eq_one, Z3_mk_not(ctx, assert[1]));  
+    }    
+
+    breakDownAssert = Z3_mk_and(ctx, 3, assert);
+    return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
+  } else {
+    breakDownAssert = Z3_mk_true(ctx);
+    return my_mk_str_value(t, regexStr.c_str());
+  }
+}
+
+/*
+ *
+ */
+Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast reduceAst = NULL;
+  if (getNodeType(t, args[0]) == my_Z3_ConstStr && getNodeType(t, args[1]) == my_Z3_ConstStr) {
+    std::string arg0Str = getConstStrValue(t, args[0]);
+    std::string arg1Str = getConstStrValue(t, args[1]);
+    if (arg0Str.compare(arg1Str) != 0) {//TODO change compare to regex_matches
+      reduceAst = Z3_mk_false(ctx);
+      breakDownAssert = NULL;
+    } else {
+      reduceAst = Z3_mk_true(ctx);
+      breakDownAssert = NULL;
+    }
+  } else if (getNodeType(t, args[1]) == my_Z3_ConstStr){
+    std::string regexStr = getConstStrValue(t, args[1]);
+    reduceAst = Z3_mk_eq(ctx, args[0], regex_break_down(t, regexStr, breakDownAssert));
+  }
+  return reduceAst;
+}
+
 /*
  *
  */
@@ -4823,7 +4890,7 @@ Z3_bool cb_reduce_app(Z3_theory t, Z3_func_decl d, unsigned n, Z3_ast const * ar
     *result = reduce_endswith(t, convertedArgs);
 #ifdef DEBUGLOG
     __debugPrint(logFile, "\n===================\n");
-    __debugPrint(logFile, "** cb_reduce_app(): StartsWith( ");
+    __debugPrint(logFile, "** cb_reduce_app(): EndsWith( ");
     printZ3Node(t, convertedArgs[0]);
     __debugPrint(logFile, ", ");
     printZ3Node(t, convertedArgs[1]);
@@ -4893,6 +4960,38 @@ Z3_bool cb_reduce_app(Z3_theory t, Z3_func_decl d, unsigned n, Z3_ast const * ar
       Z3_assert_cnstr(ctx, breakDownAst);
     delete[] convertedArgs;
     return Z3_TRUE;
+  }
+
+  //------------------------------------------
+  // Reduce app: Matches
+  //------------------------------------------
+  if (d == td->Matches) {
+    Z3_ast breakDownAst = NULL;
+    *result = reduce_matches(t, convertedArgs, breakDownAst);
+#ifdef DEBUGLOG
+    __debugPrint(logFile, "\n===================\n");
+    __debugPrint(logFile, "** cb_reduce_app(): Matches( ");
+    printZ3Node(t, convertedArgs[0]);
+    __debugPrint(logFile, ", ");
+    printZ3Node(t, convertedArgs[1]);
+    __debugPrint(logFile, " )");
+    __debugPrint(logFile, "  =>  ");
+    printZ3Node(t, *result);
+    if( breakDownAst != NULL )
+    {
+      __debugPrint(logFile, "\n-- ADD(@%d): \n", __LINE__);
+      printZ3Node(t, breakDownAst);
+    }
+    __debugPrint(logFile, "\n===================\n");
+#endif
+    if (breakDownAst != NULL)
+      Z3_assert_cnstr(ctx, breakDownAst);
+    delete[] convertedArgs;
+    if (*result != NULL){
+	return Z3_TRUE;
+    } else {
+        return Z3_FALSE;
+    }
   }
 
   delete[] convertedArgs;
@@ -5236,6 +5335,12 @@ Z3_theory mk_pa_theory(Z3_context ctx) {
   replace_domain[1] = td->String;
   replace_domain[2] = td->String;
   td->Replace = Z3_theory_mk_func_decl(ctx, Th, replace_name, 3, replace_domain, td->String);
+  //---------------------------
+  Z3_symbol matches_name = Z3_mk_string_symbol(ctx, "Matches");
+  Z3_sort matches_domain[2];
+  matches_domain[0] = td->String;
+  matches_domain[1] = td->String;
+  td->Matches = Z3_theory_mk_func_decl(ctx, Th, matches_name, 2, matches_domain, BoolSort);
   //---------------------------
   Z3_set_delete_callback(Th, cb_delete);
   Z3_set_new_eq_callback(Th, cb_new_eq);

@@ -1,0 +1,9 @@
+(declare-variable x String)
+(declare-variable z String)
+(declare-variable b1 bool)
+
+(assert (= true (Matches x "s[ABC][012]sfhdhf") ) )
+
+
+(check-sat)
+(get-model)

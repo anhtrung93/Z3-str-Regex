@@ -19,7 +19,7 @@
 #include <getopt.h>
 #include <utility>
 #include <limits.h>
-
+#include <iostream>
 
 #include "z3.h"
 
@@ -63,6 +63,7 @@ typedef struct _PATheoryData
     Z3_func_decl EndsWith;
     Z3_func_decl Contains;
     Z3_func_decl Replace;
+    Z3_func_decl Matches;
 
 //    Z3_func_decl Str2Int;  // assume the argument is always convertible
 //    Z3_func_decl Str2Real;
