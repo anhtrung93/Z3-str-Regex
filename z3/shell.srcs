@@ -1,0 +1,1 @@
+SHELL_SRCS= shell/datalog_frontend.cpp shell/dimacs_frontend.cpp shell/main.cpp shell/smtlib_frontend.cpp shell/z3_log_frontend.cpp 
