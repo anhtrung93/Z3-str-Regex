@@ -6,7 +6,7 @@ default: all
 # e.g. "/home/z3_src_4.1.1"
 #      "/home/work/tool/z3/z3_src_4.1.1"
 # -------------------------------------------------------------------
-Z3_path = /opt/Workspace/z3
+Z3_path = /opt/Workspace/z3-str_ws/z3
 
 JUNK = str
 SOURCE = strTheory.cpp testMain.cpp
