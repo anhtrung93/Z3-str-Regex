@@ -2,7 +2,8 @@
 (declare-variable z String)
 (declare-variable b1 bool)
 
-(assert (= true (Matches x "s[ABC][012]sfhdhf") ) )
+(assert (= true (Matches x "[A-Z][^B-Z][^0-6]") ) )
+(assert (= true (Matches x "[A-Z][A-Z][0-7]") ) )
 
 
 (check-sat)

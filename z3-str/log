@@ -1,0 +1,722 @@
+Input file: /tmp/z3_str_convert/verify_conv_matches-001
+
+
+Input loaded:
+-----------------------------------------------
+(and (= true
+        (Matches x
+                 __cOnStStR__x5b_x41_x2d_x5a_x5d_x5b_x5e_x42_x2d_x5a_x5d_x5b_x5e_x30_x2d_x36_x5d))
+     (= true
+        (Matches x
+                 __cOnStStR__x5b_x41_x2d_x5a_x5d_x5b_x41_x2d_x5a_x5d_x5b_x30_x2d_x37_x5d))
+     (= x __cOnStStR__x41_x41_x37))
+-----------------------------------------------
+
+>> make_concat: (Concat _t_str1 _t_str0)
+
+>> make_concat: (Concat _t_str2 (Concat _t_str1 _t_str0))
+
+
+===================
+** cb_reduce_app(): Matches( x, "[A-Z][^B-Z][^0-6]" )  =>  (= x (Concat _t_str2 (Concat _t_str1 _t_str0)))
+-- ADD(@4985): 
+(and true
+     (and (= 1 (Length _t_str2))
+          (or (= _t_str2 A)
+              (= _t_str2 B)
+              (= _t_str2 C)
+              (= _t_str2 D)
+              (= _t_str2 E)
+              (= _t_str2 F)
+              (= _t_str2 G)
+              (= _t_str2 H)
+              (= _t_str2 I)
+              (= _t_str2 J)
+              (= _t_str2 K)
+              (= _t_str2 L)
+              (= _t_str2 M)
+              (= _t_str2 N)
+              (= _t_str2 O)
+              (= _t_str2 P)
+              (= _t_str2 Q)
+              (= _t_str2 R)
+              (= _t_str2 S)
+              (= _t_str2 T)
+              (= _t_str2 U)
+              (= _t_str2 V)
+              (= _t_str2 W)
+              (= _t_str2 X)
+              (= _t_str2 Y)
+              (= _t_str2 Z)))
+     (and true
+          (and (= 1 (Length _t_str1))
+               (not (or (= _t_str1 B)
+                        (= _t_str1 C)
+                        (= _t_str1 D)
+                        (= _t_str1 E)
+                        (= _t_str1 F)
+                        (= _t_str1 G)
+                        (= _t_str1 H)
+                        (= _t_str1 I)
+                        (= _t_str1 J)
+                        (= _t_str1 K)
+                        (= _t_str1 L)
+                        (= _t_str1 M)
+                        (= _t_str1 N)
+                        (= _t_str1 O)
+                        (= _t_str1 P)
+                        (= _t_str1 Q)
+                        (= _t_str1 R)
+                        (= _t_str1 S)
+                        (= _t_str1 T)
+                        (= _t_str1 U)
+                        (= _t_str1 V)
+                        (= _t_str1 W)
+                        (= _t_str1 X)
+                        (= _t_str1 Y)
+                        (= _t_str1 Z))))
+          (and true
+               (and (= 1 (Length _t_str0))
+                    (not (or (= _t_str0 0)
+                             (= _t_str0 1)
+                             (= _t_str0 2)
+                             (= _t_str0 3)
+                             (= _t_str0 4)
+                             (= _t_str0 5)
+                             (= _t_str0 6))))
+               true)))
+===================
+>> make_concat: (Concat _t_str4 _t_str3)
+
+>> make_concat: (Concat _t_str5 (Concat _t_str4 _t_str3))
+
+
+===================
+** cb_reduce_app(): Matches( x, "[A-Z][A-Z][0-7]" )  =>  (= x (Concat _t_str5 (Concat _t_str4 _t_str3)))
+-- ADD(@4985): 
+(and true
+     (and (= 1 (Length _t_str5))
+          (or (= _t_str5 A)
+              (= _t_str5 B)
+              (= _t_str5 C)
+              (= _t_str5 D)
+              (= _t_str5 E)
+              (= _t_str5 F)
+              (= _t_str5 G)
+              (= _t_str5 H)
+              (= _t_str5 I)
+              (= _t_str5 J)
+              (= _t_str5 K)
+              (= _t_str5 L)
+              (= _t_str5 M)
+              (= _t_str5 N)
+              (= _t_str5 O)
+              (= _t_str5 P)
+              (= _t_str5 Q)
+              (= _t_str5 R)
+              (= _t_str5 S)
+              (= _t_str5 T)
+              (= _t_str5 U)
+              (= _t_str5 V)
+              (= _t_str5 W)
+              (= _t_str5 X)
+              (= _t_str5 Y)
+              (= _t_str5 Z)))
+     (and true
+          (and (= 1 (Length _t_str4))
+               (or (= _t_str4 A)
+                   (= _t_str4 B)
+                   (= _t_str4 C)
+                   (= _t_str4 D)
+                   (= _t_str4 E)
+                   (= _t_str4 F)
+                   (= _t_str4 G)
+                   (= _t_str4 H)
+                   (= _t_str4 I)
+                   (= _t_str4 J)
+                   (= _t_str4 K)
+                   (= _t_str4 L)
+                   (= _t_str4 M)
+                   (= _t_str4 N)
+                   (= _t_str4 O)
+                   (= _t_str4 P)
+                   (= _t_str4 Q)
+                   (= _t_str4 R)
+                   (= _t_str4 S)
+                   (= _t_str4 T)
+                   (= _t_str4 U)
+                   (= _t_str4 V)
+                   (= _t_str4 W)
+                   (= _t_str4 X)
+                   (= _t_str4 Y)
+                   (= _t_str4 Z)))
+          (and true
+               (and (= 1 (Length _t_str3))
+                    (or (= _t_str3 0)
+                        (= _t_str3 1)
+                        (= _t_str3 2)
+                        (= _t_str3 3)
+                        (= _t_str3 4)
+                        (= _t_str3 5)
+                        (= _t_str3 6)
+                        (= _t_str3 7)))
+               true)))
+===================
+>> cb_reduce_eq: (= x AA7)
+
+>> Length added for: (= x AA7) @ 4349
+
+>> cb_reduce_app(): Length( "AA7" ) = 3
+
+
+
+***********************************************
+*               Starting Search               *
+-----------------------------------------------
+(and (= (+ (Length _t_str0)
+           (Length _t_str1)
+           (* (- 1) (Length (Concat _t_str1 _t_str0))))
+        0)
+     (= (+ (Length (Concat _t_str1 _t_str0))
+           (Length _t_str2)
+           (* (- 1) (Length (Concat _t_str2 (Concat _t_str1 _t_str0)))))
+        0)
+     (= (Length _t_str2) 1)
+     (= (Length _t_str1) 1)
+     (= (Length _t_str0) 1)
+     (= (+ (Length _t_str3)
+           (Length _t_str4)
+           (* (- 1) (Length (Concat _t_str4 _t_str3))))
+        0)
+     (= (+ (Length (Concat _t_str4 _t_str3))
+           (Length _t_str5)
+           (* (- 1) (Length (Concat _t_str5 (Concat _t_str4 _t_str3)))))
+        0)
+     (= (Length _t_str5) 1)
+     (= (Length _t_str4) 1)
+     (= (Length _t_str3) 1)
+     (= x AA7)
+     (not (= _t_str0 ""))
+     (not (= _t_str1 ""))
+     (not (= _t_str2 ""))
+     (not (= _t_str1 B))
+     (not (= _t_str1 C))
+     (not (= _t_str1 D))
+     (not (= _t_str1 E))
+     (not (= _t_str1 F))
+     (not (= _t_str1 G))
+     (not (= _t_str1 H))
+     (not (= _t_str1 I))
+     (not (= _t_str1 J))
+     (not (= _t_str1 K))
+     (not (= _t_str1 L))
+     (not (= _t_str1 M))
+     (not (= _t_str1 N))
+     (not (= _t_str1 O))
+     (not (= _t_str1 P))
+     (not (= _t_str1 Q))
+     (not (= _t_str1 R))
+     (not (= _t_str1 S))
+     (not (= _t_str1 T))
+     (not (= _t_str1 U))
+     (not (= _t_str1 V))
+     (not (= _t_str1 W))
+     (not (= _t_str1 X))
+     (not (= _t_str1 Y))
+     (not (= _t_str1 Z))
+     (not (= _t_str0 0))
+     (not (= _t_str0 1))
+     (not (= _t_str0 2))
+     (not (= _t_str0 3))
+     (not (= _t_str0 4))
+     (not (= _t_str0 5))
+     (not (= _t_str0 6))
+     (not (= _t_str3 ""))
+     (not (= _t_str4 ""))
+     (not (= _t_str5 ""))
+     (= AA7 (Concat _t_str2 (Concat _t_str1 _t_str0)))
+     (= AA7 (Concat _t_str5 (Concat _t_str4 _t_str3))))
+***********************************************
+>> Input Var Set: x, 
+
+
+===============================================
+** cb_new_eq():    "AA7" = x
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= x AA7) @ 2586
+
+
+
+===============================================
+** cb_new_eq():    "AA7" = (Concat _t_str2 (Concat _t_str1 _t_str0))
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str2 (Concat _t_str1 _t_str0)) AA7) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str2 (Concat _t_str1 _t_str0)) = "AA7"
+>> Length added for: (= (Concat _t_str1 _t_str0) AA7) @ 1326
+
+>> Length added for: (= _t_str2 A) @ 1321
+
+>> Length added for: (= (Concat _t_str1 _t_str0) A7) @ 1326
+
+>> Length added for: (= _t_str2 AA) @ 1321
+
+>> Length added for: (= (Concat _t_str1 _t_str0) 7) @ 1326
+
+>> Length added for: (= _t_str2 AA7) @ 1321
+
+>> Length added for: (= (Concat _t_str1 _t_str0) "") @ 1326
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str2 (Concat _t_str1 _t_str0)) AA7)
+    (and (or (= _t_xor_0 0) (= _t_xor_0 1) (= _t_xor_0 2) (= _t_xor_0 3))
+         (= (= _t_xor_0 0) (= _t_str2 ""))
+         (= (= _t_xor_0 0) (= (Concat _t_str1 _t_str0) AA7))
+         (= (= _t_xor_0 1) (= _t_str2 A))
+         (= (= _t_xor_0 1) (= (Concat _t_str1 _t_str0) A7))
+         (= (= _t_xor_0 2) (= _t_str2 AA))
+         (= (= _t_xor_0 2) (= (Concat _t_str1 _t_str0) 7))
+         (= (= _t_xor_0 3) (= _t_str2 AA7))
+         (= (= _t_xor_0 3) (= (Concat _t_str1 _t_str0) ""))))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "AA7" = (Concat _t_str5 (Concat _t_str4 _t_str3))
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str5 (Concat _t_str4 _t_str3)) AA7) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str5 (Concat _t_str4 _t_str3)) = "AA7"
+>> Length added for: (= (Concat _t_str4 _t_str3) AA7) @ 1326
+
+>> Length added for: (= _t_str5 A) @ 1321
+
+>> Length added for: (= (Concat _t_str4 _t_str3) A7) @ 1326
+
+>> Length added for: (= _t_str5 AA) @ 1321
+
+>> Length added for: (= (Concat _t_str4 _t_str3) 7) @ 1326
+
+>> Length added for: (= _t_str5 AA7) @ 1321
+
+>> Length added for: (= (Concat _t_str4 _t_str3) "") @ 1326
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str5 (Concat _t_str4 _t_str3)) AA7)
+    (and (or (= _t_xor_1 0) (= _t_xor_1 1) (= _t_xor_1 2) (= _t_xor_1 3))
+         (= (= _t_xor_1 0) (= _t_str5 ""))
+         (= (= _t_xor_1 0) (= (Concat _t_str4 _t_str3) AA7))
+         (= (= _t_xor_1 1) (= _t_str5 A))
+         (= (= _t_xor_1 1) (= (Concat _t_str4 _t_str3) A7))
+         (= (= _t_xor_1 2) (= _t_str5 AA))
+         (= (= _t_xor_1 2) (= (Concat _t_str4 _t_str3) 7))
+         (= (= _t_xor_1 3) (= _t_str5 AA7))
+         (= (= _t_xor_1 3) (= (Concat _t_str4 _t_str3) ""))))
+---------------------
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str2 (Concat _t_str1 _t_str0))
+   nn2 = (Concat _t_str5 (Concat _t_str4 _t_str3))
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat _t_str2 (Concat _t_str1 _t_str0))
+                   new_nn2 = (Concat _t_str5 (Concat _t_str4 _t_str3)) @ 1506
+
+#############################
+#  SimplifyConcatEq Type 1  #
+#############################
+>> make_concat: (Concat _t_str2 _t_str6)
+
+>> make_concat: (Concat _t_str6 (Concat _t_str4 _t_str3))
+
+>> Length added for: (= _t_str5 (Concat _t_str2 _t_str6)) @ 1755
+
+>> Length added for: (= (Concat _t_str1 _t_str0) (Concat _t_str6 (Concat _t_str4 _t_str3))) @ 1756
+
+>> make_concat: (Concat _t_str5 _t_str7)
+
+>> make_concat: (Concat _t_str7 (Concat _t_str1 _t_str0))
+
+>> Length added for: (= _t_str2 (Concat _t_str5 _t_str7)) @ 1789
+
+>> Length added for: (= (Concat _t_str4 _t_str3) (Concat _t_str7 (Concat _t_str1 _t_str0))) @ 1790
+
+---------------------
+Axiom Add(@1829, Level 0):
+(=> (= (Concat _t_str2 (Concat _t_str1 _t_str0))
+       (Concat _t_str5 (Concat _t_str4 _t_str3)))
+    (and (or (= _t_xor_2 0) (= _t_xor_2 1) (= _t_xor_2 2))
+         (= (= _t_xor_2 0) (= _t_str5 (Concat _t_str2 _t_str6)))
+         (= (= _t_xor_2 0)
+            (= (Concat _t_str1 _t_str0)
+               (Concat _t_str6 (Concat _t_str4 _t_str3))))
+         (= (= _t_xor_2 0) (> (Length _t_str5) (Length _t_str2)))
+         (= (= _t_xor_2 0)
+            (> (Length (Concat _t_str1 _t_str0))
+               (Length (Concat _t_str4 _t_str3))))
+         (= (= _t_xor_2 1) (= _t_str2 (Concat _t_str5 _t_str7)))
+         (= (= _t_xor_2 1)
+            (= (Concat _t_str4 _t_str3)
+               (Concat _t_str7 (Concat _t_str1 _t_str0))))
+         (= (= _t_xor_2 1) (> (Length _t_str2) (Length _t_str5)))
+         (= (= _t_xor_2 1)
+            (> (Length (Concat _t_str4 _t_str3))
+               (Length (Concat _t_str1 _t_str0))))
+         (= (= _t_xor_2 2) (= _t_str2 _t_str5))
+         (= (= _t_xor_2 2)
+            (= (Concat _t_str1 _t_str0) (Concat _t_str4 _t_str3)))
+         (= (= _t_xor_2 2) (= (Length _t_str2) (Length _t_str5)))
+         (= (= _t_xor_2 2)
+            (= (Length (Concat _t_str4 _t_str3))
+               (Length (Concat _t_str1 _t_str0))))))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "A" = _t_str2
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str2 A) @ 2586
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str2 (Concat _t_str1 _t_str0))
+
+>> [simplifyConcatStr 3 @ 917] (Concat _t_str2 (Concat _t_str1 _t_str0))
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str2 _t_str6)
+
+
+
+===============================================
+** cb_new_eq():    "A7" = (Concat _t_str1 _t_str0)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str1 _t_str0) A7) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str1 _t_str0) = "A7"
+>> Length added for: (= _t_str0 A7) @ 1326
+
+>> Length added for: (= _t_str1 A) @ 1321
+
+>> Length added for: (= _t_str0 7) @ 1326
+
+>> Length added for: (= _t_str1 A7) @ 1321
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str1 _t_str0) A7)
+    (and (or (= _t_xor_3 0) (= _t_xor_3 1) (= _t_xor_3 2))
+         (= (= _t_xor_3 0) (= _t_str1 ""))
+         (= (= _t_xor_3 0) (= _t_str0 A7))
+         (= (= _t_xor_3 1) (= _t_str1 A))
+         (= (= _t_xor_3 1) (= _t_str0 7))
+         (= (= _t_xor_3 2) (= _t_str1 A7))
+         (= (= _t_xor_3 2) (= _t_str0 ""))))
+---------------------
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str2 (Concat _t_str1 _t_str0))
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str7 (Concat _t_str1 _t_str0))
+
+>> make_concat: (Concat _t_str7 A7)
+
+---------------------
+Axiom Add(@908, Level 0):
+(=> (= (Concat _t_str1 _t_str0) A7)
+    (= (Concat _t_str7 (Concat _t_str1 _t_str0)) (Concat _t_str7 A7)))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "A" = _t_str5
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str5 A) @ 2586
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str5 (Concat _t_str4 _t_str3))
+
+>> [simplifyConcatStr 3 @ 917] (Concat _t_str5 (Concat _t_str4 _t_str3))
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str5 _t_str7)
+
+
+
+===============================================
+** cb_new_eq():    "A7" = (Concat _t_str4 _t_str3)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str4 _t_str3) A7) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str4 _t_str3) = "A7"
+>> Length added for: (= _t_str3 A7) @ 1326
+
+>> Length added for: (= _t_str4 A) @ 1321
+
+>> Length added for: (= _t_str3 7) @ 1326
+
+>> Length added for: (= _t_str4 A7) @ 1321
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str4 _t_str3) A7)
+    (and (or (= _t_xor_4 0) (= _t_xor_4 1) (= _t_xor_4 2))
+         (= (= _t_xor_4 0) (= _t_str4 ""))
+         (= (= _t_xor_4 0) (= _t_str3 A7))
+         (= (= _t_xor_4 1) (= _t_str4 A))
+         (= (= _t_xor_4 1) (= _t_str3 7))
+         (= (= _t_xor_4 2) (= _t_str4 A7))
+         (= (= _t_xor_4 2) (= _t_str3 ""))))
+---------------------
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str1 _t_str0)
+   nn2 = (Concat _t_str4 _t_str3)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat _t_str1 _t_str0)
+                   new_nn2 = (Concat _t_str4 _t_str3) @ 1506
+
+#############################
+#  SimplifyConcatEq Type 1  #
+#############################
+>> make_concat: (Concat _t_str1 _t_str8)
+
+>> make_concat: (Concat _t_str8 _t_str3)
+
+>> Length added for: (= _t_str4 (Concat _t_str1 _t_str8)) @ 1755
+
+>> Length added for: (= _t_str0 (Concat _t_str8 _t_str3)) @ 1756
+
+>> make_concat: (Concat _t_str4 _t_str9)
+
+>> make_concat: (Concat _t_str9 _t_str0)
+
+>> Length added for: (= _t_str1 (Concat _t_str4 _t_str9)) @ 1789
+
+>> Length added for: (= _t_str3 (Concat _t_str9 _t_str0)) @ 1790
+
+---------------------
+Axiom Add(@1829, Level 0):
+(=> (= (Concat _t_str1 _t_str0) (Concat _t_str4 _t_str3))
+    (and (or (= _t_xor_5 0) (= _t_xor_5 1) (= _t_xor_5 2))
+         (= (= _t_xor_5 0) (= _t_str4 (Concat _t_str1 _t_str8)))
+         (= (= _t_xor_5 0) (= _t_str0 (Concat _t_str8 _t_str3)))
+         (= (= _t_xor_5 0) (> (Length _t_str4) (Length _t_str1)))
+         (= (= _t_xor_5 0) (> (Length _t_str0) (Length _t_str3)))
+         (= (= _t_xor_5 1) (= _t_str1 (Concat _t_str4 _t_str9)))
+         (= (= _t_xor_5 1) (= _t_str3 (Concat _t_str9 _t_str0)))
+         (= (= _t_xor_5 1) (> (Length _t_str1) (Length _t_str4)))
+         (= (= _t_xor_5 1) (> (Length _t_str3) (Length _t_str0)))
+         (= (= _t_xor_5 2) (= _t_str1 _t_str4))
+         (= (= _t_xor_5 2) (= _t_str0 _t_str3))
+         (= (= _t_xor_5 2) (= (Length _t_str1) (Length _t_str4)))
+         (= (= _t_xor_5 2) (= (Length _t_str3) (Length _t_str0)))))
+---------------------
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str5 (Concat _t_str4 _t_str3))
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str6 (Concat _t_str4 _t_str3))
+
+>> make_concat: (Concat _t_str6 A7)
+
+---------------------
+Axiom Add(@908, Level 0):
+(=> (= (Concat _t_str4 _t_str3) A7)
+    (= (Concat _t_str6 (Concat _t_str4 _t_str3)) (Concat _t_str6 A7)))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    (Concat _t_str7 A7) = (Concat _t_str7 (Concat _t_str1 _t_str0))
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str7 A7) (Concat _t_str7 (Concat _t_str1 _t_str0))) @ 2586
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str7 A7)
+   nn2 = (Concat _t_str7 (Concat _t_str1 _t_str0))
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat _t_str7 A7)
+                   new_nn2 = (Concat _t_str7 A7) @ 1506
+>> Eq concats, return.
+
+
+===============================================
+** cb_new_eq():    (Concat _t_str6 A7) = (Concat _t_str6 (Concat _t_str4 _t_str3))
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str6 A7) (Concat _t_str6 (Concat _t_str4 _t_str3))) @ 2586
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str6 A7)
+   nn2 = (Concat _t_str6 (Concat _t_str4 _t_str3))
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat _t_str6 A7)
+                   new_nn2 = (Concat _t_str6 A7) @ 1506
+>> Eq concats, return.
+
+
+===============================================
+** cb_new_eq():    "A" = _t_str1
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str1 A) @ 2586
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str1 _t_str0)
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str1 _t_str8)
+
+
+
+===============================================
+** cb_new_eq():    "7" = _t_str0
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str0 7) @ 2586
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str1 _t_str0)
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str9 _t_str0)
+
+
+
+===============================================
+** cb_new_eq():    "A" = _t_str4
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str4 A) @ 2586
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str4 _t_str3)
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str4 _t_str9)
+
+
+
+===============================================
+** cb_new_eq():    "7" = _t_str3
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str3 7) @ 2586
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str4 _t_str3)
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str8 _t_str3)
+
+
+*******************************************
+[PUSH]: Level = 1
+*******************************************
+
+*******************************************
+[PUSH]: Level = 2
+*******************************************
+
+*******************************************
+[PUSH]: Level = 3
+*******************************************
+
+*******************************************
+[PUSH]: Level = 4
+*******************************************
+
+
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [4] 
+=============================================================
+
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
+  * _t_str0	: _t_str3, 
+  * _t_str1	: _t_str2, _t_str4, _t_str5, 
+
+(1) var = constStr:
+  x = "AA7"
+  _t_str0 = "7"
+  _t_str1 = "A"
+
+(2) var = concat:
+  x = { (Concat _t_str2 (Concat _t_str1 _t_str0)), (Concat _t_str5 (Concat _t_str4 _t_str3)), }
+
+(3) concat = constStr:
+  (Concat _t_str1 _t_str0) = "A7"
+  (Concat _t_str2 (Concat _t_str1 _t_str0)) = "AA7"
+
+(4) eq concats:
+  >> (Concat _t_str1 _t_str0) , (Concat _t_str4 _t_str3) , 
+  >> (Concat _t_str2 (Concat _t_str1 _t_str0)) , (Concat _t_str5 (Concat _t_str4 _t_str3)) , 
+  >> (Concat _t_str6 (Concat _t_str4 _t_str3)) , (Concat _t_str6 A7) , 
+  >> (Concat _t_str7 (Concat _t_str1 _t_str0)) , (Concat _t_str7 A7) , 
+
+
+-- Dependence Map -----------------
+x	-->	_t_str0(2), _t_str1(2), "AA7"(1), 
+_t_str0	-->	"7"(1), "AA7"(3), "A7"(5), 
+_t_str1	-->	"A"(1), "AA7"(3), "A7"(3), 
+-----------------------------------
+
+-- L/R Most Var in eq concat ------
+-----------------------------------
+
+-- L/R constraints ----------------
+-----------------------------------
+
+
+ * All non-internal variables are assigned. Done!
+###########################################################
+
+
+*****************************
+SAT
+-----------------------------
+_t_str6 -> String!val!0
+_t_xor_5 -> 2
+_t_xor_1 -> 1
+_t_str0 -> 7
+_t_str3 -> 7
+_t_xor_4 -> 1
+_t_xor_0 -> 1
+_t_str4 -> A
+_t_str5 -> A
+_t_str7 -> String!val!1
+_t_xor_2 -> 2
+_t_str8 -> String!val!5
+_t_str1 -> A
+_t_str2 -> A
+_t_xor_3 -> 1
+x -> AA7
+_t_str9 -> String!val!6
+*****************************
+
+** Reset():
+
+** Delete()

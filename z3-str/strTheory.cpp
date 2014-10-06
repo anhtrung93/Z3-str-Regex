@@ -4690,11 +4690,11 @@ Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAss
     Z3_ast assert[3], result[3];
 
     std::string firstStr = regexStr.substr(0, openBracket);
-    result[0] = regex_break_down(t, firstStr, assert[0]);
     std::string lastStr = regexStr.substr(closeBracket + 1);
-    result[2] = regex_break_down(t, lastStr, assert[2]);
-
     std::string listChar = regexStr.substr(openBracket + 1, closeBracket - openBracket - 1);
+    result[0] = regex_break_down(t, firstStr, assert[0]);    
+    result[2] = regex_break_down(t, lastStr, assert[2]);
+    
     Z3_ast or_items[100];//TODO
     unsigned int pos = 0;
     Z3_ast character = my_mk_internal_string_var(t);
@@ -4703,9 +4703,11 @@ Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAss
         continue;
       }
       if ((id < listChar.length() - 1) && (listChar[id + 1] == '-')){
-	char charId[1];
-        for (charId[0] = listChar[id]; charId[0] <= listChar[id + 2]; ++ charId[0]){
-          or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, charId)); 
+	char charTemp;
+        //be careful with 3 below lines
+        for (charTemp = listChar[id]; charTemp <= listChar[id + 2]; ++ charTemp){
+          listChar[id] = charTemp;
+          or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, listChar.substr(id, 1).c_str())); 
         }
 	id += 2;
       } else {
@@ -4714,9 +4716,10 @@ Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAss
     }
     result[1] = character; assert[1] = Z3_mk_or(ctx, pos, or_items);
     if (listChar[0] == '^'){
-      Z3_ast charLen_eq_one = Z3_mk_eq(ctx, mk_int(ctx, 1), mk_length(t, character));
-      assert[1] = mk_2_and(t, charLen_eq_one, Z3_mk_not(ctx, assert[1]));  
+      assert[1] = Z3_mk_not(ctx, assert[1]);  
     }    
+    Z3_ast charLen_eq_one = Z3_mk_eq(ctx, mk_int(ctx, 1), mk_length(t, character));
+    assert[1] = mk_2_and(t, charLen_eq_one, assert[1]);  
 
     breakDownAssert = Z3_mk_and(ctx, 3, assert);
     return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));

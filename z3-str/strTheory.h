@@ -23,6 +23,8 @@
 
 #include "z3.h"
 
+#define DEBUGLOG
+
 #define str2Int_MinInt  -50
 #define str2Int_MaxInt   50
 
