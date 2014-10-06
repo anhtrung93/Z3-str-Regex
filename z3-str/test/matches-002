@@ -1,0 +1,6 @@
+(declare-variable x String)
+
+(assert (= true (Matches x "sdfs[ANDHT]sadfs[5649ueyth]") ) )
+
+(check-sat)
+(get-model)

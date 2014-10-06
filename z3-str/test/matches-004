@@ -1,0 +1,10 @@
+(declare-variable x String)
+
+(assert (= true (Matches x "gr[e]y") ) )
+(assert (= true (Matches x "gr(a|e)y") ) )
+(assert (= true (Matches x "(gray|grey)") ) )
+
+
+
+(check-sat)
+(get-model)

@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (= true (Matches x "[^-][^b-z][^0-8]") ) )
+(assert (= true (Matches x "[-z][a-z][0-9]") ) )
+
+(check-sat)
+(get-model)

@@ -4682,47 +4682,83 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
   }
 }
 
-Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
-  Z3_context ctx = Z3_theory_get_context(t);
-  std::size_t openBracket = regexStr.find('[');
-  if (openBracket != std::string::npos){
-    std::size_t closeBracket = regexStr.find(']', openBracket);
-    Z3_ast assert[3], result[3];
-
-    std::string firstStr = regexStr.substr(0, openBracket);
-    std::string lastStr = regexStr.substr(closeBracket + 1);
-    std::string listChar = regexStr.substr(openBracket + 1, closeBracket - openBracket - 1);
-    result[0] = regex_break_down(t, firstStr, assert[0]);    
-    result[2] = regex_break_down(t, lastStr, assert[2]);
-    
+Z3_ast regex_charInBraces(Z3_theory t, std::string charInBraces, Z3_ast & assert){
+    Z3_context ctx = Z3_theory_get_context(t);
     Z3_ast or_items[100];//TODO
     unsigned int pos = 0;
     Z3_ast character = my_mk_internal_string_var(t);
-    for (unsigned int id = 0; id < listChar.length(); ++ id){
-      if (id == 0 && listChar[id] == '^'){
-        continue;
-      }
-      if ((id < listChar.length() - 1) && (listChar[id + 1] == '-')){
+
+    bool startsWithCaret = false;
+    if (charInBraces[0] == '^'){
+      startsWithCaret = true;
+      charInBraces = charInBraces.substr(1);
+    }
+    for (unsigned int id = 0; id < charInBraces.length(); ++ id){
+      if (charInBraces[id] == '-' && id < charInBraces.length() - 1 && id > 0){
 	char charTemp;
-        //be careful with 3 below lines
-        for (charTemp = listChar[id]; charTemp <= listChar[id + 2]; ++ charTemp){
-          listChar[id] = charTemp;
-          or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, listChar.substr(id, 1).c_str())); 
+        //becareful with 4 below lines
+        for (charTemp = charInBraces[id - 1] + 1; charTemp <= charInBraces[id + 1]; ++ charTemp){
+          charInBraces[id - 1] = charTemp;
+          or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, charInBraces.substr(id - 1, 1).c_str())); 
         }
-	id += 2;
+        ++id;
       } else {
-        or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, listChar.substr(id, 1).c_str()));
+        or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, charInBraces.substr(id, 1).c_str()));
       }
     }
-    result[1] = character; assert[1] = Z3_mk_or(ctx, pos, or_items);
-    if (listChar[0] == '^'){
-      assert[1] = Z3_mk_not(ctx, assert[1]);  
+    Z3_ast result = character; assert = Z3_mk_or(ctx, pos, or_items);
+    if (startsWithCaret){
+      assert = Z3_mk_not(ctx, assert);  
     }    
     Z3_ast charLen_eq_one = Z3_mk_eq(ctx, mk_int(ctx, 1), mk_length(t, character));
-    assert[1] = mk_2_and(t, charLen_eq_one, assert[1]);  
+    assert = mk_2_and(t, charLen_eq_one, assert);
+    return result;
+}
 
-    breakDownAssert = Z3_mk_and(ctx, 3, assert);
-    return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
+Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
+  Z3_context ctx = Z3_theory_get_context(t);
+  std::size_t specChar = regexStr.find_first_of("[(|");
+
+  if (specChar != std::string::npos){
+    if (regexStr[specChar] == '|'){
+      Z3_ast subRegex[2], subAssert[2];
+      std::string firstStr = regexStr.substr(0, specChar);
+      std::string lastStr = regexStr.substr(specChar + 1);
+      subRegex[0] = regex_break_down(t, firstStr, subAssert[0]);    
+      subRegex[1] = regex_break_down(t, lastStr, subAssert[1]);
+
+      Z3_ast result = my_mk_internal_string_var(t);
+      subAssert[0] = mk_2_and(t, Z3_mk_eq(ctx, result, subRegex[0]), subAssert[0]);
+      subAssert[1] = mk_2_and(t, Z3_mk_eq(ctx, result, subRegex[1]), subAssert[1]);
+      breakDownAssert = Z3_mk_or(ctx, 2, subAssert);
+      return result;
+    } else if (regexStr[specChar] == '['){
+      std::size_t closeBracket = regexStr.find(']', specChar + 1);//+1 to eliminate case []dfasdf]
+      Z3_ast assert[3], result[3];
+  
+      std::string firstStr = regexStr.substr(0, specChar);
+      std::string lastStr = regexStr.substr(closeBracket + 1);
+      std::string listChar = regexStr.substr(specChar + 1, closeBracket - specChar - 1);
+      result[0] = regex_break_down(t, firstStr, assert[0]);    
+      result[2] = regex_break_down(t, lastStr, assert[2]);
+      result[1] = regex_charInBraces(t, listChar, assert[1]);
+  
+      breakDownAssert = Z3_mk_and(ctx, 3, assert);
+      return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
+    } else { //if (regexStr[specChar] == '(')
+      std::size_t closeParenthesis = regexStr.find(')', specChar);
+      Z3_ast assert[3], result[3];
+  
+      std::string firstStr = regexStr.substr(0, specChar);
+      std::string lastStr = regexStr.substr(closeParenthesis + 1);
+      std::string middleStr = regexStr.substr(specChar + 1, closeParenthesis - specChar - 1);
+      result[0] = regex_break_down(t, firstStr, assert[0]);    
+      result[2] = regex_break_down(t, lastStr, assert[2]);
+      result[1] = regex_break_down(t, middleStr, assert[1]);
+  
+      breakDownAssert = Z3_mk_and(ctx, 3, assert);
+      return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
+    }
   } else {
     breakDownAssert = Z3_mk_true(ctx);
     return my_mk_str_value(t, regexStr.c_str());
