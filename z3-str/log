@@ -1,216 +1,445 @@
-Input file: /tmp/z3_str_convert/verify_conv_matches-004
+Input file: /tmp/z3_str_convert/verify_conv_replace-005
 
 
 Input loaded:
 -----------------------------------------------
-(and (= true (Matches x __cOnStStR__x67_x72_x5b_x65_x5d_x79))
-     (= true (Matches x __cOnStStR__x67_x72_x28_x61_x7c_x65_x29_x79))
-     (= true
-        (Matches x __cOnStStR__x28_x67_x72_x61_x79_x7c_x67_x72_x65_x79_x29))
-     (= x __cOnStStR__x67_x72_x65_x79))
+(and (= y (Replace x __cOnStStR__x65_x66_x67 __cOnStStR__x61_x62_x63_x64))
+     (= y __cOnStStR__x61_x62_x63_x64)
+     (= y __cOnStStR__x61_x62_x63_x64)
+     (= x __cOnStStR__x65_x66_x67))
 -----------------------------------------------
 
->> make_concat: (Concat _t_str0 y)
+>> make_concat: (Concat _t_str1 _t_str2)
 
->> make_concat: (Concat gr (Concat _t_str0 y))
+>> make_concat: (Concat _t_str0 (Concat _t_str1 _t_str2))
 
+>> make_concat: (Concat abcd _t_str2)
 
-===================
-** cb_reduce_app(): Matches( x, "gr[e]y" )  =>  (= x (Concat gr (Concat _t_str0 y)))
--- ADD(@5021): 
-(and true (and (= 1 (Length _t_str0)) (or (= _t_str0 e))) true)
-===================
->> make_concat: (Concat _t_str1 y)
-
->> make_concat: (Concat gr (Concat _t_str1 y))
+>> make_concat: (Concat _t_str0 (Concat abcd _t_str2))
 
 
 ===================
-** cb_reduce_app(): Matches( x, "gr(a|e)y" )  =>  (= x (Concat gr (Concat _t_str1 y)))
--- ADD(@5021): 
-(and true (or (and (= _t_str1 a) true) (and (= _t_str1 e) true)) true)
+** cb_reduce_app(): Replace(x, "efg", "abcd")  =>  _t_str3
+-- ADD(@4993): 
+(and (= x (Concat _t_str0 (Concat _t_str1 _t_str2)))
+     (xor (= _t_int_0 (- 1)) (>= _t_int_0 0))
+     (iff (= _t_int_0 (- 1)) (not (Contains x efg)))
+     (iff (= _t_int_0 (- 1)) (= _t_str3 x))
+     (iff (>= _t_int_0 0) (= _t_int_0 (Length _t_str0)))
+     (iff (>= _t_int_0 0) (= _t_str1 efg))
+     (iff (>= _t_int_0 0) (not (Contains _t_str0 efg)))
+     (= _t_str3 (Concat _t_str0 (Concat abcd _t_str2))))
 ===================
+>> make_concat: (Concat efg _t_str5)
+
+>> make_concat: (Concat _t_str4 (Concat efg _t_str5))
+
 
 ===================
-** cb_reduce_app(): Matches( x, "(gray|grey)" )  =>  (= x _t_str2)
--- ADD(@5021): 
-(and true (or (and (= _t_str2 gray) true) (and (= _t_str2 grey) true)) true)
+** cb_reduce_app(): Contains( x, "efg" )  =>  (= x (Concat _t_str4 (Concat efg _t_str5)))
 ===================
->> cb_reduce_eq: (= x grey)
+>> make_concat: (Concat efg _t_str7)
 
->> Length added for: (= x grey) @ 4349
+>> make_concat: (Concat _t_str6 (Concat efg _t_str7))
 
->> cb_reduce_app(): Length( "grey" ) = 4
 
->> cb_reduce_app(): concat( "e" , "y" )
+===================
+** cb_reduce_app(): Contains( _t_str0, "efg" )  =>  (= _t_str0 (Concat _t_str6 (Concat efg _t_str7)))
+===================
+>> cb_reduce_eq: (= y abcd)
 
->> cb_reduce_app(): concat( "gr" , "ey" )
+>> Length added for: (= y abcd) @ 4349
+
+>> cb_reduce_eq: (= x efg)
+
+>> Length added for: (= x efg) @ 4349
+
+>> cb_reduce_app(): Length( "abcd" ) = 4
+
+>> cb_reduce_app(): Length( "efg" ) = 3
 
 
 
 ***********************************************
 *               Starting Search               *
 -----------------------------------------------
-(and (= (+ (Length _t_str0) (* (- 1) (Length (Concat _t_str0 y)))) (- 1))
-     (= (+ (Length (Concat _t_str0 y))
-           (* (- 1) (Length (Concat gr (Concat _t_str0 y)))))
-        (- 2))
-     (= (Length _t_str0) 1)
-     (= _t_str0 e)
-     (= (+ (Length _t_str1) (* (- 1) (Length (Concat _t_str1 y)))) (- 1))
-     (= (+ (Length (Concat _t_str1 y))
-           (* (- 1) (Length (Concat gr (Concat _t_str1 y)))))
-        (- 2))
-     (= x grey)
+(and (= (+ (Length _t_str1)
+           (Length _t_str2)
+           (* (- 1) (Length (Concat _t_str1 _t_str2))))
+        0)
+     (= (+ (Length _t_str0)
+           (Length (Concat _t_str1 _t_str2))
+           (* (- 1) (Length (Concat _t_str0 (Concat _t_str1 _t_str2)))))
+        0)
+     (= (+ (Length _t_str2) (* (- 1) (Length (Concat abcd _t_str2)))) (- 4))
+     (= (+ (Length _t_str0)
+           (Length (Concat abcd _t_str2))
+           (* (- 1) (Length (Concat _t_str0 (Concat abcd _t_str2)))))
+        0)
+     (= (+ (Length _t_str5) (* (- 1) (Length (Concat efg _t_str5)))) (- 3))
+     (= (+ (Length _t_str4)
+           (Length (Concat efg _t_str5))
+           (* (- 1) (Length (Concat _t_str4 (Concat efg _t_str5)))))
+        0)
+     (= (+ (Length _t_str7) (* (- 1) (Length (Concat efg _t_str7)))) (- 3))
+     (= (+ (Length _t_str6)
+           (Length (Concat efg _t_str7))
+           (* (- 1) (Length (Concat _t_str6 (Concat efg _t_str7)))))
+        0)
+     (= y abcd)
+     (= x efg)
+     (>= (Length _t_str0) 0)
      (>= (Length _t_str1) 0)
      (>= (Length _t_str2) 0)
-     (= grey (Concat gr (Concat _t_str1 y)))
-     (= grey _t_str2))
+     (>= (Length _t_str3) 0)
+     (>= (Length _t_str4) 0)
+     (>= (Length _t_str5) 0)
+     (>= (Length _t_str6) 0)
+     (>= (Length _t_str7) 0)
+     (= efg (Concat _t_str0 (Concat _t_str1 _t_str2)))
+     (= _t_str3 (Concat _t_str0 (Concat abcd _t_str2)))
+     (= abcd _t_str3))
 ***********************************************
->> Input Var Set: x, 
+>> Input Var Set: y, x, 
 
 
 ===============================================
-** cb_new_eq():    "e" = _t_str0
+** cb_new_eq():    "abcd" = y
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= _t_str0 e) @ 2586
+>> Length added for: (= y abcd) @ 2586
 
->> [simplifyConcatStr 1 @ 843] (Concat _t_str0 y)
+
+
+===============================================
+** cb_new_eq():    "efg" = x
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= x efg) @ 2586
+
+
+
+===============================================
+** cb_new_eq():    "efg" = (Concat _t_str0 (Concat _t_str1 _t_str2))
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str0 (Concat _t_str1 _t_str2)) efg) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str0 (Concat _t_str1 _t_str2)) = "efg"
+>> Length added for: (= (Concat _t_str1 _t_str2) efg) @ 1326
+
+>> Length added for: (= _t_str0 e) @ 1321
+
+>> Length added for: (= (Concat _t_str1 _t_str2) fg) @ 1326
+
+>> Length added for: (= _t_str0 ef) @ 1321
+
+>> Length added for: (= (Concat _t_str1 _t_str2) g) @ 1326
+
+>> Length added for: (= _t_str0 efg) @ 1321
+
+>> Length added for: (= (Concat _t_str1 _t_str2) "") @ 1326
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str0 (Concat _t_str1 _t_str2)) efg)
+    (and (or (= _t_xor_0 0) (= _t_xor_0 1) (= _t_xor_0 2) (= _t_xor_0 3))
+         (= (= _t_xor_0 0) (= _t_str0 ""))
+         (= (= _t_xor_0 0) (= (Concat _t_str1 _t_str2) efg))
+         (= (= _t_xor_0 1) (= _t_str0 e))
+         (= (= _t_xor_0 1) (= (Concat _t_str1 _t_str2) fg))
+         (= (= _t_xor_0 2) (= _t_str0 ef))
+         (= (= _t_xor_0 2) (= (Concat _t_str1 _t_str2) g))
+         (= (= _t_xor_0 3) (= _t_str0 efg))
+         (= (= _t_xor_0 3) (= (Concat _t_str1 _t_str2) ""))))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    (Concat _t_str0 (Concat abcd _t_str2)) = _t_str3
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str0 (Concat abcd _t_str2)) _t_str3) @ 2586
+
+
+
+===============================================
+** cb_new_eq():    "abcd" = _t_str3
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str3 abcd) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str0 (Concat abcd _t_str2)) = "abcd"
+>> Length added for: (= (Concat abcd _t_str2) abcd) @ 1326
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str0 (Concat abcd _t_str2)) abcd)
+    (and (= _t_xor_1 0)
+         (= (= _t_xor_1 0) (= _t_str0 ""))
+         (= (= _t_xor_1 0) (= (Concat abcd _t_str2) abcd))))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "" = _t_str0
+===============================================
+>> New_eq Check: PASS
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str0 (Concat _t_str1 _t_str2))
 
 ---------------------
 Axiom Add(@863, Level 0):
-(=> (= _t_str0 e) (= (Concat _t_str0 y) ey))
+(=> (= _t_str0 "")
+    (= (Concat _t_str0 (Concat _t_str1 _t_str2)) (Concat _t_str1 _t_str2)))
 ---------------------
 
->> [simplifyConcatStr 6 @ 1005] (Concat gr (Concat _t_str0 y))
+>> [simplifyConcatStr 3 @ 917] (Concat _t_str0 (Concat _t_str1 _t_str2))
+
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str0 (Concat abcd _t_str2))
 
 ---------------------
-Axiom Add(@1016, Level 0):
-(=> (= _t_str0 e) (= (Concat gr (Concat _t_str0 y)) grey))
+Axiom Add(@863, Level 0):
+(=> (= _t_str0 "")
+    (= (Concat _t_str0 (Concat abcd _t_str2)) (Concat abcd _t_str2)))
+---------------------
+
+>> [simplifyConcatStr 3 @ 917] (Concat _t_str0 (Concat abcd _t_str2))
+
+---------------------
+Axiom Add(@931, Level 0):
+(=> (= _t_str0 "")
+    (= (Concat _t_str0 (Concat abcd _t_str2)) (Concat abcd _t_str2)))
 ---------------------
 
 
 
 ===============================================
-** cb_new_eq():    "grey" = x
+** cb_new_eq():    "abcd" = (Concat abcd _t_str2)
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= x grey) @ 2586
+>> Length added for: (= (Concat abcd _t_str2) abcd) @ 2586
 
-
-
-===============================================
-** cb_new_eq():    "grey" = (Concat gr (Concat _t_str1 y))
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Concat gr (Concat _t_str1 y)) grey) @ 2586
-
-** solve_concat_eq_str: (Concat gr (Concat _t_str1 y)) = "grey"
->> Length added for: (= (Concat _t_str1 y) ey) @ 1271
-
+** solve_concat_eq_str: (Concat abcd _t_str2) = "abcd"
 ---------------------
 Axiom Add(@1272, Level 0):
-(=> (= (Concat gr (Concat _t_str1 y)) grey) (= (Concat _t_str1 y) ey))
+(=> (= (Concat abcd _t_str2) abcd) (= _t_str2 ""))
 ---------------------
 
 
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str0 (Concat abcd _t_str2))
+   nn2 = (Concat abcd _t_str2)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat abcd _t_str2)
+                   new_nn2 = (Concat abcd _t_str2) @ 1506
+>> Eq concats, return.
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str0 (Concat abcd _t_str2))
+
+
 
 ===============================================
-** cb_new_eq():    "grey" = _t_str2
+** cb_new_eq():    "efg" = (Concat _t_str1 _t_str2)
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= _t_str2 grey) @ 2586
+>> Length added for: (= (Concat _t_str1 _t_str2) efg) @ 2586
+
+** solve_concat_eq_str: (Concat _t_str1 _t_str2) = "efg"
+>> Length added for: (= _t_str2 efg) @ 1326
+
+>> Length added for: (= _t_str1 e) @ 1321
+
+>> Length added for: (= _t_str2 fg) @ 1326
+
+>> Length added for: (= _t_str1 ef) @ 1321
+
+>> Length added for: (= _t_str2 g) @ 1326
+
+>> Length added for: (= _t_str1 efg) @ 1321
+
+---------------------
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str1 _t_str2) efg)
+    (and (or (= _t_xor_2 0) (= _t_xor_2 1) (= _t_xor_2 2) (= _t_xor_2 3))
+         (= (= _t_xor_2 0) (= _t_str1 ""))
+         (= (= _t_xor_2 0) (= _t_str2 efg))
+         (= (= _t_xor_2 1) (= _t_str1 e))
+         (= (= _t_xor_2 1) (= _t_str2 fg))
+         (= (= _t_xor_2 2) (= _t_str1 ef))
+         (= (= _t_xor_2 2) (= _t_str2 g))
+         (= (= _t_xor_2 3) (= _t_str1 efg))
+         (= (= _t_xor_2 3) (= _t_str2 ""))))
+---------------------
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str0 (Concat _t_str1 _t_str2))
+   nn2 = (Concat _t_str1 _t_str2)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat _t_str1 _t_str2)
+                   new_nn2 = (Concat _t_str1 _t_str2) @ 1506
+>> Eq concats, return.
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str0 (Concat _t_str1 _t_str2))
 
 
 
 ===============================================
-** cb_new_eq():    "ey" = (Concat _t_str0 y)
+** cb_new_eq():    "" = _t_str2
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= (Concat _t_str0 y) ey) @ 2586
-
-** solve_concat_eq_str: (Concat _t_str0 y) = "ey"
->> [simplifyConcatStr 2 @ 878] (Concat gr (Concat _t_str0 y))
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str1 _t_str2)
 
 ---------------------
 Axiom Add(@898, Level 0):
-(=> (= (Concat _t_str0 y) ey) (= (Concat gr (Concat _t_str0 y)) grey))
+(=> (= _t_str2 "") (= (Concat _t_str1 _t_str2) _t_str1))
 ---------------------
+
+>> [simplifyConcatStr 2 @ 878] (Concat abcd _t_str2)
 
 
 
 ===============================================
-** cb_new_eq():    "grey" = (Concat gr (Concat _t_str0 y))
+** cb_new_eq():    "efg" = _t_str1
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= (Concat gr (Concat _t_str0 y)) grey) @ 2586
+>> Length added for: (= _t_str1 efg) @ 2586
 
-** solve_concat_eq_str: (Concat gr (Concat _t_str0 y)) = "grey"
-
-===============================================
-** simplifyConcatEq():
-   nn1 = (Concat gr (Concat _t_str1 y))
-   nn2 = (Concat gr (Concat _t_str0 y))
-===============================================
-[simplifyConcatEq] new_nn1 = (Concat gr (Concat _t_str1 y))
-                   new_nn2 = "grey" @ 1506
----------------------
-Axiom Add(@1528, Level 0):
-(=> (= (Concat _t_str0 y) ey) (= (Concat gr (Concat _t_str0 y)) grey))
----------------------
-
->> [simplifyConcatEq] nn1_new is not concat @ 1542
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str1 _t_str2)
 
 
 
 ===============================================
-** cb_new_eq():    "ey" = (Concat _t_str1 y)
+** cb_new_eq():    "efg" = (Concat _t_str4 (Concat efg _t_str5))
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= (Concat _t_str1 y) ey) @ 2586
+>> Length added for: (= (Concat _t_str4 (Concat efg _t_str5)) efg) @ 2586
 
-** solve_concat_eq_str: (Concat _t_str1 y) = "ey"
->> Length added for: (= _t_str1 e) @ 1241
+** solve_concat_eq_str: (Concat _t_str4 (Concat efg _t_str5)) = "efg"
+>> Length added for: (= (Concat efg _t_str5) efg) @ 1326
 
 ---------------------
-Axiom Add(@1242, Level 0):
-(=> (= (Concat _t_str1 y) ey) (= _t_str1 e))
+Axiom Add(@1344, Level 0):
+(=> (= (Concat _t_str4 (Concat efg _t_str5)) efg)
+    (and (= _t_xor_3 0)
+         (= (= _t_xor_3 0) (= _t_str4 ""))
+         (= (= _t_xor_3 0) (= (Concat efg _t_str5) efg))))
 ---------------------
 
 
 ===============================================
 ** simplifyConcatEq():
-   nn1 = (Concat _t_str0 y)
-   nn2 = (Concat _t_str1 y)
+   nn1 = (Concat _t_str1 _t_str2)
+   nn2 = (Concat _t_str4 (Concat efg _t_str5))
 ===============================================
-[simplifyConcatEq] new_nn1 = "ey"
-                   new_nn2 = (Concat _t_str1 y) @ 1506
+[simplifyConcatEq] new_nn1 = "efg"
+                   new_nn2 = (Concat _t_str4 (Concat efg _t_str5)) @ 1506
 >> [simplifyConcatEq] nn1_new is not concat @ 1536
 
->> [simplifyConcatStr 2 @ 878] (Concat gr (Concat _t_str1 y))
 
->> [simplifyConcatStr 2 @ 878] (Concat gr (Concat _t_str1 y))
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str0 (Concat _t_str1 _t_str2))
+   nn2 = (Concat _t_str4 (Concat efg _t_str5))
+===============================================
+[simplifyConcatEq] new_nn1 = "efg"
+                   new_nn2 = (Concat _t_str4 (Concat efg _t_str5)) @ 1506
+>> [simplifyConcatEq] nn1_new is not concat @ 1536
 
 
 
 ===============================================
-** cb_new_eq():    "e" = _t_str1
+** cb_new_eq():    "" = _t_str4
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= _t_str1 e) @ 2586
+>> [simplifyConcatStr 1 @ 843] (Concat _t_str4 (Concat efg _t_str5))
 
->> [simplifyConcatStr 1 @ 843] (Concat _t_str1 y)
+---------------------
+Axiom Add(@863, Level 0):
+(=> (= _t_str4 "")
+    (= (Concat _t_str4 (Concat efg _t_str5)) (Concat efg _t_str5)))
+---------------------
 
->> [simplifyConcatStr 6 @ 1005] (Concat gr (Concat _t_str1 y))
+>> [simplifyConcatStr 3 @ 917] (Concat _t_str4 (Concat efg _t_str5))
+
+---------------------
+Axiom Add(@931, Level 0):
+(=> (= _t_str4 "")
+    (= (Concat _t_str4 (Concat efg _t_str5)) (Concat efg _t_str5)))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "efg" = (Concat efg _t_str5)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat efg _t_str5) efg) @ 2586
+
+** solve_concat_eq_str: (Concat efg _t_str5) = "efg"
+---------------------
+Axiom Add(@1272, Level 0):
+(=> (= (Concat efg _t_str5) efg) (= _t_str5 ""))
+---------------------
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str4 (Concat efg _t_str5))
+   nn2 = (Concat efg _t_str5)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat efg _t_str5)
+                   new_nn2 = (Concat efg _t_str5) @ 1506
+>> Eq concats, return.
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str1 _t_str2)
+   nn2 = (Concat efg _t_str5)
+===============================================
+[simplifyConcatEq] new_nn1 = "efg"
+                   new_nn2 = (Concat efg _t_str5) @ 1506
+>> [simplifyConcatEq] nn1_new is not concat @ 1536
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str4 (Concat efg _t_str5))
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat _t_str0 (Concat _t_str1 _t_str2))
+   nn2 = (Concat efg _t_str5)
+===============================================
+[simplifyConcatEq] new_nn1 = "efg"
+                   new_nn2 = (Concat efg _t_str5) @ 1506
+>> [simplifyConcatEq] nn1_new is not concat @ 1536
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str4 (Concat efg _t_str5))
+
+>> [simplifyConcatStr 2 @ 878] (Concat _t_str4 (Concat efg _t_str5))
+
+
+
+===============================================
+** cb_new_eq():    "" = _t_str5
+===============================================
+>> New_eq Check: PASS
+
+>> [simplifyConcatStr 2 @ 878] (Concat efg _t_str5)
 
 
 *******************************************
@@ -231,28 +460,30 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
        Dependence Analysis
 ------------------------------------------
 (0) alias: variables
-  * x	: _t_str2, 
-  * _t_str0	: _t_str1, 
+  * y	: _t_str3, 
+  * x	: _t_str1, 
+  * _t_str0	: _t_str2, _t_str4, _t_str5, 
 
 (1) var = constStr:
-  x = "grey"
-  _t_str0 = "e"
+  y = "abcd"
+  x = "efg"
+  _t_str0 = ""
 
 (2) var = concat:
-  x = { (Concat gr (Concat _t_str0 y)), (Concat gr (Concat _t_str1 y)), }
 
 (3) concat = constStr:
-  (Concat _t_str0 y) = "ey"
-  (Concat gr (Concat _t_str0 y)) = "grey"
+  (Concat _t_str1 _t_str2) = "efg"
+  (Concat abcd _t_str2) = "abcd"
 
 (4) eq concats:
-  >> (Concat _t_str0 y) , (Concat _t_str1 y) , 
-  >> (Concat gr (Concat _t_str0 y)) , (Concat gr (Concat _t_str1 y)) , 
+  >> (Concat _t_str1 _t_str2) , (Concat _t_str0 (Concat _t_str1 _t_str2)) , (Concat efg _t_str5) , (Concat _t_str4 (Concat efg _t_str5)) , 
+  >> (Concat abcd _t_str2) , (Concat _t_str0 (Concat abcd _t_str2)) , 
 
 
 -- Dependence Map -----------------
-x	-->	_t_str0(2), "grey"(1), 
-_t_str0	-->	"e"(1), "grey"(3), "ey"(3), 
+y	-->	"abcd"(1), 
+x	-->	"efg"(1), 
+_t_str0	-->	""(1), "efg"(4), "abcd"(4), 
 -----------------------------------
 
 -- L/R Most Var in eq concat ------
@@ -261,6 +492,61 @@ _t_str0	-->	"e"(1), "grey"(3), "ey"(3),
 -- L/R constraints ----------------
 -----------------------------------
 
+ >> Bool var: { (= x (Concat _t_str4 (Concat efg _t_str5))) =  FALSE}. Check ! Contains( x, "efg") for conflict...
+---------------------
+Axiom Add(@4511, Level 2):
+(=> (= x efg) (= x (Concat _t_str4 (Concat efg _t_str5))))
+---------------------
+
+ >> Bool var: { (= _t_str0 (Concat _t_str6 (Concat efg _t_str7))) =  FALSE}. Check ! Contains( _t_str0, "efg") for conflict...
+
+ * All non-internal variables are assigned. Done!
+###########################################################
+
+
+
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [2] 
+=============================================================
+
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
+  * y	: _t_str3, 
+  * x	: _t_str1, 
+  * _t_str0	: _t_str2, _t_str4, _t_str5, 
+
+(1) var = constStr:
+  y = "abcd"
+  x = "efg"
+  _t_str0 = ""
+
+(2) var = concat:
+
+(3) concat = constStr:
+  (Concat _t_str1 _t_str2) = "efg"
+  (Concat abcd _t_str2) = "abcd"
+
+(4) eq concats:
+  >> (Concat _t_str1 _t_str2) , (Concat _t_str0 (Concat _t_str1 _t_str2)) , (Concat efg _t_str5) , (Concat _t_str4 (Concat efg _t_str5)) , 
+  >> (Concat abcd _t_str2) , (Concat _t_str0 (Concat abcd _t_str2)) , 
+
+
+-- Dependence Map -----------------
+y	-->	"abcd"(1), 
+x	-->	"efg"(1), 
+_t_str0	-->	""(1), "efg"(4), "abcd"(4), 
+-----------------------------------
+
+-- L/R Most Var in eq concat ------
+-----------------------------------
+
+-- L/R constraints ----------------
+-----------------------------------
+
+ >> Bool var: { (= _t_str0 (Concat _t_str6 (Concat efg _t_str7))) =  FALSE}. Check ! Contains( _t_str0, "efg") for conflict...
 
  * All non-internal variables are assigned. Done!
 ###########################################################
@@ -269,10 +555,21 @@ _t_str0	-->	"e"(1), "grey"(3), "ey"(3),
 *****************************
 SAT
 -----------------------------
-_t_str0 -> e
-_t_str1 -> e
-_t_str2 -> grey
-x -> grey
+_t_str6 -> String!val!2
+y -> abcd
+_t_xor_1 -> 0
+_t_str0 -> ""
+_t_str3 -> abcd
+_t_xor_0 -> 0
+_t_str5 -> ""
+_t_str4 -> ""
+_t_str7 -> String!val!0
+_t_xor_2 -> 3
+_t_str1 -> efg
+_t_str2 -> ""
+_t_int_0 -> 0
+x -> efg
+_t_xor_3 -> 0
 *****************************
 
 ** Reset():

@@ -66,6 +66,7 @@ typedef struct _PATheoryData
     Z3_func_decl Contains;
     Z3_func_decl Replace;
     Z3_func_decl Matches;
+    Z3_func_decl Star;
 
 //    Z3_func_decl Str2Int;  // assume the argument is always convertible
 //    Z3_func_decl Str2Real;

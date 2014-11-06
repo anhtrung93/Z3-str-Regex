@@ -19,6 +19,7 @@ std::map<Z3_ast, Z3_ast> concat_eqc_index;
 
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> concat_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> contains_astNode_map;
+std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> star_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, std::map<int, Z3_ast> > varForBreakConcat;
 
 //----------------------------------------------------------------
@@ -437,7 +438,7 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
           }
         } else if (sk == Z3_UNKNOWN_SORT) {
           if (s == td->String) {
-            if (d == td->Concat || d == td->SubString || d == td->Replace) {
+            if (d == td->Concat || d == td->SubString || d == td->Replace || d == td->Star) {
               return my_Z3_Func;
             } else {
               return my_Z3_ConstStr;
@@ -526,10 +527,36 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
       else
         contains_astNode_map[containsKey] = Z3_mk_false(ctx);
     } else {
-      contains_astNode_map[containsKey] = mk_2_arg_app(ctx, td->Contains, n1, n2);
+      contains_astNode_map[containsKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
     }
   }
   return contains_astNode_map[containsKey];
+}
+
+/*
+ *
+ */
+Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
+  Z3_context ctx = Z3_theory_get_context(t);
+  PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
+  std::pair<Z3_ast, Z3_ast> starKey(n1, n2);
+  if (star_astNode_map.find(starKey) == star_astNode_map.end()) {
+    if (isConstStr(t, n1) && getNodeType(t, n2) == my_Z3_Num) {
+      std::string n1Str = getConstStrValue(t, n1);
+      std::string result = ""; int intVal = 0;
+      if (Z3_get_numeral_int(ctx, n2, &intVal) == Z3_TRUE){
+        for (int id = 0; id < intVal; ++ id){
+          result += n1Str;
+        }
+        star_astNode_map[starKey] = my_mk_str_var(t, result.c_str());
+      } else {
+        star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
+      }
+    } else {
+      star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
+    }
+  }
+  return star_astNode_map[starKey];
 }
 
 /*
@@ -5380,6 +5407,12 @@ Z3_theory mk_pa_theory(Z3_context ctx) {
   matches_domain[0] = td->String;
   matches_domain[1] = td->String;
   td->Matches = Z3_theory_mk_func_decl(ctx, Th, matches_name, 2, matches_domain, BoolSort);
+  //---------------------------
+  Z3_symbol star_name = Z3_mk_string_symbol(ctx, "Star");
+  Z3_sort star_domain[2];
+  star_domain[0] = td->String;
+  star_domain[1] = IntSort;
+  td->Star = Z3_theory_mk_func_decl(ctx, Th, star_name, 2, star_domain, td->String);
   //---------------------------
   Z3_set_delete_callback(Th, cb_delete);
   Z3_set_new_eq_callback(Th, cb_new_eq);
