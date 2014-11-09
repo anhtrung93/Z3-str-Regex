@@ -3,7 +3,7 @@
 (declare-variable x String)
 
 
-(assert (= "efgh" (Substring x vi1 vi2) ) )
+(assert (= "efght" (Substring x vi1 vi2) ) )
 (assert (= (Length x) 4) )
 
 

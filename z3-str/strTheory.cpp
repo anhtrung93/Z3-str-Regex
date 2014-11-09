@@ -537,26 +537,33 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
  *
  */
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
+  if (n1 == NULL || n2 == NULL) {
+    fprintf(stdout, "> Error: the string and number to be star cannot be NULL (@ %d).\n", __LINE__);
+    exit(0);
+  }
   Z3_context ctx = Z3_theory_get_context(t);
   PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
   std::pair<Z3_ast, Z3_ast> starKey(n1, n2);
   if (star_astNode_map.find(starKey) == star_astNode_map.end()) {
-    if (isConstStr(t, n1) && getNodeType(t, n2) == my_Z3_Num) {
+    int intVal = 0;
+    if (isConstStr(t, n1) && getNodeType(t, n2) == my_Z3_Num
+        && Z3_get_numeral_int(ctx, n2, &intVal) == Z3_TRUE) {
       std::string n1Str = getConstStrValue(t, n1);
-      std::string result = ""; int intVal = 0;
-      if (Z3_get_numeral_int(ctx, n2, &intVal) == Z3_TRUE){
-        for (int id = 0; id < intVal; ++ id){
-          result += n1Str;
-        }
-        star_astNode_map[starKey] = my_mk_str_var(t, result.c_str());
-      } else {
-        star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
+      std::string result = ""; 
+      for (int id = 0; id < intVal; ++ id){
+        result += n1Str;
       }
+      star_astNode_map[starKey] = my_mk_str_var(t, result.c_str());
     } else {
       star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
     }
   }
   return star_astNode_map[starKey];
+}
+
+bool inStarMap(Z3_theory t, Z3_ast n1, Z3_ast n2) {
+  std::pair<Z3_ast, Z3_ast> starKey(n1, n2);
+  return (star_astNode_map.find(starKey) != star_astNode_map.end());
 }
 
 /*
@@ -779,6 +786,19 @@ inline bool isConcatFunc(Z3_theory t, Z3_ast n) {
   PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
   Z3_func_decl d = Z3_get_app_decl(ctx, Z3_to_app(ctx, n));
   if (d == td->Concat)
+    return true;
+  else
+    return false;
+}
+
+/*
+ *
+ */
+inline bool isStarFunc(Z3_theory t, Z3_ast n) {
+  Z3_context ctx = Z3_theory_get_context(t);
+  PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
+  Z3_func_decl d = Z3_get_app_decl(ctx, Z3_to_app(ctx, n));
+  if (d == td->Star)
     return true;
   else
     return false;
@@ -4389,7 +4409,7 @@ void getVarsInInput(Z3_theory t, Z3_ast node) {
   Z3_context ctx = Z3_theory_get_context(t);
   T_myZ3Type nodeType = getNodeType(t, node);
 
-  if (nodeType == my_Z3_Str_Var) {
+  if (nodeType == my_Z3_Str_Var){// || nodeType == my_Z3_Num) {
     std::string vName = std::string(Z3_ast_to_string(ctx, node));
     if (vName.length() >= 11 && vName.substr(0, 11) == "__cOnStStR_") {
       return;
@@ -4745,7 +4765,7 @@ Z3_ast regex_charInBraces(Z3_theory t, std::string charInBraces, Z3_ast & assert
 Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
   Z3_context ctx = Z3_theory_get_context(t);
   std::size_t specChar = regexStr.find_first_of("[(|");
-
+  //TODO rewrite below code
   if (specChar != std::string::npos){
     if (regexStr[specChar] == '|'){
       Z3_ast subRegex[2], subAssert[2];
@@ -4787,8 +4807,9 @@ Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAss
       return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
     }
   } else {
-    breakDownAssert = Z3_mk_true(ctx);
-    return my_mk_str_value(t, regexStr.c_str());
+      breakDownAssert = Z3_mk_true(ctx);
+      return my_mk_str_value(t, regexStr.c_str());
+    }
   }
 }
 
@@ -4814,6 +4835,35 @@ Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert
   }
   return reduceAst;
 }
+
+/*
+ *
+ */
+Z3_ast reduce_star(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
+  if (inStarMap(t, args[0], args[1])) {
+    return NULL;
+  }
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast reduceAst = NULL;
+  std::string result = "";
+  int intVal = -1;
+  if (getNodeType(t, args[0]) == my_Z3_ConstStr && getNodeType(t, args[1]) == my_Z3_Num 
+      && Z3_get_numeral_int(ctx, args[1], &intVal) == Z3_TRUE) {
+    std::string arg0Str = getConstStrValue(t, args[0]);
+    std::string result = "";
+    for (int id = 0; id < intVal; ++ id) {
+      result += arg0Str;
+    }
+    reduceAst = my_mk_str_value(t, result.c_str());
+  } else {
+    reduceAst = mk_star(t, args[0], args[1]);
+    Z3_ast lenAll = mk_length(t, reduceAst);
+    Z3_ast mulArgs[] = { mk_length(t, args[0]), args[1] };
+    breakDownAssert = Z3_mk_eq(ctx, lenAll, Z3_mk_mul(ctx, 2, mulArgs));
+  }
+  return reduceAst;
+};
+
 
 /*
  *
@@ -5059,6 +5109,41 @@ Z3_bool cb_reduce_app(Z3_theory t, Z3_func_decl d, unsigned n, Z3_ast const * ar
         return Z3_FALSE;
     }
   }
+
+  //------------------------------------------
+  // Reduce app: Star
+  //------------------------------------------
+  if (d == td->Star) {
+    Z3_ast breakDownAst = NULL;
+    *result = reduce_star(t, convertedArgs, breakDownAst);
+    if (*result != NULL){
+#ifdef DEBUGLOG
+    __debugPrint(logFile, "\n===================\n");
+    __debugPrint(logFile, "** cb_reduce_app(): Star( ");
+    printZ3Node(t, convertedArgs[0]);
+    __debugPrint(logFile, ", ");
+    printZ3Node(t, convertedArgs[1]);
+    __debugPrint(logFile, " )");
+    __debugPrint(logFile, "  =>  ");
+    printZ3Node(t, *result);
+    if( breakDownAst != NULL )
+    {
+      __debugPrint(logFile, "\n-- ADD(@%d): \n", __LINE__);
+      printZ3Node(t, breakDownAst);
+    }
+    __debugPrint(logFile, "\n===================\n");
+#endif
+    } else {
+        delete[] convertedArgs;
+	return Z3_FALSE;
+    }
+    if (breakDownAst != NULL) {
+      Z3_assert_cnstr(ctx, breakDownAst);
+    }
+    delete[] convertedArgs;
+    return Z3_TRUE;
+  }
+
 
   delete[] convertedArgs;
   return Z3_FALSE; // failed to simplify

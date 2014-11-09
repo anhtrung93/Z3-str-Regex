@@ -1,0 +1,8 @@
+(declare-variable x String)
+(declare-variable y String)
+
+(assert (= x (Star y 5) ) )
+(assert (= x "xxxxx" ) )
+
+(check-sat)
+(get-model)
