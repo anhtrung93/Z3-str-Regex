@@ -1,8 +1,9 @@
 (declare-variable x String)
 (declare-variable y String)
+(declare-variable n Int)
 
-(assert (= x (Star y 5) ) )
-(assert (= x "xxxxx" ) )
+(assert (= x (Star y 0) ) )
+(assert (= x "" ) )
 
 (check-sat)
 (get-model)
