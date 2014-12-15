@@ -3,51 +3,42 @@ Input file: /tmp/z3_str_convert/star-001
 
 Input loaded:
 -----------------------------------------------
-(and (= x (Star y 0)) (= x __cOnStStR_))
+(= true (Matches __cOnStStR__x78 y))
 -----------------------------------------------
 
 
 ===================
-** cb_reduce_app(): Star( y, 0 )  =>  (Star y 0)
--- ADD(@5292): 
-(= (Length (Star y 0)) (* (Length y) 0))
+** cb_reduce_app(): Matches( "x", y )  =>  NULL
 ===================
->> cb_reduce_eq: (= x "")
 
+===================
+** cb_reduce_app(): Matches( "x", y )  =>  NULL
+===================
+
+===================
+** cb_reduce_app(): Matches( "x", y )  =>  NULL
+===================
 
 
 ***********************************************
 *               Starting Search               *
 -----------------------------------------------
-(and (= (Length (Star y 0)) 0) (= x "") (= "" (Star y 0)))
+(Matches __cOnStStR__x78 y)
 ***********************************************
->> Input Var Set: x, y, 
-
-
-===============================================
-** cb_new_eq():    "" = x
-===============================================
->> New_eq Check: PASS
-
-
-
-===============================================
-** cb_new_eq():    "" = (Star y 0)
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Star y 0) "") @ 2795
-
-** solve_star_eq_str: (Star y 0) = ""
+>> Input Var Set: y, 
 
 *******************************************
 [PUSH]: Level = 1
 *******************************************
 
+*******************************************
+[PUSH]: Level = 2
+*******************************************
+
 
 
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [1] 
+                cb_final_check @ Level [2] 
 =============================================================
 
 ******************************************
@@ -56,7 +47,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 (0) alias: variables
 
 (1) var = constStr:
-  x = ""
 
 (2) var = concat:
 
@@ -66,7 +56,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 
 -- Dependence Map -----------------
-x	-->	""(1), 
 -----------------------------------
 
 -- L/R Most Var in eq concat ------
@@ -81,7 +70,7 @@ y(1),
 ----------------------------------
 
 ---------------------
-Assertion for free var: y (@4434, Level 1):
+Assertion for free var: y (@4710, Level 2):
  (and (or (= _t_len_y_1 0) (= _t_len_y_1 1) (= _t_len_y_1 2) (= _t_len_y_1 more))
      (= (= _t_len_y_1 0) (= (Length y) 0))
      (= (= _t_len_y_1 1) (= (Length y) 1))
@@ -93,7 +82,7 @@ Assertion for free var: y (@4434, Level 1):
 
 
 *******************************************
-[PUSH]: Level = 2
+[PUSH]: Level = 3
 *******************************************
 
 
@@ -104,7 +93,7 @@ Assertion for free var: y (@4434, Level 1):
 >> effectiveLenIndiStr = , i = 1,lenTesterCount = 1
 
 ---------------------
->> Var: y (@2683, Level 2):
+>> Var: y (@2959, Level 3):
  (=> (= _t_len_y_1 more)
     (and (or (= _t_len_y_2 3)
              (= _t_len_y_2 4)
@@ -115,10 +104,6 @@ Assertion for free var: y (@4434, Level 1):
          (= (= _t_len_y_2 5) (= (Length y) 5))
          (= (= _t_len_y_2 more) (>= (Length y) 6))))
 ---------------------
-
-*******************************************
-[PUSH]: Level = 3
-*******************************************
 
 *******************************************
 [PUSH]: Level = 4
@@ -132,6 +117,10 @@ Assertion for free var: y (@4434, Level 1):
 [PUSH]: Level = 6
 *******************************************
 
+*******************************************
+[PUSH]: Level = 7
+*******************************************
+
 
 ===============================================
 ** cb_new_eq():    "5" = _t_len_y_2
@@ -140,7 +129,7 @@ Assertion for free var: y (@4434, Level 1):
 >> effectiveLenIndiStr = , i = 2,lenTesterCount = 2
 
 ---------------------
->> Var: y (@2683, Level 6):
+>> Var: y (@2959, Level 7):
  (=> (and (= _t_len_y_1 more) (= _t_len_y_2 more))
     (and (or (= _t_len_y_3 6)
              (= _t_len_y_3 7)
@@ -151,10 +140,6 @@ Assertion for free var: y (@4434, Level 1):
          (= (= _t_len_y_3 8) (= (Length y) 8))
          (= (= _t_len_y_3 more) (>= (Length y) 9))))
 ---------------------
-
-*******************************************
-[PUSH]: Level = 7
-*******************************************
 
 *******************************************
 [PUSH]: Level = 8
@@ -176,10 +161,14 @@ Assertion for free var: y (@4434, Level 1):
 [PUSH]: Level = 12
 *******************************************
 
+*******************************************
+[PUSH]: Level = 13
+*******************************************
+
 
 
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [12] 
+                cb_final_check @ Level [13] 
 =============================================================
 
 ******************************************
@@ -188,7 +177,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 (0) alias: variables
 
 (1) var = constStr:
-  x = ""
 
 (2) var = concat:
 
@@ -198,7 +186,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 
 -- Dependence Map -----------------
-x	-->	""(1), 
 -----------------------------------
 
 -- L/R Most Var in eq concat ------
@@ -211,15 +198,15 @@ x	-->	""(1),
 ----------------------------------
 y(1), 
 ----------------------------------
->> valueTesterList @ 4137 = { 
-    (12, _t_val_y_5_0), 
+>> valueTesterList @ 4413 = { 
+    (13, _t_val_y_5_0), 
    }
 
 >> Value Tester Encoding = { 127,  0,  0,  0,  0,  0, }
 
 
 ---------------------
-Assertion for free var: y (@4434, Level 12):
+Assertion for free var: y (@4710, Level 13):
  (=> (= _t_len_y_2 5)
     (and (or (= _t_val_y_5_0 0)
              (= _t_val_y_5_0 1)
@@ -483,10 +470,6 @@ Assertion for free var: y (@4434, Level 12):
 
 ###########################################################
 
-
-*******************************************
-[PUSH]: Level = 13
-*******************************************
 
 *******************************************
 [PUSH]: Level = 14
@@ -1000,6 +983,10 @@ Assertion for free var: y (@4434, Level 12):
 [PUSH]: Level = 141
 *******************************************
 
+*******************************************
+[PUSH]: Level = 142
+*******************************************
+
 
 ===============================================
 ** cb_new_eq():    "68" = _t_val_y_5_0
@@ -1011,13 +998,13 @@ Assertion for free var: y (@4434, Level 12):
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= y aaaa&) @ 2795
+>> Length added for: (= y aaaa&) @ 3071
 
 
 
 
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [141] 
+                cb_final_check @ Level [142] 
 =============================================================
 
 ******************************************
@@ -1026,7 +1013,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 (0) alias: variables
 
 (1) var = constStr:
-  x = ""
   y = "aaaa&"
 
 (2) var = concat:
@@ -1037,7 +1023,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 
 -- Dependence Map -----------------
-x	-->	""(1), 
 y	-->	"aaaa&"(1), 
 -----------------------------------
 
@@ -1059,8 +1044,8 @@ _t_val_y_5_0 -> 68
 _t_len_y_2 -> 5
 y -> aaaa&
 _t_len_y_1 -> more
-x -> ""
-_t_len_y_3 -> String!val!0
+_t_len_y_3 -> String!val!1
+__cOnStStR__x78 -> String!val!0
 *****************************
 
 ** Reset():

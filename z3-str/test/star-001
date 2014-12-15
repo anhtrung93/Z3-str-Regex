@@ -2,8 +2,7 @@
 (declare-variable y String)
 (declare-variable n Int)
 
-(assert (= x (Star y 0) ) )
-(assert (= x "" ) )
-
+(assert (= true (Matches "x" y) ) )
+  
 (check-sat)
 (get-model)

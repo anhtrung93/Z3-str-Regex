@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
+#include <math.h>
 #include <unistd.h>
 #include <assert.h>
 #include <map>
@@ -111,6 +112,8 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n);
 
 inline bool isConstStr(Z3_theory t, Z3_ast node);
 
+inline bool isConstInt(Z3_theory t, Z3_ast n);
+
 Z3_ast mk_1_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x);
 
 Z3_ast mk_2_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x, Z3_ast y);
@@ -121,6 +124,8 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2);
 
 Z3_ast mk_concat(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
+Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2);
+
 bool isTwoStrEqual(std::string str1, std::string str2);
 
 void print_eq_class(Z3_theory t, Z3_ast n);
@@ -129,11 +134,17 @@ void __printZ3Node(Z3_theory t, Z3_ast node);
 
 Z3_ast get_eqc_value(Z3_theory t, Z3_ast n);
 
+inline bool isStarFunc(Z3_theory t, Z3_ast n);
+
 inline bool isConcatFunc(Z3_theory t, Z3_ast n);
+
+inline int getConstIntValue(Z3_theory t, Z3_ast n);
 
 std::string getConstStrValue(Z3_theory t, Z3_ast n);
 
 Z3_ast Concat(Z3_theory t, Z3_ast n1, Z3_ast n2);
+
+void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr);
 
 void solve_concat_eq_str(Z3_theory t, Z3_ast concatAst, Z3_ast constStr);
 
@@ -143,7 +154,15 @@ bool inSameEqc(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
 bool canTwoNodesEq(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
+void constantizeStar(Z3_theory t, Z3_ast origin_star_ast, Z3_ast & star_ast, Z3_ast & axiom);
+
+void constantizeConcat(Z3_theory t, Z3_ast origin_concat_ast, Z3_ast & concat_ast, Z3_ast & axiom);
+
+void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck = 1);
+
 void simplifyConcatEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck = 1);
+
+void simplifyStarEqConcat(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck = 1);
 
 int newEqCheck(Z3_theory t, Z3_ast nn1, Z3_ast nn2);
 
