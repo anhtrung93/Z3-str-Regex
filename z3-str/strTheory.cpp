@@ -411,7 +411,16 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
 Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast add_items[2] = { add1, add2 };
-  return Z3_mk_and(ctx, 2, add_items);
+  return Z3_mk_add(ctx, 2, add_items);
+}
+
+/*
+ *
+ */
+Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2) {
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast mul_items[2] = { mul1, mul2 };
+  return Z3_mk_mul(ctx, 2, mul_items);
 }
 
 /* ---------------------------------
@@ -575,7 +584,13 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
       for (int id = 0; id < intVal; ++ id){
         result += n1Str;
       }
-      star_astNode_map[starKey] = my_mk_str_var(t, result.c_str());
+      star_astNode_map[starKey] = my_mk_str_value(t, result.c_str());
+    } else if (isConstStr(t, n1)){
+      if (getConstStrValue(t, n1) == "") {
+        star_astNode_map[starKey] = n1;
+      } else {
+        star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
+      }
     } else {
       star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
     }
@@ -1746,14 +1761,117 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
   __debugPrint(logFile, "\n===============================================\n");
 #endif
 
-//  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_context ctx = Z3_theory_get_context(t);
 
-//  Z3_ast a1_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, nn1), 0);
-//  Z3_ast a1_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, nn1), 1);
-//  Z3_ast a2_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, nn2), 0);
-//  Z3_ast a2_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, nn2), 1);
+  //------------------------------------------------------  
+  Z3_ast new_nn1 = NULL, nn1_axiom = NULL;
+ constantizeStar(t, nn1, new_nn1, nn1_axiom);
+  //------------------------------------------------------  
+  Z3_ast new_nn2 = NULL, nn2_axiom = NULL;
+  constantizeStar(t, nn2, new_nn2, nn2_axiom);
+  //------------------------------------------------------  
+  if (!canTwoNodesEq(t, new_nn1, new_nn2)) {
+    Z3_ast detected = Z3_mk_not(ctx, Z3_mk_eq(ctx, new_nn1, new_nn2));
+    __debugPrint(logFile, "\n");
+    __debugPrint(logFile, ">> Inconsistent detected in simplifyStarEq:\n");
+    addAxiom(t, detected, __LINE__);
+    __debugPrint(logFile, "\n\n");
+    return;
+  }
   
-  //TODO
+  if (nn1_axiom != NULL){
+    addAxiom(t, nn1_axiom, __LINE__);
+  }  
+
+  if (nn2_axiom != NULL){
+    addAxiom(t, nn2_axiom, __LINE__);
+  }
+  
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "[simplifyStarEq] new_nn1 = ");
+  printZ3Node(t, new_nn1);
+  __debugPrint(logFile, "\n                   new_nn2 = ");
+  printZ3Node(t, new_nn2);
+  __debugPrint(logFile, " @ %d\n", __LINE__);
+#endif
+
+  
+  bool new_nn1IsStar = isStarFunc(t, new_nn1);
+  bool new_nn2IsStar = isStarFunc(t, new_nn2);
+  
+  if (!new_nn1IsStar && new_nn2IsStar) {
+    if (getNodeType(t, new_nn1) == my_Z3_ConstStr) {
+      __debugPrint(logFile, ">> [simplifyStarEqConcat] new_nn1 is not star @ %d\n\n", __LINE__);
+      //TODO simplifyStarStr(t, new_nn2, new_nn1);
+    }
+    return;
+  } else if (new_nn1IsStar && !new_nn2IsStar) {
+    if (getNodeType(t, new_nn2) == my_Z3_ConstStr) {
+      __debugPrint(logFile, ">> [simplifyStarEqConcat] new_nn2 is not star @ %d\n\n", __LINE__);
+      //TODO simplifyStarStr(t, new_nn1, new_nn2);
+    }
+    return;
+  } else if (!new_nn1IsStar && !new_nn2IsStar){
+    __debugPrint(logFile, ">> Not a star and a concat in simplifyStarEq @ %d\n\n", __LINE__);
+    return;
+  }
+  
+  Z3_ast nn1_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_nn1), 0);
+  Z3_ast nn1_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_nn1), 1);
+  Z3_ast nn2_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_nn2), 0);
+  Z3_ast nn2_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_nn2), 1);
+  
+  //TODO need understand this part in simplifyConcatEq and add here
+  
+  Z3_ast implyL = Z3_mk_eq(ctx, new_nn1, new_nn2);  
+  if (isConstStr(t, nn1_arg0) && isConstInt(t, nn1_arg1)){
+    solve_star_eq_str(t, new_nn2, mk_star(t, nn1_arg0, nn1_arg1));    
+  } else if (isConstStr(t, nn1_arg0) && !isConstInt(t, nn1_arg1)){
+    if (isConstStr(t, nn2_arg0) && isConstInt(t, nn2_arg1)){
+      solve_star_eq_str(t, new_nn1, mk_star(t, nn2_arg0, nn2_arg1));    
+    } else if (isConstStr(t, nn2_arg0) && !isConstInt(t, nn2_arg1)){
+      std::string const_nn1_arg0 = getConstStrValue(t, nn1_arg0);
+      std::string const_nn2_arg0 = getConstStrValue(t, nn2_arg0);
+      std::string smallStr, bigStr;
+      if (const_nn1_arg0.length() < const_nn2_arg0.length()){
+        smallStr = const_nn1_arg0;
+        bigStr = const_nn2_arg0;
+      } else if (const_nn1_arg0.length() > const_nn2_arg0.length()) {
+        smallStr = const_nn2_arg0;
+        bigStr = const_nn1_arg0;
+      } else {
+        if (const_nn1_arg0 != const_nn2_arg0){
+          //negate
+          addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, new_nn1, new_nn2)), __LINE__);
+          return;
+        } else {
+          Z3_ast implyR = mk_2_and(t, Z3_mk_eq(ctx, nn1_arg0, nn2_arg0), Z3_mk_eq(ctx, nn1_arg1, nn2_arg1));
+          addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+          return;
+        }
+      }
+      if (smallStr.length() == 0){//as bigStr.length() != smallStr.length => false
+        //negate
+        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, new_nn1, new_nn2)), __LINE__);
+        return;
+      }
+      int repeatStar = ceil(bigStr.length() / (double)smallStr.length());
+      std::string temp = "";
+      for (int id_repeat = 0; id_repeat < repeatStar; ++ id_repeat){
+        temp += smallStr;
+      }
+      std::string firstPart = temp.substr(0, bigStr.length());
+      if (firstPart != bigStr){
+        //negate
+        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, new_nn1, new_nn2)), __LINE__);
+        return;
+      }
+      Z3_ast firstMul = mk_2_mul(t, nn1_arg1, mk_int(ctx, const_nn1_arg0.length()));
+      Z3_ast secondMul = mk_2_mul(t, nn2_arg1, mk_int(ctx, const_nn2_arg0.length()));
+      Z3_ast implyR = Z3_mk_eq(ctx, firstMul, secondMul);
+      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+    }
+  }
 }
 
 /*
@@ -2651,7 +2769,7 @@ void simplifyConcatEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
         strEqLengthAxiom(t, y, commonVar_str2, __LINE__);
 
         and_item[pos++] = Z3_mk_eq(ctx, or_item[option], Z3_mk_gt(ctx, mk_length(t, m), mk_length(t, str1Ast)));
-//                and_item[pos++] = Z3_mk_eq(ctx, or_item[option], Z3_mk_gt(ctx, mk_length(t, y), mk_length(t, str2Ast)));
+//      and_item[pos++] = Z3_mk_eq(ctx, or_item[option], Z3_mk_gt(ctx, mk_length(t, y), mk_length(t, str2Ast)));
 
         option++;
       } else {
@@ -2737,6 +2855,14 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
     addAxiom(t, concat_axiom, __LINE__);
   }
   
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "[simplifyStarEqConcat] new_star = ");
+  printZ3Node(t, new_star);
+  __debugPrint(logFile, "\n                   new_concat = ");
+  printZ3Node(t, new_concat);
+  __debugPrint(logFile, " @ %d\n", __LINE__);
+#endif
+  
   bool new_starIsStar = isStarFunc(t, new_star);
   bool new_concatIsConcat = isConcatFunc(t, new_concat);
   
@@ -2762,22 +2888,15 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
   Z3_ast concat_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_concat), 0);
   Z3_ast concat_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_concat), 1);
   
+  //TODO need understand this part in simplifyConcatEq and add here
+  
   Z3_ast implyL = Z3_mk_eq(ctx, new_star, new_concat);
   
   if (isConstStr(t, concat_arg0) && isConstStr(t, concat_arg1)){
-    std::string const_concat_arg0 = getConstStrValue(t, concat_arg0);
-    std::string const_concat_arg1 = getConstStrValue(t, concat_arg1);
-    std::string const_concat = const_concat_arg0 + const_concat_arg1;
-    solve_star_eq_str(t, new_star, my_mk_str_value(t, const_concat.c_str()));
+    solve_star_eq_str(t, new_star, mk_concat(t, concat_arg0, concat_arg1));
   } else if (!isConstStr(t, concat_arg0) && isConstStr(t, concat_arg1)){
     if (isConstStr(t, star_arg0) && isConstInt(t, star_arg1)){
-      std::string const_star_arg0 = getConstStrValue(t, star_arg0);
-      int const_star_arg1 = getConstIntValue(t, star_arg1);
-      std::string const_star = "";
-      for (int id = 0; id < const_star_arg1; ++ id){
-        const_star += const_star_arg0;
-      }
-      solve_concat_eq_str(t, new_concat, my_mk_str_value(t, const_star.c_str()));
+      solve_concat_eq_str(t, new_concat, mk_star(t, star_arg0, star_arg1));
     } else if (isConstStr(t, star_arg0) && ! isConstInt(t, star_arg1)){
       //*********************************************************************//
       //  case 1: star(const_str1, var_int) = concat(var_str, constr_str2)   //
@@ -2785,6 +2904,18 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       
       std::string const_star_arg0 = getConstStrValue(t, star_arg0);
       std::string const_concat_arg1 = getConstStrValue(t, concat_arg1);
+      if (const_star_arg0.length() == 0){
+        if (const_concat_arg1.length() != 0){
+          //negate
+          addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, new_concat, new_star)), __LINE__);
+          return;
+        } else {
+          std::string empty = "";
+          Z3_ast implyR = Z3_mk_eq(ctx, concat_arg0, my_mk_str_value(t, empty.c_str()));
+          addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+          return;
+        }
+      }
       int repeatStar = ceil(const_concat_arg1.length() / (double)const_star_arg0.length());
       std::string temp = "";
       for (int id_repeat = 0; id_repeat < repeatStar; ++ id_repeat){
@@ -2792,6 +2923,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       }
       std::string firstPart = temp.substr(0, temp.length() - const_concat_arg1.length());
       std::string secondPart = temp.substr(temp.length() - const_concat_arg1.length(), const_concat_arg1.length());
+      
       if (secondPart != const_concat_arg1){
         //negate
         addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, new_concat, new_star)), __LINE__);
@@ -2819,7 +2951,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       //*****************************************************************************//
     
       Z3_ast or_items[3];
-      Z3_ast and_items[5];//TODO test whether they can use repeatedly
+      Z3_ast and_items[5];
       Z3_ast star_arg1_minus_one = mk_2_add(t, star_arg1, mk_int(ctx, -1));
       //Case: Length(star_arg0) > Length(concat_arg1) && star_arg0 = Concat(temp_str, concat_arg1) 
       //  && concat_arg1 = Concat(Star(star_arg0, star_arg1 - 1), temp_str)
@@ -2852,9 +2984,6 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
   } else {
     //TODO
   }
-
-  
-  
 
 }
 

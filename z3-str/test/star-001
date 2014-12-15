@@ -2,9 +2,10 @@
 (declare-variable y String)
 (declare-variable z String)
 (declare-variable n Int)
+(declare-variable m Int)
 
-(assert (= x (Concat y "aaaa") ) )
-(assert (= x (Star z n) ) )
+(assert (= x (Star "" m) ) )
+(assert (= x (Star "" n) ) )
   
 (check-sat)
 (get-model)

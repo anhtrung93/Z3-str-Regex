@@ -124,6 +124,10 @@ Z3_ast my_mk_and(Z3_theory t, Z3_ast * item, int count);
 
 Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2);
 
+Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2);
+
+Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2);
+
 Z3_ast mk_concat(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2);

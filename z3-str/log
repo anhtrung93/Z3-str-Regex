@@ -3,73 +3,79 @@ Input file: /tmp/z3_str_convert/star-001
 
 Input loaded:
 -----------------------------------------------
-(and (= x (Concat y __cOnStStR__x61_x61_x61_x61)) (= x (Star z n)))
+(and (= x (Star __cOnStStR_ m)) (= x (Star __cOnStStR_ n)))
 -----------------------------------------------
-
->> make_concat: (Concat y aaaa)
 
 
 ===================
-** cb_reduce_app(): Star( z, n )  =>  (Star z n)
--- ADD(@5600): 
-(= (Length (Star z n)) (* (Length z) n))
+** cb_reduce_app(): Star( "", m )  =>  ""
+-- ADD(@5732): 
+(= 0 (* 0 m))
+===================
+
+===================
+** cb_reduce_app(): Star( "", n )  =>  ""
+-- ADD(@5732): 
+(= 0 (* 0 n))
 ===================
 
 
 ***********************************************
 *               Starting Search               *
 -----------------------------------------------
-(and (= (+ (Length (Concat y aaaa)) (* (- 1) (Length y))) 4)
-     (= (+ (Length (Star z n)) (* (- 1) (* n (Length z)))) 0)
-     (= x (Concat y aaaa))
-     (= x (Star z n)))
+(= x "")
 ***********************************************
->> Input Var Set: x, y, z, 
+>> Input Var Set: x, 
 
 
 ===============================================
-** cb_new_eq():    (Concat y aaaa) = x
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Concat y aaaa) x) @ 3103
-
-
-
-===============================================
-** cb_new_eq():    x = (Star z n)
+** cb_new_eq():    "" = x
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= x (Star z n)) @ 3103
 
 
-===============================================
-** simplifyStarEqConcat():
-   starAst = (Star z n)
-   concatAst = (Concat y aaaa)
-===============================================
->> make_concat: (Concat _t_str0 aaaa)
 
->> make_concat: (Concat (Star z (and n (- 1))) _t_str0)
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [0] 
+=============================================================
 
->> make_concat: (Concat _t_str1 (Star z _t_int_0))
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
 
->> make_concat: (Concat (Star z _t_int_1) _t_str2)
+(1) var = constStr:
+  x = ""
 
->> make_concat: (Concat _t_str2 _t_str1)
+(2) var = concat:
 
----------------------
-Axiom Add(@2847, Level 0):
-(=> (= (Star z n) (Concat y aaaa))
-    (or (and (> (Length z) 4)
-             (= z (Concat _t_str0 aaaa))
-             (= y (Concat (Star z (and n (- 1))) _t_str0)))
-        (and (< (Length z) 4)
-             (= aaaa (Concat _t_str1 (Star z _t_int_0)))
-             (= y (Concat (Star z _t_int_1) _t_str2))
-             (= (and _t_int_0 (and _t_int_1 1)) n)
-             (= z (Concat _t_str2 _t_str1)))
-        (and (= z aaaa) (= y (Star z (and n (- 1)))))))
----------------------
+(3) concat = constStr:
 
+(4) eq concats:
+
+
+-- Dependence Map -----------------
+x	-->	""(1), 
+-----------------------------------
+
+-- L/R Most Var in eq concat ------
+-----------------------------------
+
+-- L/R constraints ----------------
+-----------------------------------
+
+
+ * All non-internal variables are assigned. Done!
+###########################################################
+
+
+*****************************
+SAT
+-----------------------------
+x -> ""
+*****************************
+
+** Reset():
+
+** Delete()
