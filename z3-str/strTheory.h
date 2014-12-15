@@ -108,6 +108,8 @@ Z3_ast my_mk_str_var(Z3_theory t, char const * name);
 
 Z3_ast my_mk_internal_string_var(Z3_theory t);
 
+Z3_ast my_mk_internal_int_var(Z3_theory t);
+
 T_myZ3Type getNodeType(Z3_theory t, Z3_ast n);
 
 inline bool isConstStr(Z3_theory t, Z3_ast node);

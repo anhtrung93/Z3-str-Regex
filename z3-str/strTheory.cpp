@@ -405,6 +405,15 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
   return Z3_mk_and(ctx, 2, and_items);
 }
 
+/*
+ *
+ */
+Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2) {
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast add_items[2] = { add1, add2 };
+  return Z3_mk_and(ctx, 2, add_items);
+}
+
 /* ---------------------------------
  * Return the node type in Enum
  * ---------------------------------
@@ -2773,10 +2782,6 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       //*********************************************************************//
       //  case 1: star(const_str1, var_int) = concat(var_str, constr_str2)   //
       //*********************************************************************//
-      __debugPrint(logFile, "\n");
-      __debugPrint(logFile, "#################################\n");
-      __debugPrint(logFile, "#  SimplifyStarEqConcat Type 1  #\n");
-      __debugPrint(logFile, "#################################\n");
       
       std::string const_star_arg0 = getConstStrValue(t, star_arg0);
       std::string const_concat_arg1 = getConstStrValue(t, concat_arg1);
@@ -2792,10 +2797,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
         addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, new_concat, new_star)), __LINE__);
         return;
       }
-      Z3_ast add_items[2];
-      add_items[0] = star_arg1;
-      add_items[1] = mk_int(ctx, -repeatStar);
-      Z3_ast star_arg1_minus_repeatStar = Z3_mk_add(ctx, 2, add_items);
+      Z3_ast star_arg1_minus_repeatStar = mk_2_add(t, star_arg1, mk_int(ctx, -repeatStar));
       
       Z3_ast temp_star_ast = mk_star(t, star_arg0, star_arg1_minus_repeatStar);
       Z3_ast temp_concat_ast = NULL;
@@ -2811,8 +2813,41 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       Z3_ast implyR = mk_2_and(t, mainImplyR, additionalAxiom);
       
       addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-    } else {
-      //TODO
+    } else if (! isConstStr(t, star_arg0)){
+      //*****************************************************************************//
+      //  case 2: star(var_str1, const_int/var_int) = concat(var_str, constr_str2)   //
+      //*****************************************************************************//
+    
+      Z3_ast or_items[3];
+      Z3_ast and_items[5];//TODO test whether they can use repeatedly
+      Z3_ast star_arg1_minus_one = mk_2_add(t, star_arg1, mk_int(ctx, -1));
+      //Case: Length(star_arg0) > Length(concat_arg1) && star_arg0 = Concat(temp_str, concat_arg1) 
+      //  && concat_arg1 = Concat(Star(star_arg0, star_arg1 - 1), temp_str)
+      and_items[0] = Z3_mk_gt(ctx, mk_length(t, star_arg0), mk_length(t, concat_arg1));
+      Z3_ast temp_str = my_mk_internal_string_var(t);
+      and_items[1] = Z3_mk_eq(ctx, star_arg0, mk_concat(t, temp_str, concat_arg1));      
+      and_items[2] = Z3_mk_eq(ctx, concat_arg0, mk_concat(t, mk_star(t, star_arg0, star_arg1_minus_one), temp_str));
+      or_items[0] = Z3_mk_and(ctx, 3, and_items);
+      //Case: Length(star_arg0) < Length(concat_arg1) && concat_arg1 = Concat(v1, Star(star_arg0, int1))
+      //  && concat_arg0 = Concat(Star(star_arg0, int2), v2) && star_arg0 = Concat(v2, v1) && star_arg1 = int1 + int2 + 1
+      //TODO constr_str2 is constant find a way to take out the similar pattern
+      and_items[0] = Z3_mk_lt(ctx, mk_length(t, star_arg0), mk_length(t, concat_arg1));
+      Z3_ast v1_str = my_mk_internal_string_var(t);
+      Z3_ast v2_str = my_mk_internal_string_var(t);
+      Z3_ast int1 = my_mk_internal_int_var(t);
+      Z3_ast int2 = my_mk_internal_int_var(t);
+      and_items[1] = Z3_mk_eq(ctx, concat_arg1, mk_concat(t, v1_str, mk_star(t, star_arg0, int1)));
+      and_items[2] = Z3_mk_eq(ctx, concat_arg0, mk_concat(t, mk_star(t, star_arg0, int2), v2_str));
+      and_items[3] = Z3_mk_eq(ctx, mk_2_add(t, int1, mk_2_add(t, int2, mk_int(ctx, 1))), star_arg1);
+      and_items[4] = Z3_mk_eq(ctx, star_arg0, mk_concat(t, v2_str, v1_str));
+      or_items[1] = Z3_mk_and(ctx, 5, and_items);
+      //Case Length(star_arg0) == Length(concat_arg1) && concar_arg0 = Star(star_arg0, star_arg1 - 1)
+      and_items[0] = Z3_mk_eq(ctx, star_arg0, concat_arg1);
+      and_items[1] = Z3_mk_eq(ctx, concat_arg0, mk_star(t, star_arg0, star_arg1_minus_one));
+      or_items[2] = Z3_mk_and(ctx, 2, and_items);
+      
+      Z3_ast implyR = Z3_mk_or(ctx, 3, or_items);
+      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
     }
   } else {
     //TODO
