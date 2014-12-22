@@ -4,8 +4,8 @@
 (declare-variable n Int)
 (declare-variable m Int)
 
-(assert (= x (Star "" m) ) )
-(assert (= x (Star "" n) ) )
+(assert (= x (Star y m) ) )
+(assert (= x (Concat z "cabc") ) )
   
 (check-sat)
 (get-model)
