@@ -1,11 +1,7 @@
 (declare-variable x String)
-(declare-variable y String)
-(declare-variable z String)
-(declare-variable n Int)
-(declare-variable m Int)
 
-(assert (= x (Star y m) ) )
-(assert (= x (Concat z "cabc") ) )
+(assert (= x (Star "abb" 7) ) )
+(assert (= x "aaa") )
   
 (check-sat)
 (get-model)

@@ -58,6 +58,7 @@ extern std::string inputFile;
 typedef struct _PATheoryData
 {
     Z3_sort String;
+    Z3_sort Regex;
     Z3_func_decl Concat;
     Z3_func_decl Length;
     Z3_func_decl SubString;
@@ -84,6 +85,7 @@ typedef enum
   my_Z3_Num,         //
   my_Z3_Var,         //
   my_Z3_Str_Var,     //
+  my_Z3_Regex_Var,
   my_Z3_Quantifier,  //
   my_Z3_Unknown      //
 } T_myZ3Type;

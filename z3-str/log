@@ -1,71 +1,39 @@
-Input file: /tmp/z3_str_convert/star-001
+Input file: /tmp/z3_str_convert/concat-001
 
 
 Input loaded:
 -----------------------------------------------
-(and (= x (Star y m)) (= x (Concat z __cOnStStR__x63_x61_x62_x63)))
+(= x (Concat (Concat __cOnStStR__x74_x65 y1) (Concat __cOnStStR__x73_x74 y2)))
 -----------------------------------------------
 
+>> make_concat: (Concat te y1)
 
-===================
-** cb_reduce_app(): Star( y, m )  =>  (Star y m)
--- ADD(@5786): 
-(= (Length (Star y m)) (* (Length y) m))
-===================
->> make_concat: (Concat z cabc)
+>> make_concat: (Concat st y2)
+
+>> make_concat: (Concat (Concat te y1) (Concat st y2))
 
 
 
 ***********************************************
 *               Starting Search               *
 -----------------------------------------------
-(and (= (+ (Length (Star y m)) (* (- 1) (* m (Length y)))) 0)
-     (= (+ (Length (Concat z cabc)) (* (- 1) (Length z))) 4)
-     (= x (Star y m))
-     (= x (Concat z cabc)))
+(and (= (+ (Length (Concat te y1)) (* (- 1) (Length y1))) 2)
+     (= (+ (Length (Concat st y2)) (* (- 1) (Length y2))) 2)
+     (= (+ (Length (Concat te y1))
+           (Length (Concat st y2))
+           (* (- 1) (Length (Concat (Concat te y1) (Concat st y2)))))
+        0)
+     (= x (Concat (Concat te y1) (Concat st y2))))
 ***********************************************
->> Input Var Set: x, y, z, 
+>> Input Var Set: x, y1, y2, 
 
 
 ===============================================
-** cb_new_eq():    (Star y m) = x
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Star y m) x) @ 3289
-
-
-
-===============================================
-** cb_new_eq():    x = (Concat z cabc)
+** cb_new_eq():    (Concat (Concat te y1) (Concat st y2)) = x
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= x (Concat z cabc)) @ 3289
-
-
-===============================================
-** simplifyStarEqConcat():
-   starAst = (Star y m)
-   concatAst = (Concat z cabc)
-===============================================
-[simplifyStarEqConcat] new_star = (Star y m)
-                   new_concat = (Concat z cabc) @ 2912
->> make_concat: (Concat (Star y (+ m (- 2))) ab)
-
->> make_concat: (Concat _t_str0 cabc)
-
->> make_concat: (Concat (Star y (+ m (- 1))) _t_str0)
-
----------------------
-Axiom Add(@3034, Level 0):
-(=> (= (Star y m) (Concat z cabc))
-    (or (and (= y abc) (= z (Concat (Star y (+ m (- 2))) ab)))
-        (and (= y cabc) (= z (Star y (+ m (- 1)))))
-        (and (> (Length y) 4)
-             (= y (Concat _t_str0 cabc))
-             (= z (Concat (Star y (+ m (- 1))) _t_str0)))))
----------------------
+>> Length added for: (= (Concat (Concat te y1) (Concat st y2)) x) @ 3276
 
 
 *******************************************
@@ -76,82 +44,67 @@ Axiom Add(@3034, Level 0):
 [PUSH]: Level = 2
 *******************************************
 
-*******************************************
-[PUSH]: Level = 3
-*******************************************
-
-*******************************************
-[PUSH]: Level = 4
-*******************************************
 
 
-===============================================
-** cb_new_eq():    (Concat (Star y (+ (- 2) m)) ab) = z
-===============================================
->> New_eq Check: PASS
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [2] 
+=============================================================
 
->> Length added for: (= (Concat (Star y (+ (- 2) m)) ab) z) @ 3289
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
 
+(1) var = constStr:
 
+(2) var = concat:
+  x = { (Concat (Concat te y1) (Concat st y2)), }
 
-===============================================
-** cb_new_eq():    "abc" = y
-===============================================
->> New_eq Check: PASS
+(3) concat = constStr:
 
->> Length added for: (= y abc) @ 3289
-
-
-*******************************************
-[POP]: Level = 3
-*******************************************
-
-*******************************************
-[POP]: Level = 2
-*******************************************
-
-*******************************************
-[PUSH]: Level = 3
-*******************************************
+(4) eq concats:
 
 
-===============================================
-** cb_new_eq():    (Star y (+ (- 1) m)) = z
-===============================================
->> New_eq Check: PASS
+-- Dependence Map -----------------
+x	-->	y1(2), y2(2), 
+-----------------------------------
 
->> Length added for: (= (Star y (+ (- 1) m)) z) @ 3289
+-- L/R Most Var in eq concat ------
+-----------------------------------
 
+-- L/R constraints ----------------
+-----------------------------------
 
+* Free Variables:
+----------------------------------
+y1(2), y2(2), 
+----------------------------------
 
-===============================================
-** cb_new_eq():    "cabc" = y
-===============================================
->> New_eq Check: PASS
+---------------------
+Assertion for free var: y1 (@4915, Level 2):
+ (and (or (= _t_len_y1_1 0)
+         (= _t_len_y1_1 1)
+         (= _t_len_y1_1 2)
+         (= _t_len_y1_1 more))
+     (= (= _t_len_y1_1 0) (= (Length y1) 0))
+     (= (= _t_len_y1_1 1) (= (Length y1) 1))
+     (= (= _t_len_y1_1 2) (= (Length y1) 2))
+     (= (= _t_len_y1_1 more) (>= (Length y1) 3)))
+---------------------
 
->> Length added for: (= y cabc) @ 3289
+---------------------
+Assertion for free var: y2 (@4915, Level 2):
+ (and (or (= _t_len_y2_1 0)
+         (= _t_len_y2_1 1)
+         (= _t_len_y2_1 2)
+         (= _t_len_y2_1 more))
+     (= (= _t_len_y2_1 0) (= (Length y2) 0))
+     (= (= _t_len_y2_1 1) (= (Length y2) 1))
+     (= (= _t_len_y2_1 2) (= (Length y2) 2))
+     (= (= _t_len_y2_1 more) (>= (Length y2) 3)))
+---------------------
 
-
-*******************************************
-[POP]: Level = 2
-*******************************************
-
-
-===============================================
-** cb_new_eq():    (Concat (Star y (+ (- 1) m)) _t_str0) = z
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Concat (Star y (+ (- 1) m)) _t_str0) z) @ 3289
-
-
-
-===============================================
-** cb_new_eq():    (Concat _t_str0 cabc) = y
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Concat _t_str0 cabc) y) @ 3289
+###########################################################
 
 
 *******************************************
@@ -166,88 +119,377 @@ Axiom Add(@3034, Level 0):
 [PUSH]: Level = 5
 *******************************************
 
+*******************************************
+[POP]: Level = 4
+*******************************************
+
+*******************************************
+[POP]: Level = 3
+*******************************************
+
+*******************************************
+[PUSH]: Level = 4
+*******************************************
 
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [5] 
-=============================================================
+===============================================
+** cb_new_eq():    "1" = _t_len_y2_1
+===============================================
 
-******************************************
-       Dependence Analysis
-------------------------------------------
-(0) alias: variables
-
-(1) var = constStr:
-
-(2) var = concat:
-  x = { (Concat z cabc), }
-  y = { (Concat _t_str0 cabc), }
-  z = { (Concat (Star y (+ (- 1) m)) _t_str0), }
-
-(3) concat = constStr:
-
-(4) eq concats:
-
-
--- Dependence Map -----------------
-x	-->	z(2), 
-y	-->	_t_str0(2), 
-z	-->	y(2), _t_str0(2), 
------------------------------------
-
--- L/R Most Var in eq concat ------
------------------------------------
-
--- L/R constraints ----------------
------------------------------------
-
-* Free Variables:
-----------------------------------
-_t_str0(3), 
-----------------------------------
+>> effectiveLenIndiStr = , i = 1,lenTesterCount = 1
 
 ---------------------
-Assertion for free var: _t_str0 (@4928, Level 5):
- (and (or (= _t_len__t_str0_1 0)
-         (= _t_len__t_str0_1 1)
-         (= _t_len__t_str0_1 2)
-         (= _t_len__t_str0_1 more))
-     (= (= _t_len__t_str0_1 0) (= (Length _t_str0) 0))
-     (= (= _t_len__t_str0_1 1) (= (Length _t_str0) 1))
-     (= (= _t_len__t_str0_1 2) (= (Length _t_str0) 2))
-     (= (= _t_len__t_str0_1 more) (>= (Length _t_str0) 3)))
+>> Var: y2 (@3164, Level 4):
+ (=> (= _t_len_y2_1 more)
+    (and (or (= _t_len_y2_2 3)
+             (= _t_len_y2_2 4)
+             (= _t_len_y2_2 5)
+             (= _t_len_y2_2 more))
+         (= (= _t_len_y2_2 3) (= (Length y2) 3))
+         (= (= _t_len_y2_2 4) (= (Length y2) 4))
+         (= (= _t_len_y2_2 5) (= (Length y2) 5))
+         (= (= _t_len_y2_2 more) (>= (Length y2) 6))))
 ---------------------
 
-###########################################################
-
+*******************************************
+[PUSH]: Level = 5
+*******************************************
 
 *******************************************
 [PUSH]: Level = 6
 *******************************************
 
 *******************************************
-[PUSH]: Level = 7
+[POP]: Level = 5
+*******************************************
+
+*******************************************
+[POP]: Level = 4
+*******************************************
+
+*******************************************
+[POP]: Level = 3
+*******************************************
+
+*******************************************
+[POP]: Level = 2
+*******************************************
+
+*******************************************
+[PUSH]: Level = 3
+*******************************************
+
+*******************************************
+[PUSH]: Level = 4
+*******************************************
+
+*******************************************
+[PUSH]: Level = 5
 *******************************************
 
 
 ===============================================
-** cb_new_eq():    "more" = _t_len__t_str0_1
+** cb_new_eq():    "1" = _t_len_y2_1
+===============================================
+
+>> *Warning*: length indicator: _t_len_y2_2 doesn't have an EQC value. i = 1, lenTesterCount = 2
+>> valueTesterList @ 4618 = { 
+    (5, _t_val_y2_1_0), 
+   }
+
+>> Value Tester Encoding = { 127,  0, }
+
+
+---------------------
+>> Var: y2 (@3164, Level 5):
+ (=> (= _t_len_y2_1 1)
+    (and (or (= _t_val_y2_1_0 0)
+             (= _t_val_y2_1_0 1)
+             (= _t_val_y2_1_0 2)
+             (= _t_val_y2_1_0 3)
+             (= _t_val_y2_1_0 4)
+             (= _t_val_y2_1_0 5)
+             (= _t_val_y2_1_0 6)
+             (= _t_val_y2_1_0 7)
+             (= _t_val_y2_1_0 8)
+             (= _t_val_y2_1_0 9)
+             (= _t_val_y2_1_0 10)
+             (= _t_val_y2_1_0 11)
+             (= _t_val_y2_1_0 12)
+             (= _t_val_y2_1_0 13)
+             (= _t_val_y2_1_0 14)
+             (= _t_val_y2_1_0 15)
+             (= _t_val_y2_1_0 16)
+             (= _t_val_y2_1_0 17)
+             (= _t_val_y2_1_0 18)
+             (= _t_val_y2_1_0 19)
+             (= _t_val_y2_1_0 20)
+             (= _t_val_y2_1_0 21)
+             (= _t_val_y2_1_0 22)
+             (= _t_val_y2_1_0 23)
+             (= _t_val_y2_1_0 24)
+             (= _t_val_y2_1_0 25)
+             (= _t_val_y2_1_0 26)
+             (= _t_val_y2_1_0 27)
+             (= _t_val_y2_1_0 28)
+             (= _t_val_y2_1_0 29)
+             (= _t_val_y2_1_0 30)
+             (= _t_val_y2_1_0 31)
+             (= _t_val_y2_1_0 32)
+             (= _t_val_y2_1_0 33)
+             (= _t_val_y2_1_0 34)
+             (= _t_val_y2_1_0 35)
+             (= _t_val_y2_1_0 36)
+             (= _t_val_y2_1_0 37)
+             (= _t_val_y2_1_0 38)
+             (= _t_val_y2_1_0 39)
+             (= _t_val_y2_1_0 40)
+             (= _t_val_y2_1_0 41)
+             (= _t_val_y2_1_0 42)
+             (= _t_val_y2_1_0 43)
+             (= _t_val_y2_1_0 44)
+             (= _t_val_y2_1_0 45)
+             (= _t_val_y2_1_0 46)
+             (= _t_val_y2_1_0 47)
+             (= _t_val_y2_1_0 48)
+             (= _t_val_y2_1_0 49)
+             (= _t_val_y2_1_0 50)
+             (= _t_val_y2_1_0 51)
+             (= _t_val_y2_1_0 52)
+             (= _t_val_y2_1_0 53)
+             (= _t_val_y2_1_0 54)
+             (= _t_val_y2_1_0 55)
+             (= _t_val_y2_1_0 56)
+             (= _t_val_y2_1_0 57)
+             (= _t_val_y2_1_0 58)
+             (= _t_val_y2_1_0 59)
+             (= _t_val_y2_1_0 60)
+             (= _t_val_y2_1_0 61)
+             (= _t_val_y2_1_0 62)
+             (= _t_val_y2_1_0 63)
+             (= _t_val_y2_1_0 64)
+             (= _t_val_y2_1_0 65)
+             (= _t_val_y2_1_0 66)
+             (= _t_val_y2_1_0 67)
+             (= _t_val_y2_1_0 68)
+             (= _t_val_y2_1_0 69)
+             (= _t_val_y2_1_0 70)
+             (= _t_val_y2_1_0 71)
+             (= _t_val_y2_1_0 72)
+             (= _t_val_y2_1_0 73)
+             (= _t_val_y2_1_0 74)
+             (= _t_val_y2_1_0 75)
+             (= _t_val_y2_1_0 76)
+             (= _t_val_y2_1_0 77)
+             (= _t_val_y2_1_0 78)
+             (= _t_val_y2_1_0 79)
+             (= _t_val_y2_1_0 80)
+             (= _t_val_y2_1_0 81)
+             (= _t_val_y2_1_0 82)
+             (= _t_val_y2_1_0 83)
+             (= _t_val_y2_1_0 84)
+             (= _t_val_y2_1_0 85)
+             (= _t_val_y2_1_0 86)
+             (= _t_val_y2_1_0 87)
+             (= _t_val_y2_1_0 88)
+             (= _t_val_y2_1_0 89)
+             (= _t_val_y2_1_0 90)
+             (= _t_val_y2_1_0 91)
+             (= _t_val_y2_1_0 92)
+             (= _t_val_y2_1_0 93)
+             (= _t_val_y2_1_0 94)
+             (= _t_val_y2_1_0 95)
+             (= _t_val_y2_1_0 96)
+             (= _t_val_y2_1_0 97)
+             (= _t_val_y2_1_0 98)
+             (= _t_val_y2_1_0 99)
+             (= _t_val_y2_1_0 100)
+             (= _t_val_y2_1_0 101)
+             (= _t_val_y2_1_0 102)
+             (= _t_val_y2_1_0 103)
+             (= _t_val_y2_1_0 104)
+             (= _t_val_y2_1_0 105)
+             (= _t_val_y2_1_0 106)
+             (= _t_val_y2_1_0 107)
+             (= _t_val_y2_1_0 108)
+             (= _t_val_y2_1_0 109)
+             (= _t_val_y2_1_0 110)
+             (= _t_val_y2_1_0 111)
+             (= _t_val_y2_1_0 112)
+             (= _t_val_y2_1_0 113)
+             (= _t_val_y2_1_0 114)
+             (= _t_val_y2_1_0 115)
+             (= _t_val_y2_1_0 116)
+             (= _t_val_y2_1_0 117)
+             (= _t_val_y2_1_0 118)
+             (= _t_val_y2_1_0 119)
+             (= _t_val_y2_1_0 120)
+             (= _t_val_y2_1_0 121)
+             (= _t_val_y2_1_0 122)
+             (= _t_val_y2_1_0 123)
+             (= _t_val_y2_1_0 124)
+             (= _t_val_y2_1_0 125)
+             (= _t_val_y2_1_0 126)
+             (= _t_val_y2_1_0 127)
+             (= _t_val_y2_1_0 more))
+         (= (= _t_val_y2_1_0 0) (= y2 a))
+         (= (= _t_val_y2_1_0 1) (= y2 b))
+         (= (= _t_val_y2_1_0 2) (= y2 c))
+         (= (= _t_val_y2_1_0 3) (= y2 d))
+         (= (= _t_val_y2_1_0 4) (= y2 e))
+         (= (= _t_val_y2_1_0 5) (= y2 f))
+         (= (= _t_val_y2_1_0 6) (= y2 g))
+         (= (= _t_val_y2_1_0 7) (= y2 h))
+         (= (= _t_val_y2_1_0 8) (= y2 i))
+         (= (= _t_val_y2_1_0 9) (= y2 j))
+         (= (= _t_val_y2_1_0 10) (= y2 k))
+         (= (= _t_val_y2_1_0 11) (= y2 l))
+         (= (= _t_val_y2_1_0 12) (= y2 m))
+         (= (= _t_val_y2_1_0 13) (= y2 n))
+         (= (= _t_val_y2_1_0 14) (= y2 o))
+         (= (= _t_val_y2_1_0 15) (= y2 p))
+         (= (= _t_val_y2_1_0 16) (= y2 q))
+         (= (= _t_val_y2_1_0 17) (= y2 r))
+         (= (= _t_val_y2_1_0 18) (= y2 s))
+         (= (= _t_val_y2_1_0 19) (= y2 t))
+         (= (= _t_val_y2_1_0 20) (= y2 u))
+         (= (= _t_val_y2_1_0 21) (= y2 v))
+         (= (= _t_val_y2_1_0 22) (= y2 w))
+         (= (= _t_val_y2_1_0 23) (= y2 x))
+         (= (= _t_val_y2_1_0 24) (= y2 y))
+         (= (= _t_val_y2_1_0 25) (= y2 z))
+         (= (= _t_val_y2_1_0 26) (= y2 A))
+         (= (= _t_val_y2_1_0 27) (= y2 B))
+         (= (= _t_val_y2_1_0 28) (= y2 C))
+         (= (= _t_val_y2_1_0 29) (= y2 D))
+         (= (= _t_val_y2_1_0 30) (= y2 E))
+         (= (= _t_val_y2_1_0 31) (= y2 F))
+         (= (= _t_val_y2_1_0 32) (= y2 G))
+         (= (= _t_val_y2_1_0 33) (= y2 H))
+         (= (= _t_val_y2_1_0 34) (= y2 I))
+         (= (= _t_val_y2_1_0 35) (= y2 J))
+         (= (= _t_val_y2_1_0 36) (= y2 K))
+         (= (= _t_val_y2_1_0 37) (= y2 L))
+         (= (= _t_val_y2_1_0 38) (= y2 M))
+         (= (= _t_val_y2_1_0 39) (= y2 N))
+         (= (= _t_val_y2_1_0 40) (= y2 O))
+         (= (= _t_val_y2_1_0 41) (= y2 P))
+         (= (= _t_val_y2_1_0 42) (= y2 Q))
+         (= (= _t_val_y2_1_0 43) (= y2 R))
+         (= (= _t_val_y2_1_0 44) (= y2 S))
+         (= (= _t_val_y2_1_0 45) (= y2 T))
+         (= (= _t_val_y2_1_0 46) (= y2 U))
+         (= (= _t_val_y2_1_0 47) (= y2 V))
+         (= (= _t_val_y2_1_0 48) (= y2 W))
+         (= (= _t_val_y2_1_0 49) (= y2 X))
+         (= (= _t_val_y2_1_0 50) (= y2 Y))
+         (= (= _t_val_y2_1_0 51) (= y2 Z))
+         (= (= _t_val_y2_1_0 52) (= y2 0))
+         (= (= _t_val_y2_1_0 53) (= y2 1))
+         (= (= _t_val_y2_1_0 54) (= y2 2))
+         (= (= _t_val_y2_1_0 55) (= y2 3))
+         (= (= _t_val_y2_1_0 56) (= y2 4))
+         (= (= _t_val_y2_1_0 57) (= y2 5))
+         (= (= _t_val_y2_1_0 58) (= y2 6))
+         (= (= _t_val_y2_1_0 59) (= y2 7))
+         (= (= _t_val_y2_1_0 60) (= y2 8))
+         (= (= _t_val_y2_1_0 61) (= y2 9))
+         (= (= _t_val_y2_1_0 62) (= y2  ))
+         (= (= _t_val_y2_1_0 63) (= y2 !))
+         (= (= _t_val_y2_1_0 64) (= y2 "))
+         (= (= _t_val_y2_1_0 65) (= y2 #))
+         (= (= _t_val_y2_1_0 66) (= y2 $))
+         (= (= _t_val_y2_1_0 67) (= y2 %))
+         (= (= _t_val_y2_1_0 68) (= y2 &))
+         (= (= _t_val_y2_1_0 69) (= y2 '))
+         (= (= _t_val_y2_1_0 70) (= y2 ())
+         (= (= _t_val_y2_1_0 71) (= y2 )))
+         (= (= _t_val_y2_1_0 72) (= y2 *))
+         (= (= _t_val_y2_1_0 73) (= y2 +))
+         (= (= _t_val_y2_1_0 74) (= y2 ,))
+         (= (= _t_val_y2_1_0 75) (= y2 -))
+         (= (= _t_val_y2_1_0 76) (= y2 .))
+         (= (= _t_val_y2_1_0 77) (= y2 /))
+         (= (= _t_val_y2_1_0 78) (= y2 :))
+         (= (= _t_val_y2_1_0 79) (= y2 ;))
+         (= (= _t_val_y2_1_0 80) (= y2 <))
+         (= (= _t_val_y2_1_0 81) (= y2 =))
+         (= (= _t_val_y2_1_0 82) (= y2 >))
+         (= (= _t_val_y2_1_0 83) (= y2 ?))
+         (= (= _t_val_y2_1_0 84) (= y2 @))
+         (= (= _t_val_y2_1_0 85) (= y2 [))
+         (= (= _t_val_y2_1_0 86) (= y2 \))
+         (= (= _t_val_y2_1_0 87) (= y2 ]))
+         (= (= _t_val_y2_1_0 88) (= y2 ^))
+         (= (= _t_val_y2_1_0 89) (= y2 _))
+         (= (= _t_val_y2_1_0 90) (= y2 `))
+         (= (= _t_val_y2_1_0 91) (= y2 {))
+         (= (= _t_val_y2_1_0 92) (= y2 |))
+         (= (= _t_val_y2_1_0 93) (= y2 }))
+         (= (= _t_val_y2_1_0 94) (= y2 ~))
+         (= (= _t_val_y2_1_0 95) (= y2 ""))
+         (= (= _t_val_y2_1_0 96) (= y2 ))
+         (= (= _t_val_y2_1_0 97) (= y2 ))
+         (= (= _t_val_y2_1_0 98) (= y2 ))
+         (= (= _t_val_y2_1_0 99) (= y2 ))
+         (= (= _t_val_y2_1_0 100) (= y2 ))
+         (= (= _t_val_y2_1_0 101) (= y2 ))
+         (= (= _t_val_y2_1_0 102) (= y2 ))
+         (= (= _t_val_y2_1_0 103) (= y2 ))
+         (= (= _t_val_y2_1_0 104) (= y2 	))
+         (= (= _t_val_y2_1_0 105) (= y2 
+))
+         (= (= _t_val_y2_1_0 106) (= y2 ))
+         (= (= _t_val_y2_1_0 107) (= y2 ))
+         (= (= _t_val_y2_1_0 108) (= y2 ))
+         (= (= _t_val_y2_1_0 109) (= y2 ))
+         (= (= _t_val_y2_1_0 110) (= y2 ))
+         (= (= _t_val_y2_1_0 111) (= y2 ))
+         (= (= _t_val_y2_1_0 112) (= y2 ))
+         (= (= _t_val_y2_1_0 113) (= y2 ))
+         (= (= _t_val_y2_1_0 114) (= y2 ))
+         (= (= _t_val_y2_1_0 115) (= y2 ))
+         (= (= _t_val_y2_1_0 116) (= y2 ))
+         (= (= _t_val_y2_1_0 117) (= y2 ))
+         (= (= _t_val_y2_1_0 118) (= y2 ))
+         (= (= _t_val_y2_1_0 119) (= y2 ))
+         (= (= _t_val_y2_1_0 120) (= y2 ))
+         (= (= _t_val_y2_1_0 121) (= y2 ))
+         (= (= _t_val_y2_1_0 122) (= y2 ))
+         (= (= _t_val_y2_1_0 123) (= y2 ))
+         (= (= _t_val_y2_1_0 124) (= y2 ))
+         (= (= _t_val_y2_1_0 125) (= y2 ))
+         (= (= _t_val_y2_1_0 126) (= y2 ))
+         (= (= _t_val_y2_1_0 127) (= y2 ))))
+---------------------
+
+*******************************************
+[PUSH]: Level = 6
+*******************************************
+
+
+===============================================
+** cb_new_eq():    "1" = _t_len_y1_1
 ===============================================
 
 >> effectiveLenIndiStr = , i = 1,lenTesterCount = 1
 
 ---------------------
->> Var: _t_str0 (@3177, Level 7):
- (=> (= _t_len__t_str0_1 more)
-    (and (or (= _t_len__t_str0_2 3)
-             (= _t_len__t_str0_2 4)
-             (= _t_len__t_str0_2 5)
-             (= _t_len__t_str0_2 more))
-         (= (= _t_len__t_str0_2 3) (= (Length _t_str0) 3))
-         (= (= _t_len__t_str0_2 4) (= (Length _t_str0) 4))
-         (= (= _t_len__t_str0_2 5) (= (Length _t_str0) 5))
-         (= (= _t_len__t_str0_2 more) (>= (Length _t_str0) 6))))
+>> Var: y1 (@3164, Level 6):
+ (=> (= _t_len_y1_1 more)
+    (and (or (= _t_len_y1_2 3)
+             (= _t_len_y1_2 4)
+             (= _t_len_y1_2 5)
+             (= _t_len_y1_2 more))
+         (= (= _t_len_y1_2 3) (= (Length y1) 3))
+         (= (= _t_len_y1_2 4) (= (Length y1) 4))
+         (= (= _t_len_y1_2 5) (= (Length y1) 5))
+         (= (= _t_len_y1_2 more) (>= (Length y1) 6))))
 ---------------------
+
+*******************************************
+[PUSH]: Level = 7
+*******************************************
 
 *******************************************
 [PUSH]: Level = 8
@@ -264,26 +506,6 @@ Assertion for free var: _t_str0 (@4928, Level 5):
 *******************************************
 [PUSH]: Level = 11
 *******************************************
-
-
-===============================================
-** cb_new_eq():    "4" = _t_len__t_str0_2
-===============================================
-
->> effectiveLenIndiStr = , i = 2,lenTesterCount = 2
-
----------------------
->> Var: _t_str0 (@3177, Level 11):
- (=> (and (= _t_len__t_str0_1 more) (= _t_len__t_str0_2 more))
-    (and (or (= _t_len__t_str0_3 6)
-             (= _t_len__t_str0_3 7)
-             (= _t_len__t_str0_3 8)
-             (= _t_len__t_str0_3 more))
-         (= (= _t_len__t_str0_3 6) (= (Length _t_str0) 6))
-         (= (= _t_len__t_str0_3 7) (= (Length _t_str0) 7))
-         (= (= _t_len__t_str0_3 8) (= (Length _t_str0) 8))
-         (= (= _t_len__t_str0_3 more) (>= (Length _t_str0) 9))))
----------------------
 
 *******************************************
 [PUSH]: Level = 12
@@ -304,318 +526,6 @@ Assertion for free var: _t_str0 (@4928, Level 5):
 *******************************************
 [PUSH]: Level = 16
 *******************************************
-
-
-
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [16] 
-=============================================================
-
-******************************************
-       Dependence Analysis
-------------------------------------------
-(0) alias: variables
-
-(1) var = constStr:
-
-(2) var = concat:
-  x = { (Concat z cabc), }
-  y = { (Concat _t_str0 cabc), }
-  z = { (Concat (Star y (+ (- 1) m)) _t_str0), }
-
-(3) concat = constStr:
-
-(4) eq concats:
-
-
--- Dependence Map -----------------
-x	-->	z(2), 
-y	-->	_t_str0(2), 
-z	-->	y(2), _t_str0(2), 
------------------------------------
-
--- L/R Most Var in eq concat ------
------------------------------------
-
--- L/R constraints ----------------
------------------------------------
-
-* Free Variables:
-----------------------------------
-_t_str0(3), 
-----------------------------------
->> valueTesterList @ 4631 = { 
-    (16, _t_val__t_str0_4_0), 
-   }
-
->> Value Tester Encoding = { 127,  0,  0,  0,  0, }
-
-
----------------------
-Assertion for free var: _t_str0 (@4928, Level 16):
- (=> (= _t_len__t_str0_2 4)
-    (and (or (= _t_val__t_str0_4_0 0)
-             (= _t_val__t_str0_4_0 1)
-             (= _t_val__t_str0_4_0 2)
-             (= _t_val__t_str0_4_0 3)
-             (= _t_val__t_str0_4_0 4)
-             (= _t_val__t_str0_4_0 5)
-             (= _t_val__t_str0_4_0 6)
-             (= _t_val__t_str0_4_0 7)
-             (= _t_val__t_str0_4_0 8)
-             (= _t_val__t_str0_4_0 9)
-             (= _t_val__t_str0_4_0 10)
-             (= _t_val__t_str0_4_0 11)
-             (= _t_val__t_str0_4_0 12)
-             (= _t_val__t_str0_4_0 13)
-             (= _t_val__t_str0_4_0 14)
-             (= _t_val__t_str0_4_0 15)
-             (= _t_val__t_str0_4_0 16)
-             (= _t_val__t_str0_4_0 17)
-             (= _t_val__t_str0_4_0 18)
-             (= _t_val__t_str0_4_0 19)
-             (= _t_val__t_str0_4_0 20)
-             (= _t_val__t_str0_4_0 21)
-             (= _t_val__t_str0_4_0 22)
-             (= _t_val__t_str0_4_0 23)
-             (= _t_val__t_str0_4_0 24)
-             (= _t_val__t_str0_4_0 25)
-             (= _t_val__t_str0_4_0 26)
-             (= _t_val__t_str0_4_0 27)
-             (= _t_val__t_str0_4_0 28)
-             (= _t_val__t_str0_4_0 29)
-             (= _t_val__t_str0_4_0 30)
-             (= _t_val__t_str0_4_0 31)
-             (= _t_val__t_str0_4_0 32)
-             (= _t_val__t_str0_4_0 33)
-             (= _t_val__t_str0_4_0 34)
-             (= _t_val__t_str0_4_0 35)
-             (= _t_val__t_str0_4_0 36)
-             (= _t_val__t_str0_4_0 37)
-             (= _t_val__t_str0_4_0 38)
-             (= _t_val__t_str0_4_0 39)
-             (= _t_val__t_str0_4_0 40)
-             (= _t_val__t_str0_4_0 41)
-             (= _t_val__t_str0_4_0 42)
-             (= _t_val__t_str0_4_0 43)
-             (= _t_val__t_str0_4_0 44)
-             (= _t_val__t_str0_4_0 45)
-             (= _t_val__t_str0_4_0 46)
-             (= _t_val__t_str0_4_0 47)
-             (= _t_val__t_str0_4_0 48)
-             (= _t_val__t_str0_4_0 49)
-             (= _t_val__t_str0_4_0 50)
-             (= _t_val__t_str0_4_0 51)
-             (= _t_val__t_str0_4_0 52)
-             (= _t_val__t_str0_4_0 53)
-             (= _t_val__t_str0_4_0 54)
-             (= _t_val__t_str0_4_0 55)
-             (= _t_val__t_str0_4_0 56)
-             (= _t_val__t_str0_4_0 57)
-             (= _t_val__t_str0_4_0 58)
-             (= _t_val__t_str0_4_0 59)
-             (= _t_val__t_str0_4_0 60)
-             (= _t_val__t_str0_4_0 61)
-             (= _t_val__t_str0_4_0 62)
-             (= _t_val__t_str0_4_0 63)
-             (= _t_val__t_str0_4_0 64)
-             (= _t_val__t_str0_4_0 65)
-             (= _t_val__t_str0_4_0 66)
-             (= _t_val__t_str0_4_0 67)
-             (= _t_val__t_str0_4_0 68)
-             (= _t_val__t_str0_4_0 69)
-             (= _t_val__t_str0_4_0 70)
-             (= _t_val__t_str0_4_0 71)
-             (= _t_val__t_str0_4_0 72)
-             (= _t_val__t_str0_4_0 73)
-             (= _t_val__t_str0_4_0 74)
-             (= _t_val__t_str0_4_0 75)
-             (= _t_val__t_str0_4_0 76)
-             (= _t_val__t_str0_4_0 77)
-             (= _t_val__t_str0_4_0 78)
-             (= _t_val__t_str0_4_0 79)
-             (= _t_val__t_str0_4_0 80)
-             (= _t_val__t_str0_4_0 81)
-             (= _t_val__t_str0_4_0 82)
-             (= _t_val__t_str0_4_0 83)
-             (= _t_val__t_str0_4_0 84)
-             (= _t_val__t_str0_4_0 85)
-             (= _t_val__t_str0_4_0 86)
-             (= _t_val__t_str0_4_0 87)
-             (= _t_val__t_str0_4_0 88)
-             (= _t_val__t_str0_4_0 89)
-             (= _t_val__t_str0_4_0 90)
-             (= _t_val__t_str0_4_0 91)
-             (= _t_val__t_str0_4_0 92)
-             (= _t_val__t_str0_4_0 93)
-             (= _t_val__t_str0_4_0 94)
-             (= _t_val__t_str0_4_0 95)
-             (= _t_val__t_str0_4_0 96)
-             (= _t_val__t_str0_4_0 97)
-             (= _t_val__t_str0_4_0 98)
-             (= _t_val__t_str0_4_0 99)
-             (= _t_val__t_str0_4_0 100)
-             (= _t_val__t_str0_4_0 101)
-             (= _t_val__t_str0_4_0 102)
-             (= _t_val__t_str0_4_0 103)
-             (= _t_val__t_str0_4_0 104)
-             (= _t_val__t_str0_4_0 105)
-             (= _t_val__t_str0_4_0 106)
-             (= _t_val__t_str0_4_0 107)
-             (= _t_val__t_str0_4_0 108)
-             (= _t_val__t_str0_4_0 109)
-             (= _t_val__t_str0_4_0 110)
-             (= _t_val__t_str0_4_0 111)
-             (= _t_val__t_str0_4_0 112)
-             (= _t_val__t_str0_4_0 113)
-             (= _t_val__t_str0_4_0 114)
-             (= _t_val__t_str0_4_0 115)
-             (= _t_val__t_str0_4_0 116)
-             (= _t_val__t_str0_4_0 117)
-             (= _t_val__t_str0_4_0 118)
-             (= _t_val__t_str0_4_0 119)
-             (= _t_val__t_str0_4_0 120)
-             (= _t_val__t_str0_4_0 121)
-             (= _t_val__t_str0_4_0 122)
-             (= _t_val__t_str0_4_0 123)
-             (= _t_val__t_str0_4_0 124)
-             (= _t_val__t_str0_4_0 125)
-             (= _t_val__t_str0_4_0 126)
-             (= _t_val__t_str0_4_0 127)
-             (= _t_val__t_str0_4_0 more))
-         (= (= _t_val__t_str0_4_0 0) (= _t_str0 aaaa))
-         (= (= _t_val__t_str0_4_0 1) (= _t_str0 aaab))
-         (= (= _t_val__t_str0_4_0 2) (= _t_str0 aaac))
-         (= (= _t_val__t_str0_4_0 3) (= _t_str0 aaad))
-         (= (= _t_val__t_str0_4_0 4) (= _t_str0 aaae))
-         (= (= _t_val__t_str0_4_0 5) (= _t_str0 aaaf))
-         (= (= _t_val__t_str0_4_0 6) (= _t_str0 aaag))
-         (= (= _t_val__t_str0_4_0 7) (= _t_str0 aaah))
-         (= (= _t_val__t_str0_4_0 8) (= _t_str0 aaai))
-         (= (= _t_val__t_str0_4_0 9) (= _t_str0 aaaj))
-         (= (= _t_val__t_str0_4_0 10) (= _t_str0 aaak))
-         (= (= _t_val__t_str0_4_0 11) (= _t_str0 aaal))
-         (= (= _t_val__t_str0_4_0 12) (= _t_str0 aaam))
-         (= (= _t_val__t_str0_4_0 13) (= _t_str0 aaan))
-         (= (= _t_val__t_str0_4_0 14) (= _t_str0 aaao))
-         (= (= _t_val__t_str0_4_0 15) (= _t_str0 aaap))
-         (= (= _t_val__t_str0_4_0 16) (= _t_str0 aaaq))
-         (= (= _t_val__t_str0_4_0 17) (= _t_str0 aaar))
-         (= (= _t_val__t_str0_4_0 18) (= _t_str0 aaas))
-         (= (= _t_val__t_str0_4_0 19) (= _t_str0 aaat))
-         (= (= _t_val__t_str0_4_0 20) (= _t_str0 aaau))
-         (= (= _t_val__t_str0_4_0 21) (= _t_str0 aaav))
-         (= (= _t_val__t_str0_4_0 22) (= _t_str0 aaaw))
-         (= (= _t_val__t_str0_4_0 23) (= _t_str0 aaax))
-         (= (= _t_val__t_str0_4_0 24) (= _t_str0 aaay))
-         (= (= _t_val__t_str0_4_0 25) (= _t_str0 aaaz))
-         (= (= _t_val__t_str0_4_0 26) (= _t_str0 aaaA))
-         (= (= _t_val__t_str0_4_0 27) (= _t_str0 aaaB))
-         (= (= _t_val__t_str0_4_0 28) (= _t_str0 aaaC))
-         (= (= _t_val__t_str0_4_0 29) (= _t_str0 aaaD))
-         (= (= _t_val__t_str0_4_0 30) (= _t_str0 aaaE))
-         (= (= _t_val__t_str0_4_0 31) (= _t_str0 aaaF))
-         (= (= _t_val__t_str0_4_0 32) (= _t_str0 aaaG))
-         (= (= _t_val__t_str0_4_0 33) (= _t_str0 aaaH))
-         (= (= _t_val__t_str0_4_0 34) (= _t_str0 aaaI))
-         (= (= _t_val__t_str0_4_0 35) (= _t_str0 aaaJ))
-         (= (= _t_val__t_str0_4_0 36) (= _t_str0 aaaK))
-         (= (= _t_val__t_str0_4_0 37) (= _t_str0 aaaL))
-         (= (= _t_val__t_str0_4_0 38) (= _t_str0 aaaM))
-         (= (= _t_val__t_str0_4_0 39) (= _t_str0 aaaN))
-         (= (= _t_val__t_str0_4_0 40) (= _t_str0 aaaO))
-         (= (= _t_val__t_str0_4_0 41) (= _t_str0 aaaP))
-         (= (= _t_val__t_str0_4_0 42) (= _t_str0 aaaQ))
-         (= (= _t_val__t_str0_4_0 43) (= _t_str0 aaaR))
-         (= (= _t_val__t_str0_4_0 44) (= _t_str0 aaaS))
-         (= (= _t_val__t_str0_4_0 45) (= _t_str0 aaaT))
-         (= (= _t_val__t_str0_4_0 46) (= _t_str0 aaaU))
-         (= (= _t_val__t_str0_4_0 47) (= _t_str0 aaaV))
-         (= (= _t_val__t_str0_4_0 48) (= _t_str0 aaaW))
-         (= (= _t_val__t_str0_4_0 49) (= _t_str0 aaaX))
-         (= (= _t_val__t_str0_4_0 50) (= _t_str0 aaaY))
-         (= (= _t_val__t_str0_4_0 51) (= _t_str0 aaaZ))
-         (= (= _t_val__t_str0_4_0 52) (= _t_str0 aaa0))
-         (= (= _t_val__t_str0_4_0 53) (= _t_str0 aaa1))
-         (= (= _t_val__t_str0_4_0 54) (= _t_str0 aaa2))
-         (= (= _t_val__t_str0_4_0 55) (= _t_str0 aaa3))
-         (= (= _t_val__t_str0_4_0 56) (= _t_str0 aaa4))
-         (= (= _t_val__t_str0_4_0 57) (= _t_str0 aaa5))
-         (= (= _t_val__t_str0_4_0 58) (= _t_str0 aaa6))
-         (= (= _t_val__t_str0_4_0 59) (= _t_str0 aaa7))
-         (= (= _t_val__t_str0_4_0 60) (= _t_str0 aaa8))
-         (= (= _t_val__t_str0_4_0 61) (= _t_str0 aaa9))
-         (= (= _t_val__t_str0_4_0 62) (= _t_str0 aaa ))
-         (= (= _t_val__t_str0_4_0 63) (= _t_str0 aaa!))
-         (= (= _t_val__t_str0_4_0 64) (= _t_str0 aaa"))
-         (= (= _t_val__t_str0_4_0 65) (= _t_str0 aaa#))
-         (= (= _t_val__t_str0_4_0 66) (= _t_str0 aaa$))
-         (= (= _t_val__t_str0_4_0 67) (= _t_str0 aaa%))
-         (= (= _t_val__t_str0_4_0 68) (= _t_str0 aaa&))
-         (= (= _t_val__t_str0_4_0 69) (= _t_str0 aaa'))
-         (= (= _t_val__t_str0_4_0 70) (= _t_str0 aaa())
-         (= (= _t_val__t_str0_4_0 71) (= _t_str0 aaa)))
-         (= (= _t_val__t_str0_4_0 72) (= _t_str0 aaa*))
-         (= (= _t_val__t_str0_4_0 73) (= _t_str0 aaa+))
-         (= (= _t_val__t_str0_4_0 74) (= _t_str0 aaa,))
-         (= (= _t_val__t_str0_4_0 75) (= _t_str0 aaa-))
-         (= (= _t_val__t_str0_4_0 76) (= _t_str0 aaa.))
-         (= (= _t_val__t_str0_4_0 77) (= _t_str0 aaa/))
-         (= (= _t_val__t_str0_4_0 78) (= _t_str0 aaa:))
-         (= (= _t_val__t_str0_4_0 79) (= _t_str0 aaa;))
-         (= (= _t_val__t_str0_4_0 80) (= _t_str0 aaa<))
-         (= (= _t_val__t_str0_4_0 81) (= _t_str0 aaa=))
-         (= (= _t_val__t_str0_4_0 82) (= _t_str0 aaa>))
-         (= (= _t_val__t_str0_4_0 83) (= _t_str0 aaa?))
-         (= (= _t_val__t_str0_4_0 84) (= _t_str0 aaa@))
-         (= (= _t_val__t_str0_4_0 85) (= _t_str0 aaa[))
-         (= (= _t_val__t_str0_4_0 86) (= _t_str0 aaa\))
-         (= (= _t_val__t_str0_4_0 87) (= _t_str0 aaa]))
-         (= (= _t_val__t_str0_4_0 88) (= _t_str0 aaa^))
-         (= (= _t_val__t_str0_4_0 89) (= _t_str0 aaa_))
-         (= (= _t_val__t_str0_4_0 90) (= _t_str0 aaa`))
-         (= (= _t_val__t_str0_4_0 91) (= _t_str0 aaa{))
-         (= (= _t_val__t_str0_4_0 92) (= _t_str0 aaa|))
-         (= (= _t_val__t_str0_4_0 93) (= _t_str0 aaa}))
-         (= (= _t_val__t_str0_4_0 94) (= _t_str0 aaa~))
-         (= (= _t_val__t_str0_4_0 95) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 96) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 97) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 98) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 99) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 100) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 101) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 102) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 103) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 104) (= _t_str0 aaa	))
-         (= (= _t_val__t_str0_4_0 105) (= _t_str0 aaa
-))
-         (= (= _t_val__t_str0_4_0 106) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 107) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 108) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 109) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 110) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 111) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 112) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 113) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 114) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 115) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 116) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 117) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 118) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 119) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 120) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 121) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 122) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 123) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 124) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 125) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 126) (= _t_str0 aaa))
-         (= (= _t_val__t_str0_4_0 127) (= _t_str0 aaa))))
----------------------
-
-###########################################################
-
 
 *******************************************
 [PUSH]: Level = 17
@@ -1113,6 +1023,379 @@ Assertion for free var: _t_str0 (@4928, Level 16):
 [PUSH]: Level = 140
 *******************************************
 
+
+===============================================
+** cb_new_eq():    "15" = _t_val_y2_1_0
+===============================================
+
+
+===============================================
+** cb_new_eq():    "p" = y2
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= y2 p) @ 3276
+
+>> [simplifyConcatStr 2 @ 1060] (Concat st y2)
+
+---------------------
+Axiom Add(@1080, Level 140):
+(=> (= y2 p) (= (Concat st y2) stp))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "stp" = (Concat st y2)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat st y2) stp) @ 3276
+
+** solve_concat_eq_str: (Concat st y2) = "stp"
+>> [simplifyConcatStr 2 @ 1060] (Concat (Concat te y1) (Concat st y2))
+
+>> make_concat: (Concat (Concat te y1) stp)
+
+---------------------
+Axiom Add(@1090, Level 140):
+(=> (= (Concat st y2) stp)
+    (= (Concat (Concat te y1) (Concat st y2)) (Concat (Concat te y1) stp)))
+---------------------
+
+>> [simplifyConcatStr 4 @ 1124] (Concat (Concat te y1) (Concat st y2))
+
+
+
+===============================================
+** cb_new_eq():    (Concat (Concat te y1) (Concat st y2)) = (Concat (Concat te y1) stp)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat (Concat te y1) (Concat st y2)) (Concat (Concat te y1) stp)) @ 3276
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat (Concat te y1) (Concat st y2))
+   nn2 = (Concat (Concat te y1) stp)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat (Concat te y1) stp)
+                   new_nn2 = (Concat (Concat te y1) stp) @ 1998
+>> Eq concats, return.
+
+
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [140] 
+=============================================================
+
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
+
+(1) var = constStr:
+  y2 = "p"
+
+(2) var = concat:
+  x = { (Concat (Concat te y1) (Concat st y2)), (Concat (Concat te y1) stp), }
+
+(3) concat = constStr:
+  (Concat st y2) = "stp"
+
+(4) eq concats:
+  >> (Concat (Concat te y1) (Concat st y2)) , (Concat (Concat te y1) stp) , 
+
+
+-- Dependence Map -----------------
+x	-->	y1(2), y2(2), 
+y2	-->	"p"(1), "stp"(5), 
+-----------------------------------
+
+-- L/R Most Var in eq concat ------
+-----------------------------------
+
+-- L/R constraints ----------------
+-----------------------------------
+
+* Free Variables:
+----------------------------------
+y1(2), 
+----------------------------------
+>> valueTesterList @ 4618 = { 
+    (140, _t_val_y1_1_0), 
+   }
+
+>> Value Tester Encoding = { 127,  0, }
+
+
+---------------------
+Assertion for free var: y1 (@4915, Level 140):
+ (=> (= _t_len_y1_1 1)
+    (and (or (= _t_val_y1_1_0 0)
+             (= _t_val_y1_1_0 1)
+             (= _t_val_y1_1_0 2)
+             (= _t_val_y1_1_0 3)
+             (= _t_val_y1_1_0 4)
+             (= _t_val_y1_1_0 5)
+             (= _t_val_y1_1_0 6)
+             (= _t_val_y1_1_0 7)
+             (= _t_val_y1_1_0 8)
+             (= _t_val_y1_1_0 9)
+             (= _t_val_y1_1_0 10)
+             (= _t_val_y1_1_0 11)
+             (= _t_val_y1_1_0 12)
+             (= _t_val_y1_1_0 13)
+             (= _t_val_y1_1_0 14)
+             (= _t_val_y1_1_0 15)
+             (= _t_val_y1_1_0 16)
+             (= _t_val_y1_1_0 17)
+             (= _t_val_y1_1_0 18)
+             (= _t_val_y1_1_0 19)
+             (= _t_val_y1_1_0 20)
+             (= _t_val_y1_1_0 21)
+             (= _t_val_y1_1_0 22)
+             (= _t_val_y1_1_0 23)
+             (= _t_val_y1_1_0 24)
+             (= _t_val_y1_1_0 25)
+             (= _t_val_y1_1_0 26)
+             (= _t_val_y1_1_0 27)
+             (= _t_val_y1_1_0 28)
+             (= _t_val_y1_1_0 29)
+             (= _t_val_y1_1_0 30)
+             (= _t_val_y1_1_0 31)
+             (= _t_val_y1_1_0 32)
+             (= _t_val_y1_1_0 33)
+             (= _t_val_y1_1_0 34)
+             (= _t_val_y1_1_0 35)
+             (= _t_val_y1_1_0 36)
+             (= _t_val_y1_1_0 37)
+             (= _t_val_y1_1_0 38)
+             (= _t_val_y1_1_0 39)
+             (= _t_val_y1_1_0 40)
+             (= _t_val_y1_1_0 41)
+             (= _t_val_y1_1_0 42)
+             (= _t_val_y1_1_0 43)
+             (= _t_val_y1_1_0 44)
+             (= _t_val_y1_1_0 45)
+             (= _t_val_y1_1_0 46)
+             (= _t_val_y1_1_0 47)
+             (= _t_val_y1_1_0 48)
+             (= _t_val_y1_1_0 49)
+             (= _t_val_y1_1_0 50)
+             (= _t_val_y1_1_0 51)
+             (= _t_val_y1_1_0 52)
+             (= _t_val_y1_1_0 53)
+             (= _t_val_y1_1_0 54)
+             (= _t_val_y1_1_0 55)
+             (= _t_val_y1_1_0 56)
+             (= _t_val_y1_1_0 57)
+             (= _t_val_y1_1_0 58)
+             (= _t_val_y1_1_0 59)
+             (= _t_val_y1_1_0 60)
+             (= _t_val_y1_1_0 61)
+             (= _t_val_y1_1_0 62)
+             (= _t_val_y1_1_0 63)
+             (= _t_val_y1_1_0 64)
+             (= _t_val_y1_1_0 65)
+             (= _t_val_y1_1_0 66)
+             (= _t_val_y1_1_0 67)
+             (= _t_val_y1_1_0 68)
+             (= _t_val_y1_1_0 69)
+             (= _t_val_y1_1_0 70)
+             (= _t_val_y1_1_0 71)
+             (= _t_val_y1_1_0 72)
+             (= _t_val_y1_1_0 73)
+             (= _t_val_y1_1_0 74)
+             (= _t_val_y1_1_0 75)
+             (= _t_val_y1_1_0 76)
+             (= _t_val_y1_1_0 77)
+             (= _t_val_y1_1_0 78)
+             (= _t_val_y1_1_0 79)
+             (= _t_val_y1_1_0 80)
+             (= _t_val_y1_1_0 81)
+             (= _t_val_y1_1_0 82)
+             (= _t_val_y1_1_0 83)
+             (= _t_val_y1_1_0 84)
+             (= _t_val_y1_1_0 85)
+             (= _t_val_y1_1_0 86)
+             (= _t_val_y1_1_0 87)
+             (= _t_val_y1_1_0 88)
+             (= _t_val_y1_1_0 89)
+             (= _t_val_y1_1_0 90)
+             (= _t_val_y1_1_0 91)
+             (= _t_val_y1_1_0 92)
+             (= _t_val_y1_1_0 93)
+             (= _t_val_y1_1_0 94)
+             (= _t_val_y1_1_0 95)
+             (= _t_val_y1_1_0 96)
+             (= _t_val_y1_1_0 97)
+             (= _t_val_y1_1_0 98)
+             (= _t_val_y1_1_0 99)
+             (= _t_val_y1_1_0 100)
+             (= _t_val_y1_1_0 101)
+             (= _t_val_y1_1_0 102)
+             (= _t_val_y1_1_0 103)
+             (= _t_val_y1_1_0 104)
+             (= _t_val_y1_1_0 105)
+             (= _t_val_y1_1_0 106)
+             (= _t_val_y1_1_0 107)
+             (= _t_val_y1_1_0 108)
+             (= _t_val_y1_1_0 109)
+             (= _t_val_y1_1_0 110)
+             (= _t_val_y1_1_0 111)
+             (= _t_val_y1_1_0 112)
+             (= _t_val_y1_1_0 113)
+             (= _t_val_y1_1_0 114)
+             (= _t_val_y1_1_0 115)
+             (= _t_val_y1_1_0 116)
+             (= _t_val_y1_1_0 117)
+             (= _t_val_y1_1_0 118)
+             (= _t_val_y1_1_0 119)
+             (= _t_val_y1_1_0 120)
+             (= _t_val_y1_1_0 121)
+             (= _t_val_y1_1_0 122)
+             (= _t_val_y1_1_0 123)
+             (= _t_val_y1_1_0 124)
+             (= _t_val_y1_1_0 125)
+             (= _t_val_y1_1_0 126)
+             (= _t_val_y1_1_0 127)
+             (= _t_val_y1_1_0 more))
+         (= (= _t_val_y1_1_0 0) (= y1 a))
+         (= (= _t_val_y1_1_0 1) (= y1 b))
+         (= (= _t_val_y1_1_0 2) (= y1 c))
+         (= (= _t_val_y1_1_0 3) (= y1 d))
+         (= (= _t_val_y1_1_0 4) (= y1 e))
+         (= (= _t_val_y1_1_0 5) (= y1 f))
+         (= (= _t_val_y1_1_0 6) (= y1 g))
+         (= (= _t_val_y1_1_0 7) (= y1 h))
+         (= (= _t_val_y1_1_0 8) (= y1 i))
+         (= (= _t_val_y1_1_0 9) (= y1 j))
+         (= (= _t_val_y1_1_0 10) (= y1 k))
+         (= (= _t_val_y1_1_0 11) (= y1 l))
+         (= (= _t_val_y1_1_0 12) (= y1 m))
+         (= (= _t_val_y1_1_0 13) (= y1 n))
+         (= (= _t_val_y1_1_0 14) (= y1 o))
+         (= (= _t_val_y1_1_0 15) (= y1 p))
+         (= (= _t_val_y1_1_0 16) (= y1 q))
+         (= (= _t_val_y1_1_0 17) (= y1 r))
+         (= (= _t_val_y1_1_0 18) (= y1 s))
+         (= (= _t_val_y1_1_0 19) (= y1 t))
+         (= (= _t_val_y1_1_0 20) (= y1 u))
+         (= (= _t_val_y1_1_0 21) (= y1 v))
+         (= (= _t_val_y1_1_0 22) (= y1 w))
+         (= (= _t_val_y1_1_0 23) (= y1 x))
+         (= (= _t_val_y1_1_0 24) (= y1 y))
+         (= (= _t_val_y1_1_0 25) (= y1 z))
+         (= (= _t_val_y1_1_0 26) (= y1 A))
+         (= (= _t_val_y1_1_0 27) (= y1 B))
+         (= (= _t_val_y1_1_0 28) (= y1 C))
+         (= (= _t_val_y1_1_0 29) (= y1 D))
+         (= (= _t_val_y1_1_0 30) (= y1 E))
+         (= (= _t_val_y1_1_0 31) (= y1 F))
+         (= (= _t_val_y1_1_0 32) (= y1 G))
+         (= (= _t_val_y1_1_0 33) (= y1 H))
+         (= (= _t_val_y1_1_0 34) (= y1 I))
+         (= (= _t_val_y1_1_0 35) (= y1 J))
+         (= (= _t_val_y1_1_0 36) (= y1 K))
+         (= (= _t_val_y1_1_0 37) (= y1 L))
+         (= (= _t_val_y1_1_0 38) (= y1 M))
+         (= (= _t_val_y1_1_0 39) (= y1 N))
+         (= (= _t_val_y1_1_0 40) (= y1 O))
+         (= (= _t_val_y1_1_0 41) (= y1 P))
+         (= (= _t_val_y1_1_0 42) (= y1 Q))
+         (= (= _t_val_y1_1_0 43) (= y1 R))
+         (= (= _t_val_y1_1_0 44) (= y1 S))
+         (= (= _t_val_y1_1_0 45) (= y1 T))
+         (= (= _t_val_y1_1_0 46) (= y1 U))
+         (= (= _t_val_y1_1_0 47) (= y1 V))
+         (= (= _t_val_y1_1_0 48) (= y1 W))
+         (= (= _t_val_y1_1_0 49) (= y1 X))
+         (= (= _t_val_y1_1_0 50) (= y1 Y))
+         (= (= _t_val_y1_1_0 51) (= y1 Z))
+         (= (= _t_val_y1_1_0 52) (= y1 0))
+         (= (= _t_val_y1_1_0 53) (= y1 1))
+         (= (= _t_val_y1_1_0 54) (= y1 2))
+         (= (= _t_val_y1_1_0 55) (= y1 3))
+         (= (= _t_val_y1_1_0 56) (= y1 4))
+         (= (= _t_val_y1_1_0 57) (= y1 5))
+         (= (= _t_val_y1_1_0 58) (= y1 6))
+         (= (= _t_val_y1_1_0 59) (= y1 7))
+         (= (= _t_val_y1_1_0 60) (= y1 8))
+         (= (= _t_val_y1_1_0 61) (= y1 9))
+         (= (= _t_val_y1_1_0 62) (= y1  ))
+         (= (= _t_val_y1_1_0 63) (= y1 !))
+         (= (= _t_val_y1_1_0 64) (= y1 "))
+         (= (= _t_val_y1_1_0 65) (= y1 #))
+         (= (= _t_val_y1_1_0 66) (= y1 $))
+         (= (= _t_val_y1_1_0 67) (= y1 %))
+         (= (= _t_val_y1_1_0 68) (= y1 &))
+         (= (= _t_val_y1_1_0 69) (= y1 '))
+         (= (= _t_val_y1_1_0 70) (= y1 ())
+         (= (= _t_val_y1_1_0 71) (= y1 )))
+         (= (= _t_val_y1_1_0 72) (= y1 *))
+         (= (= _t_val_y1_1_0 73) (= y1 +))
+         (= (= _t_val_y1_1_0 74) (= y1 ,))
+         (= (= _t_val_y1_1_0 75) (= y1 -))
+         (= (= _t_val_y1_1_0 76) (= y1 .))
+         (= (= _t_val_y1_1_0 77) (= y1 /))
+         (= (= _t_val_y1_1_0 78) (= y1 :))
+         (= (= _t_val_y1_1_0 79) (= y1 ;))
+         (= (= _t_val_y1_1_0 80) (= y1 <))
+         (= (= _t_val_y1_1_0 81) (= y1 =))
+         (= (= _t_val_y1_1_0 82) (= y1 >))
+         (= (= _t_val_y1_1_0 83) (= y1 ?))
+         (= (= _t_val_y1_1_0 84) (= y1 @))
+         (= (= _t_val_y1_1_0 85) (= y1 [))
+         (= (= _t_val_y1_1_0 86) (= y1 \))
+         (= (= _t_val_y1_1_0 87) (= y1 ]))
+         (= (= _t_val_y1_1_0 88) (= y1 ^))
+         (= (= _t_val_y1_1_0 89) (= y1 _))
+         (= (= _t_val_y1_1_0 90) (= y1 `))
+         (= (= _t_val_y1_1_0 91) (= y1 {))
+         (= (= _t_val_y1_1_0 92) (= y1 |))
+         (= (= _t_val_y1_1_0 93) (= y1 }))
+         (= (= _t_val_y1_1_0 94) (= y1 ~))
+         (= (= _t_val_y1_1_0 95) (= y1 ""))
+         (= (= _t_val_y1_1_0 96) (= y1 ))
+         (= (= _t_val_y1_1_0 97) (= y1 ))
+         (= (= _t_val_y1_1_0 98) (= y1 ))
+         (= (= _t_val_y1_1_0 99) (= y1 ))
+         (= (= _t_val_y1_1_0 100) (= y1 ))
+         (= (= _t_val_y1_1_0 101) (= y1 ))
+         (= (= _t_val_y1_1_0 102) (= y1 ))
+         (= (= _t_val_y1_1_0 103) (= y1 ))
+         (= (= _t_val_y1_1_0 104) (= y1 	))
+         (= (= _t_val_y1_1_0 105) (= y1 
+))
+         (= (= _t_val_y1_1_0 106) (= y1 ))
+         (= (= _t_val_y1_1_0 107) (= y1 ))
+         (= (= _t_val_y1_1_0 108) (= y1 ))
+         (= (= _t_val_y1_1_0 109) (= y1 ))
+         (= (= _t_val_y1_1_0 110) (= y1 ))
+         (= (= _t_val_y1_1_0 111) (= y1 ))
+         (= (= _t_val_y1_1_0 112) (= y1 ))
+         (= (= _t_val_y1_1_0 113) (= y1 ))
+         (= (= _t_val_y1_1_0 114) (= y1 ))
+         (= (= _t_val_y1_1_0 115) (= y1 ))
+         (= (= _t_val_y1_1_0 116) (= y1 ))
+         (= (= _t_val_y1_1_0 117) (= y1 ))
+         (= (= _t_val_y1_1_0 118) (= y1 ))
+         (= (= _t_val_y1_1_0 119) (= y1 ))
+         (= (= _t_val_y1_1_0 120) (= y1 ))
+         (= (= _t_val_y1_1_0 121) (= y1 ))
+         (= (= _t_val_y1_1_0 122) (= y1 ))
+         (= (= _t_val_y1_1_0 123) (= y1 ))
+         (= (= _t_val_y1_1_0 124) (= y1 ))
+         (= (= _t_val_y1_1_0 125) (= y1 ))
+         (= (= _t_val_y1_1_0 126) (= y1 ))
+         (= (= _t_val_y1_1_0 127) (= y1 ))))
+---------------------
+
+###########################################################
+
+
 *******************************************
 [PUSH]: Level = 141
 *******************************************
@@ -1133,43 +1416,574 @@ Assertion for free var: _t_str0 (@4928, Level 16):
 [PUSH]: Level = 145
 *******************************************
 
+*******************************************
+[PUSH]: Level = 146
+*******************************************
+
+*******************************************
+[PUSH]: Level = 147
+*******************************************
+
+*******************************************
+[PUSH]: Level = 148
+*******************************************
+
+*******************************************
+[PUSH]: Level = 149
+*******************************************
+
+*******************************************
+[PUSH]: Level = 150
+*******************************************
+
+*******************************************
+[PUSH]: Level = 151
+*******************************************
+
+*******************************************
+[PUSH]: Level = 152
+*******************************************
+
+*******************************************
+[PUSH]: Level = 153
+*******************************************
+
+*******************************************
+[PUSH]: Level = 154
+*******************************************
+
+*******************************************
+[PUSH]: Level = 155
+*******************************************
+
+*******************************************
+[PUSH]: Level = 156
+*******************************************
+
+*******************************************
+[PUSH]: Level = 157
+*******************************************
+
+*******************************************
+[PUSH]: Level = 158
+*******************************************
+
+*******************************************
+[PUSH]: Level = 159
+*******************************************
+
+*******************************************
+[PUSH]: Level = 160
+*******************************************
+
+*******************************************
+[PUSH]: Level = 161
+*******************************************
+
+*******************************************
+[PUSH]: Level = 162
+*******************************************
+
+*******************************************
+[PUSH]: Level = 163
+*******************************************
+
+*******************************************
+[PUSH]: Level = 164
+*******************************************
+
+*******************************************
+[PUSH]: Level = 165
+*******************************************
+
+*******************************************
+[PUSH]: Level = 166
+*******************************************
+
+*******************************************
+[PUSH]: Level = 167
+*******************************************
+
+*******************************************
+[PUSH]: Level = 168
+*******************************************
+
+*******************************************
+[PUSH]: Level = 169
+*******************************************
+
+*******************************************
+[PUSH]: Level = 170
+*******************************************
+
+*******************************************
+[PUSH]: Level = 171
+*******************************************
+
+*******************************************
+[PUSH]: Level = 172
+*******************************************
+
+*******************************************
+[PUSH]: Level = 173
+*******************************************
+
+*******************************************
+[PUSH]: Level = 174
+*******************************************
+
+*******************************************
+[PUSH]: Level = 175
+*******************************************
+
+*******************************************
+[PUSH]: Level = 176
+*******************************************
+
+*******************************************
+[PUSH]: Level = 177
+*******************************************
+
+*******************************************
+[PUSH]: Level = 178
+*******************************************
+
+*******************************************
+[PUSH]: Level = 179
+*******************************************
+
+*******************************************
+[PUSH]: Level = 180
+*******************************************
+
+*******************************************
+[PUSH]: Level = 181
+*******************************************
+
+*******************************************
+[PUSH]: Level = 182
+*******************************************
+
+*******************************************
+[PUSH]: Level = 183
+*******************************************
+
+*******************************************
+[PUSH]: Level = 184
+*******************************************
+
+*******************************************
+[PUSH]: Level = 185
+*******************************************
+
+*******************************************
+[PUSH]: Level = 186
+*******************************************
+
+*******************************************
+[PUSH]: Level = 187
+*******************************************
+
+*******************************************
+[PUSH]: Level = 188
+*******************************************
+
+*******************************************
+[PUSH]: Level = 189
+*******************************************
+
+*******************************************
+[PUSH]: Level = 190
+*******************************************
+
+*******************************************
+[PUSH]: Level = 191
+*******************************************
+
+*******************************************
+[PUSH]: Level = 192
+*******************************************
+
+*******************************************
+[PUSH]: Level = 193
+*******************************************
+
+*******************************************
+[PUSH]: Level = 194
+*******************************************
+
+*******************************************
+[PUSH]: Level = 195
+*******************************************
+
+*******************************************
+[PUSH]: Level = 196
+*******************************************
+
+*******************************************
+[PUSH]: Level = 197
+*******************************************
+
+*******************************************
+[PUSH]: Level = 198
+*******************************************
+
+*******************************************
+[PUSH]: Level = 199
+*******************************************
+
+*******************************************
+[PUSH]: Level = 200
+*******************************************
+
+*******************************************
+[PUSH]: Level = 201
+*******************************************
+
+*******************************************
+[PUSH]: Level = 202
+*******************************************
+
+*******************************************
+[PUSH]: Level = 203
+*******************************************
+
+*******************************************
+[PUSH]: Level = 204
+*******************************************
+
+*******************************************
+[PUSH]: Level = 205
+*******************************************
+
+*******************************************
+[PUSH]: Level = 206
+*******************************************
+
+*******************************************
+[PUSH]: Level = 207
+*******************************************
+
+*******************************************
+[PUSH]: Level = 208
+*******************************************
+
+*******************************************
+[PUSH]: Level = 209
+*******************************************
+
+*******************************************
+[PUSH]: Level = 210
+*******************************************
+
+*******************************************
+[PUSH]: Level = 211
+*******************************************
+
+*******************************************
+[PUSH]: Level = 212
+*******************************************
+
+*******************************************
+[PUSH]: Level = 213
+*******************************************
+
+*******************************************
+[PUSH]: Level = 214
+*******************************************
+
+*******************************************
+[PUSH]: Level = 215
+*******************************************
+
+*******************************************
+[PUSH]: Level = 216
+*******************************************
+
+*******************************************
+[PUSH]: Level = 217
+*******************************************
+
+*******************************************
+[PUSH]: Level = 218
+*******************************************
+
+*******************************************
+[PUSH]: Level = 219
+*******************************************
+
+*******************************************
+[PUSH]: Level = 220
+*******************************************
+
+*******************************************
+[PUSH]: Level = 221
+*******************************************
+
+*******************************************
+[PUSH]: Level = 222
+*******************************************
+
+*******************************************
+[PUSH]: Level = 223
+*******************************************
+
+*******************************************
+[PUSH]: Level = 224
+*******************************************
+
+*******************************************
+[PUSH]: Level = 225
+*******************************************
+
+*******************************************
+[PUSH]: Level = 226
+*******************************************
+
+*******************************************
+[PUSH]: Level = 227
+*******************************************
+
+*******************************************
+[PUSH]: Level = 228
+*******************************************
+
+*******************************************
+[PUSH]: Level = 229
+*******************************************
+
+*******************************************
+[PUSH]: Level = 230
+*******************************************
+
+*******************************************
+[PUSH]: Level = 231
+*******************************************
+
+*******************************************
+[PUSH]: Level = 232
+*******************************************
+
+*******************************************
+[PUSH]: Level = 233
+*******************************************
+
+*******************************************
+[PUSH]: Level = 234
+*******************************************
+
+*******************************************
+[PUSH]: Level = 235
+*******************************************
+
+*******************************************
+[PUSH]: Level = 236
+*******************************************
+
+*******************************************
+[PUSH]: Level = 237
+*******************************************
+
+*******************************************
+[PUSH]: Level = 238
+*******************************************
+
+*******************************************
+[PUSH]: Level = 239
+*******************************************
+
+*******************************************
+[PUSH]: Level = 240
+*******************************************
+
+*******************************************
+[PUSH]: Level = 241
+*******************************************
+
+*******************************************
+[PUSH]: Level = 242
+*******************************************
+
+*******************************************
+[PUSH]: Level = 243
+*******************************************
+
+*******************************************
+[PUSH]: Level = 244
+*******************************************
+
+*******************************************
+[PUSH]: Level = 245
+*******************************************
+
+*******************************************
+[PUSH]: Level = 246
+*******************************************
+
+*******************************************
+[PUSH]: Level = 247
+*******************************************
+
+*******************************************
+[PUSH]: Level = 248
+*******************************************
+
+*******************************************
+[PUSH]: Level = 249
+*******************************************
+
+*******************************************
+[PUSH]: Level = 250
+*******************************************
+
+*******************************************
+[PUSH]: Level = 251
+*******************************************
+
+*******************************************
+[PUSH]: Level = 252
+*******************************************
+
+*******************************************
+[PUSH]: Level = 253
+*******************************************
+
+*******************************************
+[PUSH]: Level = 254
+*******************************************
+
+*******************************************
+[PUSH]: Level = 255
+*******************************************
+
+*******************************************
+[PUSH]: Level = 256
+*******************************************
+
+*******************************************
+[PUSH]: Level = 257
+*******************************************
+
+*******************************************
+[PUSH]: Level = 258
+*******************************************
+
+*******************************************
+[PUSH]: Level = 259
+*******************************************
+
+*******************************************
+[PUSH]: Level = 260
+*******************************************
+
+*******************************************
+[PUSH]: Level = 261
+*******************************************
+
+*******************************************
+[PUSH]: Level = 262
+*******************************************
+
+*******************************************
+[PUSH]: Level = 263
+*******************************************
+
+*******************************************
+[PUSH]: Level = 264
+*******************************************
+
+*******************************************
+[PUSH]: Level = 265
+*******************************************
+
+*******************************************
+[PUSH]: Level = 266
+*******************************************
+
+*******************************************
+[PUSH]: Level = 267
+*******************************************
+
+*******************************************
+[PUSH]: Level = 268
+*******************************************
+
 
 ===============================================
-** cb_new_eq():    "113" = _t_val__t_str0_4_0
+** cb_new_eq():    "125" = _t_val_y1_1_0
 ===============================================
 
 
 ===============================================
-** cb_new_eq():    "aaa" = _t_str0
+** cb_new_eq():    "" = y1
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= _t_str0 aaa) @ 3289
+>> Length added for: (= y1 ) @ 3276
 
->> [simplifyConcatStr 1 @ 979] (Concat _t_str0 cabc)
+>> [simplifyConcatStr 2 @ 1060] (Concat te y1)
 
 ---------------------
-Axiom Add(@999, Level 145):
-(=> (= _t_str0 aaa) (= (Concat _t_str0 cabc) aaacabc))
+Axiom Add(@1080, Level 268):
+(=> (= y1 ) (= (Concat te y1) te))
 ---------------------
 
->> [simplifyConcatStr 2 @ 1014] (Concat (Star y (+ (- 1) m)) _t_str0)
+
+
+>> [simplifyConcatStr 5 @ 1157] (Concat (Concat te y1) stp)
+---------------------
+Axiom Add(@1168, Level 268):
+(=> (= y1 ) (= (Concat (Concat te y1) stp) testp))
+---------------------
 
 
 
 ===============================================
-** cb_new_eq():    "aaacabc" = (Concat _t_str0 cabc)
+** cb_new_eq():    "te" = (Concat te y1)
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= (Concat _t_str0 cabc) aaacabc) @ 3289
+>> Length added for: (= (Concat te y1) te) @ 3276
 
-** solve_concat_eq_str: (Concat _t_str0 cabc) = "aaacabc"
+** solve_concat_eq_str: (Concat te y1) = "te"
+>> [simplifyConcatStr 1 @ 1025] (Concat (Concat te y1) (Concat st y2))
+
+---------------------
+Axiom Add(@1045, Level 268):
+(=> (and (= (Concat te y1) te) (= (Concat st y2) stp))
+    (= (Concat (Concat te y1) (Concat st y2)) testp))
+---------------------
+
+>> [simplifyConcatStr 3 @ 1099] (Concat (Concat te y1) (Concat st y2))
+
+---------------------
+Axiom Add(@1113, Level 268):
+(=> (= (Concat te y1) te) (= (Concat (Concat te y1) (Concat st y2)) testp))
+---------------------
+
+>> [simplifyConcatStr 1 @ 1025] (Concat (Concat te y1) stp)
+
+---------------------
+Axiom Add(@1045, Level 268):
+(=> (= (Concat te y1) te) (= (Concat (Concat te y1) stp) testp))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    "testp" = (Concat (Concat te y1) stp)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat (Concat te y1) stp) testp) @ 3276
+
+** solve_concat_eq_str: (Concat (Concat te y1) stp) = "testp"
+** solve_concat_eq_str: (Concat (Concat te y1) (Concat st y2)) = "testp"
 
 
 
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [145] 
+                cb_final_check @ Level [268] 
 =============================================================
 
 ******************************************
@@ -1178,25 +1992,26 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 (0) alias: variables
 
 (1) var = constStr:
-  y = "aaacabc"
-  _t_str0 = "aaa"
+  x = "testp"
+  y1 = ""
+  y2 = "p"
 
 (2) var = concat:
-  x = { (Concat z cabc), }
-  y = { (Concat _t_str0 cabc), }
-  z = { (Concat (Star y (+ (- 1) m)) _t_str0), }
+  x = { (Concat (Concat te y1) (Concat st y2)), (Concat (Concat te y1) stp), }
 
 (3) concat = constStr:
-  (Concat _t_str0 cabc) = "aaacabc"
+  (Concat te y1) = "te"
+  (Concat st y2) = "stp"
+  (Concat (Concat te y1) (Concat st y2)) = "testp"
 
 (4) eq concats:
+  >> (Concat (Concat te y1) (Concat st y2)) , (Concat (Concat te y1) stp) , 
 
 
 -- Dependence Map -----------------
-x	-->	z(2), 
-y	-->	_t_str0(2), "aaacabc"(1), 
-z	-->	y(2), _t_str0(2), 
-_t_str0	-->	"aaa"(1), "aaacabc"(3), 
+x	-->	y1(2), y2(2), "testp"(1), 
+y1	-->	""(1), "te"(3), "testp"(3), 
+y2	-->	"p"(1), "stp"(5), "testp"(3), 
 -----------------------------------
 
 -- L/R Most Var in eq concat ------
@@ -1205,26 +2020,22 @@ _t_str0	-->	"aaa"(1), "aaacabc"(3),
 -- L/R constraints ----------------
 -----------------------------------
 
-* Free Variables:
-----------------------------------
 
-----------------------------------
-
+ * All non-internal variables are assigned. Done!
 ###########################################################
 
 
 *****************************
 SAT
 -----------------------------
-_t_len__t_str0_2 -> 4
-y -> aaacabc
-_t_val__t_str0_4_0 -> 113
-_t_len__t_str0_3 -> String!val!5
-m -> 1
-_t_len__t_str0_1 -> more
-z -> String!val!4
-_t_str0 -> aaa
-x -> String!val!0
+_t_len_y2_1 -> 1
+_t_len_y1_1 -> 1
+y1 -> 
+_t_len_y1_2 -> String!val!0
+_t_val_y1_1_0 -> 125
+_t_val_y2_1_0 -> 15
+y2 -> p
+x -> testp
 *****************************
 
 ** Reset():

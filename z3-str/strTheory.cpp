@@ -284,7 +284,7 @@ void setAlphabet() {
 /*
  * 
  */
-std::vector<std::string> getStarableFromStart(const std::string & first){
+std::vector<std::string> getStarableFromStart(const std::string & first){//TODO update to format getStarableFromStart(string, regex)
   std::vector<std::string> result;
   for (unsigned int idFirst = 0; idFirst < first.length(); ++ idFirst){
     bool capable = true;
@@ -304,7 +304,7 @@ std::vector<std::string> getStarableFromStart(const std::string & first){
 /*
  * 
  */
-std::vector<std::string> getStarableFromEnd(const std::string & first){
+std::vector<std::string> getStarableFromEnd(const std::string & first){//TODO update to format getStarableFromEnd(string, regex)
   std::vector<std::string> result;
   
   for (unsigned int idFirst = 0; idFirst < first.length(); ++ idFirst){
@@ -502,6 +502,8 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
             } else {
               return my_Z3_ConstStr;
             }
+          } else if (s == td->Regex){
+            return my_Z3_Regex_Var;
           }
         }
       } else {
@@ -1341,7 +1343,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
     }
 
     //---------------------------------------------------------------------
-    // (2) Star( var_Str, const_Int ) = const_Str
+    // (2) Star( var_Str, const_Int ) = const_Str //TODO wrong need to fix
     //---------------------------------------------------------------------
     else if (!isConstStr(t, arg1) && isConstInt(t, arg2)) {
       int const_arg2 = getConstIntValue(t, arg2);
@@ -1420,7 +1422,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
       }
     }
     //---------------------------------------------------------------------
-    // (4) Star(varStr, varInt) = const_Str
+    // (4) Star(varStr, varInt) = const_Str//TODO need to fix
     //---------------------------------------------------------------------
     else {
       int resultStrLen = const_str.length();
@@ -3087,25 +3089,25 @@ void handleNodesEqual(Z3_theory t, Z3_ast v1, Z3_ast v2) {
   // Star(... , ....) = Constant String
   //----------------------------------------------------------
   else if (v1IsStar && v2_Type == my_Z3_ConstStr) {
-    solve_star_eq_str(t, v1, v2);
+//    solve_star_eq_str(t, v1, v2);
   }
   else if (v2IsStar && v1_Type == my_Z3_ConstStr) {
-    solve_star_eq_str(t, v2, v1);
+//    solve_star_eq_str(t, v2, v1);
   }
   //**********************************************************
   // Star(... , ....) = Star(... , ... )
   //----------------------------------------------------------
   else if (v1IsStar && v2IsStar){
-    simplifyStarEq(t, v1, v2);
+//    simplifyStarEq(t, v1, v2);
   }
   //**********************************************************
   // Star(... , ....) = Concat(... , ... )
   //----------------------------------------------------------
   else if (v1IsStar && v2IsConcat){
-    simplifyStarEqConcat(t, v1, v2);
+//    simplifyStarEqConcat(t, v1, v2);
   } 
   else if (v2IsStar && v1IsConcat){
-    simplifyStarEqConcat(t, v2, v1);
+//    simplifyStarEqConcat(t, v2, v1);
   }  
 }
 
@@ -5759,7 +5761,7 @@ Z3_bool cb_reduce_app(Z3_theory t, Z3_func_decl d, unsigned n, Z3_ast const * ar
       Z3_assert_cnstr(ctx, breakDownAst);
     delete[] convertedArgs;
     if (*result != NULL){
-	return Z3_TRUE;
+	      return Z3_TRUE;
     } else {
         return Z3_FALSE;
     }
@@ -5884,6 +5886,7 @@ void cb_delete(Z3_theory t) {
   __debugPrint(logFile, "\n** Delete()\n");
   PATheoryData * td = (PATheoryData *) Z3_theory_get_ext_data(t);
   free(td);
+  __debugPrint(logFile, "\n** Delete()\n")
 }
 
 /*
@@ -5958,6 +5961,9 @@ void display_sort(Z3_theory t, FILE * out, Z3_sort ty) {
     default: {
       if (ty == td->String) {
         fprintf(out, "string");
+        break;
+      } else if (ty == td->Regex){
+        fprintf(out, "regex");
         break;
       } else {
         fprintf(out, "unknown[");
@@ -6145,12 +6151,12 @@ Z3_theory mk_pa_theory(Z3_context ctx) {
   Z3_symbol matches_name = Z3_mk_string_symbol(ctx, "Matches");
   Z3_sort matches_domain[2];
   matches_domain[0] = td->String;
-  matches_domain[1] = td->String;
+  matches_domain[1] = td->Regex;
   td->Matches = Z3_theory_mk_func_decl(ctx, Th, matches_name, 2, matches_domain, BoolSort);
   //---------------------------
   Z3_symbol star_name = Z3_mk_string_symbol(ctx, "Star");
   Z3_sort star_domain[2];
-  star_domain[0] = td->String;
+  star_domain[0] = td->Regex;
   star_domain[1] = IntSort;
   td->Star = Z3_theory_mk_func_decl(ctx, Th, star_name, 2, star_domain, td->String);
   //---------------------------

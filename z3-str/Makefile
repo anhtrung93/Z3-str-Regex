@@ -9,7 +9,7 @@ default: all
 Z3_path = /opt/Workspace/z3-str_ws/z3
 
 JUNK = str
-SOURCE = strTheory.cpp testMain.cpp
+SOURCE = strTheory2.cpp testMain.cpp
 INCLUDE = $(Z3_path)/lib
 LIB = $(Z3_path)/bin/external
 

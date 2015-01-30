@@ -15,7 +15,7 @@ solver = "/opt/Workspace/z3-str_ws/z3-str/str"
 # inputs are saved
 tmpEncodingDir = "/tmp/z3_str_convert"
 clearTempFile = 1
-checkAnswer = 1
+checkAnswer = 0
 #=================================================================== 
 
 encodeDict = {
@@ -378,21 +378,21 @@ if __name__ == '__main__':
       paras = [solver, "-f", convertedVerifyInputFilename]
       
       # run the solver again, check the solution.
-#      err1 = subprocess.check_output(paras, );
-#      if err1.find(">> SAT") != -1:
-#        print "* v-ok" 
-#        sys.stdout.write(outStr)  
-#        eclapse = (time.time() - start)
-#      else:
+      err1 = subprocess.check_output(paras, );
+      if err1.find(">> SAT") != -1:
+        print "* v-ok" 
+        sys.stdout.write(outStr)  
+        eclapse = (time.time() - start)
+      else:
 
-#        print "************************"
-#        print ">> UNKNOWN (2)"
-#        print "************************"
-#      if clearTempFile == 1:
-#        if os.path.exists(verifyInputFilename):
-#          os.remove(verifyInputFilename)
-#        if os.path.exists(convertedVerifyInputFilename):
-#          os.remove(convertedVerifyInputFilename)
+        print "************************"
+        print ">> UNKNOWN (2)"
+        print "************************"
+      if clearTempFile == 1:
+        if os.path.exists(verifyInputFilename):
+          os.remove(verifyInputFilename)
+        if os.path.exists(convertedVerifyInputFilename):
+          os.remove(convertedVerifyInputFilename)
     else:
       sys.stdout.write(outStr)  
       eclapse = (time.time() - start)

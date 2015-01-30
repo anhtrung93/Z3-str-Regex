@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (= x (Star "abb") ) )
+(assert (= x "aaa") )
+  
+(check-sat)
+(get-model)
