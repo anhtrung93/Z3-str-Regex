@@ -1,6 +1,6 @@
 (declare-variable x String)
 
-(assert (= x (Star 'a' 3) ) )
+(assert (= true (Matches x '[abcdefg]aa') ) )
 (assert (= x "aaa") )
   
 (check-sat)

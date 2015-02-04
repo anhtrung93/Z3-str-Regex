@@ -1,10 +1,10 @@
-#include "strTheory2.h"
+#include "strTheory.h"
 
 FILE * logFile = NULL;
 int sLevel = 0;
 int searchStart = 0;
 int tmpStringVarCount = 0;
-int tmpRegexVarCount = 0;
+int tmpRegexVarCount = 0; //OWN CODE
 int tmpIntVarCount = 0;
 int tmpXorVarCount = 0;
 int tmpBoolVarCount = 0;
@@ -12,7 +12,7 @@ int tmpConcatCount = 0;
 bool loopDetected = false;
 
 std::map<std::string, Z3_ast> constStr_astNode_map;
-std::map<std::string, Z3_ast> regex_astNode_map;
+std::map<std::string, Z3_ast> regex_astNode_map; //OWN CODE
 std::map<Z3_ast, Z3_ast> length_astNode_map;
 std::map<Z3_ast, Z3_ast> containsReduced_bool_str_map;
 std::map<Z3_ast, Z3_ast> containsReduced_bool_subStr_map;
@@ -21,7 +21,7 @@ std::map<Z3_ast, Z3_ast> concat_eqc_index;
 
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> concat_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> contains_astNode_map;
-std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> star_astNode_map;
+std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> star_astNode_map; //OWN CODE
 std::map<std::pair<Z3_ast, Z3_ast>, std::map<int, Z3_ast> > varForBreakConcat;
 
 //----------------------------------------------------------------
@@ -284,7 +284,7 @@ void setAlphabet() {
 }
 
 /*
- * 
+ * OWN CODE 
  */
 std::vector<std::string> getStarableFromStart(const std::string & first){//TODO update to format getStarableFromStart(string, regex)
   std::vector<std::string> result;
@@ -304,7 +304,7 @@ std::vector<std::string> getStarableFromStart(const std::string & first){//TODO 
 }
 
 /*
- * 
+ * OWN CODE 
  */
 std::vector<std::string> getStarableFromEnd(const std::string & first){//TODO update to format getStarableFromEnd(string, regex)
   std::vector<std::string> result;
@@ -381,7 +381,7 @@ Z3_ast my_mk_str_value(Z3_theory t, char const * str) {
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast my_mk_regex_value(Z3_theory t, char const * str) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -396,12 +396,15 @@ Z3_ast my_mk_regex_value(Z3_theory t, char const * str) {
 
   std::string keyStr = std::string(str);
   // if the str is not created, create one
-  if (regex_astNode_map.find(keyStr) == regex_astNode_map.end()) {
+  std::map<std::string, Z3_ast>::iterator it = regex_astNode_map.find(keyStr);
+  if (it == regex_astNode_map.end()) {
     Z3_symbol str_sym = Z3_mk_string_symbol(ctx, str);
     Z3_ast strNode = Z3_theory_mk_value(ctx, t, str_sym, td->Regex);
     regex_astNode_map[keyStr] = strNode;
+    return strNode;
+  } else {
+    return it->second;
   }
-  return regex_astNode_map[keyStr];
 }
 
 /*
@@ -416,8 +419,7 @@ Z3_ast my_mk_str_var(Z3_theory t, char const * name) {
 }
 
 /*
- *
-
+ * OWN CODE
  */
 Z3_ast my_mk_regex_var(Z3_theory t, char const * name) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -438,7 +440,7 @@ Z3_ast my_mk_internal_string_var(Z3_theory t) {
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast my_mk_internal_regex_var(Z3_theory t) {
   std::stringstream ss;
@@ -495,7 +497,7 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -504,7 +506,7 @@ Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2) {
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -542,7 +544,7 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
         if (sk == Z3_INT_SORT) {
           if (d == td->Length || d == td->Indexof) {
             return my_Z3_Func;
-          }//TODO
+          }
         } else if (sk == Z3_UNKNOWN_SORT) {
           if (s == td->String) {
             if (d == td->Concat || d == td->SubString || d == td->Replace || d == td->Star) {
@@ -590,7 +592,7 @@ inline bool isConstStr(Z3_theory t, Z3_ast node) {
 }
 
 /*
- *
+ * OWN CODE
  */
 inline bool isConstInt(Z3_theory t, Z3_ast node) {
   int temp;
@@ -603,7 +605,7 @@ inline bool isConstInt(Z3_theory t, Z3_ast node) {
   }
 }
 /*
- *
+ * OWN CODE
  */
 inline bool isValidRegex(Z3_theory t, Z3_ast node){
   std::string regexStr = getRegexValue(t, node);
@@ -615,13 +617,14 @@ inline bool isValidRegex(Z3_theory t, Z3_ast node){
   }
 }
 /*
+ * OWN CODE
  * whether this regex is simple (regex itself is a string))
  */
 inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
   if (! isValidRegex(t, node)){
     return false;
   } else {
-    //TODO
+    //TODO check whether Regex only have concat
     return true;
   }
 }
@@ -682,7 +685,7 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
   if (n1 == NULL || n2 == NULL) {
@@ -692,7 +695,9 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
   Z3_context ctx = Z3_theory_get_context(t);
   PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
   std::pair<Z3_ast, Z3_ast> starKey(n1, n2);
-  if (star_astNode_map.find(starKey) == star_astNode_map.end()) {
+  std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast>::iterator it = star_astNode_map.find(starKey);
+  if (it == star_astNode_map.end()) {
+    Z3_ast starAst = NULL;
     if (isSimpleRegex(t, n1) && isConstInt(t, n2)) {
       int intVal = getConstIntValue(t, n2);
       std::string n1Str = getRegexValue(t, n1);
@@ -700,18 +705,24 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
       for (int id = 0; id < intVal; ++ id){
         result += n1Str;
       }
-      star_astNode_map[starKey] = my_mk_str_value(t, result.c_str());
+      starAst = my_mk_str_value(t, result.c_str());
     } else if (getRegexValue(t, n1) == ""){
-      star_astNode_map[starKey] = n1;
+      starAst = n1;
     } else if (isConstInt(t, n2) && getConstIntValue(t, n2) == 0){
-      star_astNode_map[starKey] = my_mk_str_value(t, "");
+      starAst = my_mk_str_value(t, "");
     } else {
-      star_astNode_map[starKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
+      starAst = mk_2_arg_app(ctx, td->Star, n1, n2);
     }
+    star_astNode_map[starKey] = starAst;
+    return starAst;
+  } else {
+    return it->second;
   }
-  return star_astNode_map[starKey];
 }
 
+/*
+ * OWN CODE
+ */
 bool inStarMap(Z3_theory t, Z3_ast n1, Z3_ast n2) {
   std::pair<Z3_ast, Z3_ast> starKey(n1, n2);
   return (star_astNode_map.find(starKey) != star_astNode_map.end());
@@ -947,7 +958,7 @@ inline bool isConcatFunc(Z3_theory t, Z3_ast n) {
 }
 
 /*
- *
+ * OWN CODE
  */
 inline bool isStarFunc(Z3_theory t, Z3_ast n) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -999,6 +1010,7 @@ std::string getConstStrValue(Z3_theory t, Z3_ast n) {
   return strValue;
 }
 /*
+ * OWN CODE
  * get regex from a term:regex (even it is valid or not)
  */
 std::string getRegexValue(Z3_theory t, Z3_ast n){
@@ -1018,7 +1030,7 @@ std::string getRegexValue(Z3_theory t, Z3_ast n){
 }
 
 /*
- *
+ * OWN CODE
  */
 inline int getConstIntValue(Z3_theory t, Z3_ast n) {
   int result;
@@ -1383,6 +1395,9 @@ bool canTwoNodesEq(Z3_theory t, Z3_ast n1, Z3_ast n2) {
   return true;
 }
 
+/*
+ * OWN CODE
+ */
 //------------------------------------------------------------
 // solve concat of pattern:
 //    constStr == Star( constrStr, constInt )
@@ -1406,7 +1421,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
     Z3_ast arg2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
     
     //---------------------------------------------------------------------
-    // (1) Star(const_Str, const_Int) = const_Str
+    // (1) Star(simple_regex, const_Int) = const_Str
     //---------------------------------------------------------------------
     if (isSimpleRegex(t, arg1) && isConstInt(t, arg2)) {
       int const_arg2 = getConstIntValue(t, arg2);
@@ -1464,7 +1479,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
     }*/
 
     //---------------------------------------------------------------------
-    // (3) Star(const_Str, var_Int) = const_Str
+    // (3) Star(simple_regex, var_Int) = const_Str
     //---------------------------------------------------------------------
     else if (isSimpleRegex(t, arg1)) {
       std::string arg1_str = getRegexValue(t, arg1);
@@ -1810,6 +1825,7 @@ void strEqLengthAxiom(Z3_theory t, Z3_ast varAst, Z3_ast strAst, int line) {
 }
 
 /*
+ * OWN CODE
  * Return a new concat_ast whose arguments are the equivalent constants of the old one
  * Return origin_concat_ast if not
  */
@@ -1845,7 +1861,8 @@ void constantizeConcat(Z3_theory t, Z3_ast origin_concat_ast, Z3_ast & concat_as
 }
 
 /*
- * Handle two equivalent Concats. nn1 and nn2 are two concat functions
+ * OWN CODE
+ * Handle two equivalent Stars. nn1 and nn2 are two star functions
  */
 void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
 #ifdef DEBUGLOG
@@ -2906,6 +2923,7 @@ void simplifyConcatEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
 }
 
 /*
+ * OWN CODE
  * Handle star equals concat. nn1 is a star function and nn2 is a concat one
  */
 void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int duplicateCheck) {
@@ -3119,6 +3137,9 @@ void handleNodesEqual(Z3_theory t, Z3_ast v1, Z3_ast v2) {
   else if (v1IsConcat && v2IsConcat) {
     simplifyConcatEq(t, v1, v2);
   }
+  /*
+   * OWN CODE
+   */
   //**********************************************************
   // Star(... , ....) = Constant String
   //----------------------------------------------------------
@@ -5049,7 +5070,7 @@ std::string convertInputTrickyConstStr(std::string inputStr) {
 }
 
 /*
- *
+ * OWN CODE
  */
 std::string convertInputTrickyRegex(std::string inputRegex) {
   std::string outputStr = "";
@@ -5453,6 +5474,10 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
   }
 }
 
+
+/*
+ * OWN CODE
+ */
 Z3_ast regex_charInBraces(Z3_theory t, std::string charInBraces, Z3_ast & assert){
     Z3_context ctx = Z3_theory_get_context(t);
     Z3_ast or_items[100];//TODO
@@ -5486,6 +5511,9 @@ Z3_ast regex_charInBraces(Z3_theory t, std::string charInBraces, Z3_ast & assert
     return result;
 }
 
+/*
+ * OWN CODE
+ */
 Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
   Z3_context ctx = Z3_theory_get_context(t);
   std::size_t specChar = regexStr.find_first_of("[(|");
@@ -5537,7 +5565,7 @@ Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAss
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -5560,7 +5588,7 @@ Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert
 }
 
 /*
- *
+ * OWN CODE
  */
 Z3_ast reduce_star(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
   if (inStarMap(t, args[0], args[1])) {
@@ -5805,6 +5833,9 @@ Z3_bool cb_reduce_app(Z3_theory t, Z3_func_decl d, unsigned n, Z3_ast const * ar
     return Z3_TRUE;
   }
 
+  /*
+   * OWN CODE
+   */
   //------------------------------------------
   // Reduce app: Matches
   //------------------------------------------
