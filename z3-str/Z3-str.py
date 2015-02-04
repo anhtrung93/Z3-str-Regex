@@ -104,6 +104,22 @@ def encodeConstStr(constStr):
   result = "__cOnStStR_" + result
   return result
 
+def encodeRegex(regex):
+  try:
+    regex = regex.decode('string_escape')      
+  except ValueError, e:
+    print "Error: %s in \"%s\"" % (e, regex)
+    print "Exit..."
+    sys.exit(1) 
+  
+  p = 0
+  result = ""
+  while p < len(regex):
+    cc = encodeDict[ regex[p] ]
+    result = result + cc
+    p += 1
+  result = "__regex_" + result
+  return result
 
 
 varTypeDict = {}
@@ -117,6 +133,7 @@ def convert(org_file, convertedOriginalFile):
 
   declared_string_var = []
   declared_string_const = []
+  declared_regex = []
   converted_cstr = ""  
   
   f_o = open(org_file, 'r')    
@@ -198,6 +215,38 @@ def convert(org_file, convertedOriginalFile):
         declared_string_const.append(encoded_s)
       p1 = p2
     # -----------------------------
+    # ------------------------------------
+    # start: processing regex
+    p1 = -1
+    while True:
+      p1 = line.find('\'', p1 + 1);
+      if p1 == -1:
+        break;
+      
+      # exclude the case "...\"..."
+      p2 = p1 + 1
+      while p2 < len(line):
+        if line[p2] == "\\":
+          if p2 + 1 < len(line) and (line[p2 + 1] == "\'" or line[p2 + 1] == "\\"):
+            p2 = p2 + 2
+            continue
+        elif line[p2] == "\'":
+          break
+        p2 = p2 + 1
+   
+      if p2  >= len(line):
+        print('input format error!\n')
+        print line
+        return "eRrOr"     
+      
+      old_s = line[p1: p2 + 1]
+      encoded_s = encodeRegex( old_s[1 : len(old_s) - 1] )      
+      line = line.replace(old_s, encoded_s)
+      
+      if encoded_s not in declared_string_const:
+        declared_regex.append(encoded_s)
+      p1 = p2
+    # -----------------------------
     # end: processing const string
     converted_cstr = converted_cstr + line + '\n'
   
@@ -208,6 +257,8 @@ def convert(org_file, convertedOriginalFile):
   output_str = output_str + '\n'  
   for str_const in declared_string_const:
     output_str = output_str + '(declare-const ' + str_const + ' String)\n'    
+  for regex in declared_regex:
+    output_str = output_str + '(declare-const ' + regex + ' Regex)\n'    
   output_str = output_str + '\n'
   output_str = output_str + converted_cstr
   # -------------------------------------

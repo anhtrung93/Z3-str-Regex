@@ -9,12 +9,12 @@ default: all
 Z3_path = /opt/Workspace/z3-str_ws/z3
 
 JUNK = str
-SOURCE = strTheory2.cpp testMain.cpp
+SOURCE = strTheory.cpp testMain.cpp
 INCLUDE = $(Z3_path)/lib
 LIB = $(Z3_path)/bin/external
 
 all: $(SOURCE)
-	g++ -O3 -fopenmp -static -I$(INCLUDE) -L$(LIB) $(SOURCE) -lz3 -lrt -o str -Wall
+	g++ -O3 -fopenmp -g -static -I$(INCLUDE) -L$(LIB) $(SOURCE) -lz3 -lrt -o str -Wall
 	@echo ""
 	
 clean:

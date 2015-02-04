@@ -57,8 +57,9 @@ extern std::string inputFile;
  */
 typedef struct _PATheoryData
 {
-    Z3_sort String;
     Z3_sort Regex;
+    Z3_sort String;
+
     Z3_func_decl Concat;
     Z3_func_decl Length;
     Z3_func_decl SubString;
@@ -85,7 +86,7 @@ typedef enum
   my_Z3_Num,         //
   my_Z3_Var,         //
   my_Z3_Str_Var,     //
-  my_Z3_Regex_Var,
+  my_Z3_Regex_Var,   //
   my_Z3_Quantifier,  //
   my_Z3_Unknown      //
 } T_myZ3Type;
@@ -122,6 +123,10 @@ inline bool isConstStr(Z3_theory t, Z3_ast node);
 
 inline bool isConstInt(Z3_theory t, Z3_ast n);
 
+inline bool isValidRegex(Z3_theory t, Z3_ast n);
+
+inline bool isSimpleRegex(Z3_theory t, Z3_ast n);
+
 Z3_ast mk_1_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x);
 
 Z3_ast mk_2_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x, Z3_ast y);
@@ -154,6 +159,8 @@ inline int getConstIntValue(Z3_theory t, Z3_ast n);
 
 std::string getConstStrValue(Z3_theory t, Z3_ast n);
 
+std::string getRegexValue(Z3_theory t, Z3_ast n);
+
 Z3_ast Concat(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
 void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr);
@@ -165,8 +172,6 @@ void getconstStrAstsInNode(Z3_theory t, Z3_ast node, std::list<Z3_ast> & astList
 bool inSameEqc(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
 bool canTwoNodesEq(Z3_theory t, Z3_ast n1, Z3_ast n2);
-
-void constantizeStar(Z3_theory t, Z3_ast origin_star_ast, Z3_ast & star_ast, Z3_ast & axiom);
 
 void constantizeConcat(Z3_theory t, Z3_ast origin_concat_ast, Z3_ast & concat_ast, Z3_ast & axiom);
 
