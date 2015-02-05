@@ -277,5 +277,7 @@ void pa_theory_example();
 
 Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert);
 
+bool isSimpleRegex(std::string regexStr);
+
 #endif
 
