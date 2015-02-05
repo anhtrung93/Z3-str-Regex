@@ -223,7 +223,7 @@ def convert(org_file, convertedOriginalFile):
       if p1 == -1:
         break;
       
-      # exclude the case "...\"..."
+      # exclude the case '...\'...'
       p2 = p1 + 1
       while p2 < len(line):
         if line[p2] == "\\":

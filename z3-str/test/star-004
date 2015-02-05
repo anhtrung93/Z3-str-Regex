@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (= true (Matches x 'asbags{5,67}') ) )
+  
+(check-sat)
+(get-model)
+

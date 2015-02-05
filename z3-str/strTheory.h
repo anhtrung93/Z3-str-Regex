@@ -111,6 +111,8 @@ Z3_ast mk_int(Z3_context ctx, int v);
 
 Z3_ast my_mk_str_value(Z3_theory t, char const * str);
 
+Z3_ast my_mk_regex_value(Z3_theory t, char const * regex);
+
 Z3_ast my_mk_str_var(Z3_theory t, char const * name);
 
 Z3_ast my_mk_internal_string_var(Z3_theory t);
@@ -134,6 +136,8 @@ Z3_ast mk_2_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x, Z3_ast y);
 Z3_ast my_mk_and(Z3_theory t, Z3_ast * item, int count);
 
 Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2);
+
+Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2);
 
 Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2);
 
@@ -268,6 +272,10 @@ int canConcatEqConcat(Z3_theory t, Z3_ast concat1, Z3_ast concat2);
 void doubleCheckForNotContain(Z3_theory t);
 
 void pa_theory_example();
+
+//Parser functions
+
+Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert);
 
 #endif
 

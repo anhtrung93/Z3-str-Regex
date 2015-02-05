@@ -419,16 +419,6 @@ Z3_ast my_mk_str_var(Z3_theory t, char const * name) {
 }
 
 /*
- * OWN CODE
- */
-Z3_ast my_mk_regex_var(Z3_theory t, char const * name) {
-  Z3_context ctx = Z3_theory_get_context(t);
-  PATheoryData * td = (PATheoryData *) Z3_theory_get_ext_data(t);
-  Z3_ast varAst = mk_var(ctx, name, td->Regex);
-  return varAst;
-}
-
-/*
  *
  */
 Z3_ast my_mk_internal_string_var(Z3_theory t) {
@@ -437,17 +427,6 @@ Z3_ast my_mk_internal_string_var(Z3_theory t) {
   tmpStringVarCount++;
   std::string name = "_t_str" + ss.str();
   return my_mk_str_var(t, name.c_str());
-}
-
-/*
- * OWN CODE
- */
-Z3_ast my_mk_internal_regex_var(Z3_theory t) {
-  std::stringstream ss;
-  ss << tmpRegexVarCount;
-  tmpRegexVarCount++;
-  std::string name = "_t_regex" + ss.str();
-  return my_mk_regex_var(t, name.c_str());
 }
 
 /*
@@ -494,6 +473,15 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast and_items[2] = { and1, and2 };
   return Z3_mk_and(ctx, 2, and_items);
+}
+
+/*
+ * OWN CODE
+ */
+Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2) {
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast or_items[2] = { or1, or2 };
+  return Z3_mk_and(ctx, 2, or_items);
 }
 
 /*
@@ -1969,6 +1957,7 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
         addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, nn1, nn2)), __LINE__);
         return;
       }
+      //TODO calculate greatest common divisor of const_nn1_arg0.length() and const_nn2_arg0.length() to simplify below algorithm
       Z3_ast firstMul = mk_2_mul(t, nn1_arg1, mk_int(ctx, const_nn1_arg0.length()));
       Z3_ast secondMul = mk_2_mul(t, nn2_arg1, mk_int(ctx, const_nn2_arg0.length()));
       Z3_ast implyR = Z3_mk_eq(ctx, firstMul, secondMul);
@@ -5474,96 +5463,6 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
   }
 }
 
-
-/*
- * OWN CODE
- */
-Z3_ast regex_charInBraces(Z3_theory t, std::string charInBraces, Z3_ast & assert){
-    Z3_context ctx = Z3_theory_get_context(t);
-    Z3_ast or_items[100];//TODO
-    unsigned int pos = 0;
-    Z3_ast character = my_mk_internal_string_var(t);
-
-    bool startsWithCaret = false;
-    if (charInBraces[0] == '^'){
-      startsWithCaret = true;
-      charInBraces = charInBraces.substr(1);
-    }
-    for (unsigned int id = 0; id < charInBraces.length(); ++ id){
-      if (charInBraces[id] == '-' && id < charInBraces.length() - 1 && id > 0){
-      	char charTemp;
-        //becareful with 4 below lines
-        for (charTemp = charInBraces[id - 1] + 1; charTemp <= charInBraces[id + 1]; ++ charTemp){
-          charInBraces[id - 1] = charTemp;
-          or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, charInBraces.substr(id - 1, 1).c_str())); 
-        }
-        ++id;
-      } else {
-        or_items[pos++] = Z3_mk_eq(ctx, character, my_mk_str_value(t, charInBraces.substr(id, 1).c_str()));
-      }
-    }
-    Z3_ast result = character; assert = Z3_mk_or(ctx, pos, or_items);
-    if (startsWithCaret){
-      assert = Z3_mk_not(ctx, assert);  
-    }    
-    Z3_ast charLen_eq_one = Z3_mk_eq(ctx, mk_int(ctx, 1), mk_length(t, character));
-    assert = mk_2_and(t, charLen_eq_one, assert);
-    return result;
-}
-
-/*
- * OWN CODE
- */
-Z3_ast regex_break_down(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
-  Z3_context ctx = Z3_theory_get_context(t);
-  std::size_t specChar = regexStr.find_first_of("[(|");
-  //TODO rewrite below code
-  if (specChar != std::string::npos){
-    if (regexStr[specChar] == '|'){
-      Z3_ast subRegex[2], subAssert[2];
-      std::string firstStr = regexStr.substr(0, specChar);
-      std::string lastStr = regexStr.substr(specChar + 1);
-      subRegex[0] = regex_break_down(t, firstStr, subAssert[0]);    
-      subRegex[1] = regex_break_down(t, lastStr, subAssert[1]);
-
-      Z3_ast result = my_mk_internal_string_var(t);
-      subAssert[0] = mk_2_and(t, Z3_mk_eq(ctx, result, subRegex[0]), subAssert[0]);
-      subAssert[1] = mk_2_and(t, Z3_mk_eq(ctx, result, subRegex[1]), subAssert[1]);
-      breakDownAssert = Z3_mk_or(ctx, 2, subAssert);
-      return result;
-    } else if (regexStr[specChar] == '['){
-      std::size_t closeBracket = regexStr.find(']', specChar + 1);//+1 to eliminate case []dfasdf]
-      Z3_ast assert[3], result[3];
-  
-      std::string firstStr = regexStr.substr(0, specChar);
-      std::string lastStr = regexStr.substr(closeBracket + 1);
-      std::string listChar = regexStr.substr(specChar + 1, closeBracket - specChar - 1);
-      result[0] = regex_break_down(t, firstStr, assert[0]);    
-      result[2] = regex_break_down(t, lastStr, assert[2]);
-      result[1] = regex_charInBraces(t, listChar, assert[1]);
-  
-      breakDownAssert = Z3_mk_and(ctx, 3, assert);
-      return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
-    } else { //if (regexStr[specChar] == '(')
-      std::size_t closeParenthesis = regexStr.find(')', specChar);
-      Z3_ast assert[3], result[3];
-  
-      std::string firstStr = regexStr.substr(0, specChar);
-      std::string lastStr = regexStr.substr(closeParenthesis + 1);
-      std::string middleStr = regexStr.substr(specChar + 1, closeParenthesis - specChar - 1);
-      result[0] = regex_break_down(t, firstStr, assert[0]);    
-      result[2] = regex_break_down(t, lastStr, assert[2]);
-      result[1] = regex_break_down(t, middleStr, assert[1]);
-  
-      breakDownAssert = Z3_mk_and(ctx, 3, assert);
-      return mk_concat(t, result[0], mk_concat(t, result[1], result[2]));
-    }
-  } else {
-    breakDownAssert = Z3_mk_true(ctx);
-    return my_mk_str_value(t, regexStr.c_str());
-  }
-}
-
 /*
  * OWN CODE
  */
@@ -5582,7 +5481,9 @@ Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert
     }
   } else if (isValidRegex(t, args[1])){
     std::string regexStr = getRegexValue(t, args[1]);
-    reduceAst = Z3_mk_eq(ctx, args[0], regex_break_down(t, regexStr, breakDownAssert));
+    reduceAst = Z3_mk_eq(ctx, args[0], regex_parse(t, regexStr, breakDownAssert));
+  } else { //TODO what if not validRegex??
+    //TODO
   }
   return reduceAst;
 }

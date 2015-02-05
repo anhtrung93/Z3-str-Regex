@@ -1,0 +1,10 @@
+(declare-variable x String)
+(declare-variable n Int)
+(declare-variable b Int)
+
+(assert (= x (Star 'a' n) ) )
+(assert (= x (Star 'aa' b) ) )
+  
+(check-sat)
+(get-model)
+
