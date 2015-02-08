@@ -196,7 +196,7 @@ Z3_ast parseGroup(Z3_theory t, std::string regexStr, Z3_ast & assert){
  * OWN CODE
  * parse for regex with form <union>
  */
-Z3_ast parseUnion(Z3_theory t, std::string regexStr, Z3_ast & assert){
+/*Z3_ast parseUnion(Z3_theory t, std::string regexStr, Z3_ast & assert){
   int unionCharId = (int) regexStr.find("|");
   if (unionCharId == (int) std::string::npos){
 #ifdef DEBUGLOG
@@ -214,7 +214,7 @@ Z3_ast parseUnion(Z3_theory t, std::string regexStr, Z3_ast & assert){
   assert = mk_2_or(t, assert1, assert2);
   
   return result;
-} 
+} */
  
  
 /*
@@ -237,9 +237,9 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
       } else {
         std::string temp = components.top() + regexStr.substr(id, 1); 
         components.pop();
-#ifdef DEBUGLOG
+/*#ifdef DEBUGLOG
       __debugPrint(logFile, ">> regex_parse(): push %s %d\n", temp.c_str(), __LINE__);
-#endif          
+#endif    */      
         components.push(temp);
       }
     } else if (regexStr[id] == ']' || regexStr[id] == '}' || regexStr[id] == ')'){
@@ -265,14 +265,14 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
         tempStr = components.top() + tempStr;
         components.pop();
       }
-#ifdef DEBUGLOG
+/*#ifdef DEBUGLOG
       __debugPrint(logFile, ">> regex_parse(): push %s %d\n", tempStr.c_str(), __LINE__);
-#endif          
+#endif          */
       components.push(tempStr);
     } else {
-#ifdef DEBUGLOG
+/*#ifdef DEBUGLOG
       __debugPrint(logFile, ">> regex_parse(): push %s %d\n", regexStr.substr(id, 1).c_str(), __LINE__);
-#endif  
+#endif  */
       components.push(regexStr.substr(id, 1));
     }
   }
@@ -368,7 +368,7 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
   return result;
 }
 
-bool isSimpleRegex(std::string regexStr){
+bool isSimpleRegex(std::string regexStr){//TODO
   if (regexStr.find_first_of("*+?[](){}|") == std::string::npos){
     return true;
   } else {

@@ -2,8 +2,8 @@
 (declare-variable n Int)
 (declare-variable b Int)
 
-(assert (= x (Star 'a' n) ) )
-(assert (= x (Star 'aa' b) ) )
+(assert (= true (Matches x 'colou?r') ) )
+(assert (= true (EndsWith x "ur") ) )
   
 (check-sat)
 (get-model)

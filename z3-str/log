@@ -1,115 +1,83 @@
-Input file: /tmp/z3_str_convert/star-004
+Input file: /tmp/z3_str_convert/star-005
 
 
 Input loaded:
 -----------------------------------------------
-(= true
-   (Matches x
-            __regex__x61_x73_x62_x28_x61_x67_x73_x29_x7b_x35_x2c_x36_x37_x7d_x7c_x6e_x61_x67_x2a_x7c_x73_x64_x61_x67_x3f_x7c_x64_x66_x61_x68_x2b))
+(= true (Matches x __regex__x0e_x62_x74))
 -----------------------------------------------
 
->> regex_parse(): push a 274
->> regex_parse(): push s 274
+>> regex_parse(): push  274
 >> regex_parse(): push b 274
->> regex_parse(): push ( 274
->> regex_parse(): push a 274
->> regex_parse(): push g 274
->> regex_parse(): push s 274
->> regex_parse(): push (ags) 269
->> regex_parse(): push { 274
->> regex_parse(): push 5 274
->> regex_parse(): push , 274
->> regex_parse(): push 6 274
->> regex_parse(): push 7 274
->> regex_parse(): push (ags){5,67} 269
->> regex_parse(): push | 274
->> regex_parse(): push n 274
->> regex_parse(): push a 274
->> regex_parse(): push g 274
->> regex_parse(): push g* 241
->> regex_parse(): push | 274
->> regex_parse(): push s 274
->> regex_parse(): push d 274
->> regex_parse(): push a 274
->> regex_parse(): push g 274
->> regex_parse(): push g? 241
->> regex_parse(): push | 274
->> regex_parse(): push d 274
->> regex_parse(): push f 274
->> regex_parse(): push a 274
->> regex_parse(): push h 274
->> regex_parse(): push h+ 241
+>> regex_parse(): push t 274
 >> regex_parse(): currentAst = 330
 
-(Star h _t_int_0)
-
->> make_concat: (Concat dfa (Star h _t_int_0))
-
->> regex_parse(): currentAst = 330
-
-(Concat dfa (Star h _t_int_0))
-
->> regex_parse(): push g 274
->> regex_parse(): currentAst = 330
-
-"g"
+"bt"
 
 >> regex_parse(): 364
-"g"
-
->> regex_parse(): currentAst = 330
-
-_t_str0
-
->> make_concat: (Concat sda _t_str0)
-
->> regex_parse(): currentAst = 330
-
-(Concat sda _t_str0)
-
->> regex_parse(): currentAst = 330
-
-(Star g _t_int_1)
-
->> make_concat: (Concat na (Star g _t_int_1))
-
->> regex_parse(): currentAst = 330
-
-(Concat na (Star g _t_int_1))
-
->> regex_parse(): currentAst = 330
-
-(Star (ags) _t_int_2)
-
->> make_concat: (Concat asb (Star (ags) _t_int_2))
-
->> regex_parse(): currentAst = 330
-
-(Concat asb (Star (ags) _t_int_2))
-
->> regex_parse(): 364
-_t_str1
+"bt"
 
 
 ===================
-** cb_reduce_app(): Matches( x, asb(ags){5,67}|nag*|sdag?|dfah+ )  =>  (= x _t_str1)
--- ADD(@5757): 
-(and (and (>= _t_int_0 1)
-          (and (= _t_str0 g) (= _t_str0 ""))
-          (>= _t_int_1 0)
-          (and (>= _t_int_2 5) (<= _t_int_2 67)))
-     (or (= _t_str1 (Concat dfa (Star h _t_int_0)))
-         (= _t_str1 (Concat sda _t_str0))
-         (= _t_str1 (Concat na (Star g _t_int_1)))
-         (= _t_str1 (Concat asb (Star (ags) _t_int_2)))))
+** cb_reduce_app(): Matches( x, bt )  =>  (= x bt)
 ===================
->> cb_reduce_app(): Length( "g" ) = 1
 
->> cb_reduce_app(): concat( "sda" , "g" )
+
+***********************************************
+*               Starting Search               *
+-----------------------------------------------
+(= x bt)
+***********************************************
+>> Input Var Set: x, 
+
+
+===============================================
+** cb_new_eq():    "bt" = x
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= x bt) @ 3335
+
+
+
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [0] 
+=============================================================
+
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
+
+(1) var = constStr:
+  x = "bt"
+
+(2) var = concat:
+
+(3) concat = constStr:
+
+(4) eq concats:
+
+
+-- Dependence Map -----------------
+x	-->	"bt"(1), 
+-----------------------------------
+
+-- L/R Most Var in eq concat ------
+-----------------------------------
+
+-- L/R constraints ----------------
+-----------------------------------
+
+
+ * All non-internal variables are assigned. Done!
+###########################################################
 
 
 *****************************
-UNSAT
+SAT
+-----------------------------
+x -> bt
 *****************************
 
 ** Reset():

@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (= true (Matches x '\x0ebt') ) )
+  
+(check-sat)
+(get-model)
+

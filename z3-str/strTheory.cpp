@@ -481,7 +481,7 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
 Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast or_items[2] = { or1, or2 };
-  return Z3_mk_and(ctx, 2, or_items);
+  return Z3_mk_or(ctx, 2, or_items);
 }
 
 /*
