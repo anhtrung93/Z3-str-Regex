@@ -170,7 +170,11 @@ Z3_ast parseCounter(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert)
     
   } else {
     int repeatTimes = atoi(counterStr.c_str());
-    result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), mk_int(ctx, repeatTimes));
+    std::string new_regex = "";
+    for (int id = 0; id < repeatTimes; ++ id){
+      new_regex += regexStr;
+    }
+    result = regex_parse(t, new_regex, breakDownAssert);
   }
   
   return result;
@@ -190,6 +194,33 @@ Z3_ast parseGroup(Z3_theory t, std::string regexStr, Z3_ast & assert){
   regexStr = regexStr.substr(1, regexStr.length() - 2);
   
   return regex_parse(t, regexStr, assert);
+}
+
+/*
+ * OWN CODE
+ * parse special characters
+ */
+Z3_ast parseSpecialCharacter(Z3_theory t, std::string regexStr, Z3_ast & assert){
+  if (regexStr[0] != '.' || regexStr.length() != 2 || regexStr[0] != '\'){
+#ifdef DEBUGLOG
+      __debugPrint(logFile, ">> parseSpecialCharacter(): %s invalid regex-specialChar Type %d\n", regexStr.c_str(), __LINE__);
+#endif    
+    return NULL;
+  }
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast result = NULL;
+  if (regexStr[0] == '.' && regexStr.length() == 1){
+    result = my_mk_internal_string_var(t);
+    assert = Z3_mk_eq(ctx, mk_length(t, result), mk_int(ctx, 1));
+  } else if (regexStr[1] == 'w'){  //TODO    
+  } else if (regexStr[1] == 'W'){
+  } else if (regexStr[1] == 'd'){
+  } else if (regexStr[1] == 'D'){
+  } else if (regexStr[1] == 's'){
+  } else if (regexStr[1] == 'S'){
+  }
+  
+  return result;
 }
 
 /*
@@ -216,7 +247,6 @@ Z3_ast parseGroup(Z3_theory t, std::string regexStr, Z3_ast & assert){
   return result;
 } */
  
- 
 /*
  * OWN CODE
  */
@@ -228,6 +258,7 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
   }
   std::stack<std::string> components;
   for (int id = 0; id < (int) regexStr.length(); ++ id){
+    //TODO 
     if (regexStr[id] == '*' || regexStr[id] == '?' || regexStr[id] == '+'){
       if (components.size() <= 0){
 #ifdef DEBUGLOG
@@ -327,7 +358,7 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
         }
       }
 #ifdef DEBUGLOG
-    __debugPrint(logFile, ">> regex_parse(): currentAst = %d\n\n", __LINE__);
+    __debugPrint(logFile, ">> regex_parse(): currentAst = %d ", __LINE__);
     printZ3Node(t, currentAst);
     __debugPrint(logFile, "\n\n");
 #endif            
