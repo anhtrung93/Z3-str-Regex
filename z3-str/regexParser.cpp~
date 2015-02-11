@@ -201,7 +201,7 @@ Z3_ast parseGroup(Z3_theory t, std::string regexStr, Z3_ast & assert){
  * parse special characters
  */
 Z3_ast parseSpecialCharacter(Z3_theory t, std::string regexStr, Z3_ast & assert){
-  if (regexStr[0] != '.' || regexStr.length() != 2 || regexStr[0] != '\\'){
+  if (regexStr[0] != '.' || regexStr.length() != 2 || regexStr[0] != '\''){
 #ifdef DEBUGLOG
       __debugPrint(logFile, ">> parseSpecialCharacter(): %s invalid regex-specialChar Type %d\n", regexStr.c_str(), __LINE__);
 #endif    
