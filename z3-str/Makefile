@@ -14,7 +14,7 @@ INCLUDE = $(Z3_path)/lib
 LIB = $(Z3_path)/bin/external
 
 all: $(SOURCE)
-	g++ -O3 -fopenmp -g -static -I$(INCLUDE) -L$(LIB) $(SOURCE) -lz3 -lrt -o str -Wall
+	g++ -O3 -fopenmp -std=c++11 -g -static -I$(INCLUDE) -L$(LIB) $(SOURCE) -lz3 -lrt -o str -Wall
 	@echo ""
 	
 clean:

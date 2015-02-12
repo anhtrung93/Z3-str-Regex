@@ -597,8 +597,7 @@ inline bool isConstInt(Z3_theory t, Z3_ast node) {
  */
 inline bool isValidRegex(Z3_theory t, Z3_ast node){
   std::string regexStr = getRegexValue(t, node);
-  if (regexStr != "__NotRegex__") {
-    //TODO check whether regexStr is a valid one?
+  if (regexStr.compare("__NotRegex__") != 0) {
     return true;
   } else {
     return false;
@@ -606,14 +605,36 @@ inline bool isValidRegex(Z3_theory t, Z3_ast node){
 }
 /*
  * OWN CODE
+ * if it is "__NotRegex__" => notRegex
+ */
+inline bool isValidRegex(std::string regexStr){
+  if (regexStr.compare("__NotRegex__") != 0) {
+    return true;
+  } else {
+    try {
+      std::regex tempRegex(regexStr);
+    } catch(std::regex_error & e){
+      return false;
+    }
+    return true;
+  }
+}
+/*
+ * OWN CODE
  * whether this regex is simple (regex itself is a string))
+ * Alert: TODO for now this one is not right!!!!
  */
 inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
-  if (! isValidRegex(t, node)){
+  std::string regexStr = getRegexValue(t, node);
+  if (! isValidRegex(regexStr)){
     return false;
   } else {
-    //TODO check whether Regex only have concat
-    return true;
+    std::regex regexTemp(regexStr);
+    if (std::regex_match(regexStr, regexTemp)){
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
@@ -999,17 +1020,24 @@ std::string getConstStrValue(Z3_theory t, Z3_ast n) {
 }
 /*
  * OWN CODE
- * get regex from a term:regex (even it is valid or not)
+ * get regex from a term:regex 
+ * if it is not a valid regex return "__NotRegex__"
  */
 std::string getRegexValue(Z3_theory t, Z3_ast n){
   Z3_context ctx = Z3_theory_get_context(t);
   std::string strValue;
   if (getNodeType(t, n) == my_Z3_Regex_Var) {
     char * str = (char *) Z3_ast_to_string(ctx, n);
-    if (strcmp(str, "\'\'") == 0)
+    if (strcmp(str, "\'\'") == 0) {
       strValue = std::string("");
-    else
-      strValue = std::string(str);
+    } else {
+      try {
+        std::regex tempRegex(str);
+        strValue = std::string(str);
+      } catch (std::regex_error & e){
+        strValue == std::string("__NotRegex__");      
+      }
+    }
   } else {
     strValue == std::string("__NotRegex__");
   }
@@ -1404,137 +1432,89 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
   Z3_context ctx = Z3_theory_get_context(t);
   if (isStarFunc(t, starAst) && isConstStr(t, constStr)) {
     std::string const_str = getConstStrValue(t, constStr);
+    int length_const_str = (int) const_str.length();
     
     Z3_ast arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 0);
     Z3_ast arg2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
     
-    //---------------------------------------------------------------------
-    // (1) Star(simple_regex, const_Int) = const_Str
-    //---------------------------------------------------------------------
-    if (isSimpleRegex(t, arg1) && isConstInt(t, arg2)) {
-      int const_arg2 = getConstIntValue(t, arg2);
-      std::string arg1_str = getRegexValue(t, arg1);
-      std::string result_str = "";
-      for (int id = 0; id < const_arg2; ++ id) {
-        result_str += arg1_str;
-      }
-      if (! isTwoStrEqual(result_str, const_str)) {
-        // negate
-        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
-        return;
+    int * * dp = new int * [length_const_str];
+    for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+      dp[id_dp] = new int [length_const_str];
+      for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
+        dp[id_dp][id_dp2] = 0;
       }
     }
-
-    //---------------------------------------------------------------------
-    // (2) Star( var_Str, const_Int ) = const_Str //TODO wrong need to fix
-    //---------------------------------------------------------------------
-/*    else if (!isConstStr(t, arg1) && isConstInt(t, arg2)) {
-      int const_arg2 = getConstIntValue(t, arg2);
-      int resultStrLen = const_str.length();
-      if (const_arg2 != 0 && resultStrLen % const_arg2 != 0) {
-        // negate
-        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
-        return;
-      } else if (const_arg2 == 0) {
-        if (resultStrLen == 0) {
-          //do nothing 
-        } else {
-          // negate
-          Z3_ast negateAst = Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr));
-          addAxiom(t, negateAst, __LINE__);
-          return;
-        }        
-      } else {
-        int arg1StrLen = resultStrLen / const_arg2;
-        std::string arg1_str = const_str.substr(0, arg1StrLen);
-        std::string result_str = "";
-        for (int id = 0; id < const_arg2; ++ id) {
-          result_str += arg1_str;
-        }
-        if (isTwoStrEqual(result_str, const_str) != true) {
-          // negate
-          Z3_ast negateAst = Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr));
-          addAxiom(t, negateAst, __LINE__);
-          return;
-        } else {
-          Z3_ast tmpStrConst = my_mk_str_value(t, arg1_str.c_str());
-          Z3_ast implyL = Z3_mk_eq(ctx, starAst, constStr);
-          Z3_ast implyR = Z3_mk_eq(ctx, arg1, tmpStrConst);
-          strEqLengthAxiom(t, arg1, tmpStrConst, __LINE__);
-          addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-        }
-      }
-    }*/
-
-    //---------------------------------------------------------------------
-    // (3) Star(simple_regex, var_Int) = const_Str
-    //---------------------------------------------------------------------
-    else if (isSimpleRegex(t, arg1)) {
-      std::string arg1_str = getRegexValue(t, arg1);
-      int resultStrLen = const_str.length();
-      int arg1StrLen = arg1_str.length();
-      if (arg1StrLen != 0 && resultStrLen % arg1StrLen != 0) {
-        // negate
-        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
-        return;
-      } else if (arg1StrLen == 0) {
-        if (resultStrLen == 0) {
-          //do nothing  
-        } else {
-          // negate
-          Z3_ast negateAst = Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr));
-          addAxiom(t, negateAst, __LINE__);
-          return;
-        }
-      } else {
-        int const_arg2 = resultStrLen / arg1StrLen;
-        std::string result_str = "";
-        for (int id = 0; id < const_arg2; ++ id) {
-          result_str += arg1_str;
-        }
-        if (isTwoStrEqual(result_str, const_str) != true) {
-          // negate
-          Z3_ast negateAst = Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr));
-          addAxiom(t, negateAst, __LINE__);
-          return;
-        } else {
-          Z3_ast implyL = Z3_mk_eq(ctx, starAst, constStr);
-          Z3_ast implyR = Z3_mk_eq(ctx, arg2, mk_int(ctx, const_arg2));
-          addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-        }
-      }
+    
+    std::string regexStr = getRegexValue(t, arg1);
+    if (! isValidRegex(regexStr)){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, " invalid regular expression: ");
+  printZ3Node(t, arg1);
+  __debugPrint(logFile, "\n");
+#endif
+      return;
     }
-    //---------------------------------------------------------------------
-    // (4) Star(varStr, varInt) = const_Str//TODO need to fix
-    //---------------------------------------------------------------------
-/*    else {
-      int resultStrLen = const_str.length();
+    
+    std::regex regexTemp(regexStr);
+    std::string strTemp;
+    
+    for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+      strTemp = const_str.substr(0, id_dp + 1);
+      if (std::regex_match(strTemp, regexTemp)){
+        dp[id_dp][0] = 1;
+      }
+//#ifdef DEBUGLOG
+//  __debugPrint(logFile, "%d ", dp[id_dp][0]);
+//#endif
       
-      int countOrAst = 0;
-      Z3_ast * or_items = new Z3_ast[resultStrLen + 1];
-      
-      for (int divisor = 1; divisor <= resultStrLen; ++ divisor){
-        if (resultStrLen % divisor == 0){
-          std::string subStr = const_str.substr(0, resultStrLen / divisor);
-          std::string temp = "";
-          for (int id = 0; id < divisor; ++ id){
-            temp += subStr;
-          }
-          if (temp == const_str){
-            Z3_ast subStrArg1 = my_mk_str_value(t, subStr.c_str());
-            Z3_ast intArg2 = mk_int(ctx, divisor);
-            or_items[countOrAst] = mk_2_and(t, Z3_mk_eq(ctx, arg1, subStrArg1), Z3_mk_eq(ctx, arg2, intArg2));
-            ++ countOrAst;
+      for (int id_const_str = 0; id_const_str < id_dp; ++ id_const_str){
+        strTemp = const_str.substr(id_const_str + 1, id_dp - id_const_str);
+        if (std::regex_match(strTemp, regexTemp)){
+          for (int id_dp2 = 0; id_dp2 < length_const_str - 1; ++ id_dp2){
+            dp[id_dp][id_dp2 + 1] = dp[id_const_str][id_dp2];
+//#ifdef DEBUGLOG
+//  __debugPrint(logFile, "%d ", dp[id_dp][id_dp2 + 1]);
+//#endif
           }
         }
       }
-      
-      Z3_ast implyL = Z3_mk_eq(ctx, starAst, constStr);
-      Z3_ast implyR = Z3_mk_or(ctx, countOrAst, or_items);
-      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);          
-
-      delete[] or_items;
-    }*/
+//#ifdef DEBUGLOG
+//  __debugPrint(logFile, "\n");
+//#endif
+    }
+    
+    if (isConstInt(t, arg2)){
+      int const_arg2 = getConstIntValue(t, arg2);
+      if (dp[length_const_str - 1][const_arg2 - 1] <= 0){
+        // negate
+        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
+      } 
+    } else {
+      bool result = false;
+      for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
+        if (dp[length_const_str - 1][id_dp2] > 0){
+          addAxiom(t, Z3_mk_eq(ctx, arg2, mk_int(ctx, id_dp2 + 1)), __LINE__);
+          result = true;
+          break;
+        }
+      }
+      if (! result){
+        // negate
+        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
+      }
+    }
+    
+    for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+      delete[] dp[id_dp];
+    }
+    delete[] dp;
+    
+    return;
+  } else {
+#ifdef DEBUGLOG
+  __debugPrint(logFile, " invalid starFunction or invalid constStr");
+#endif
+    return;
   }
 }
 
@@ -5469,17 +5449,18 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
 Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast reduceAst = NULL;
-  if ( isConstStr(t, args[0]) && isValidRegex(t, args[1])) {
+  std::string arg1Str = getRegexValue(t, args[1]);
+  if ( isConstStr(t, args[0]) && isValidRegex(arg1Str)) {
     std::string arg0Str = getConstStrValue(t, args[0]);
-    std::string arg1Str = getRegexValue(t, args[1]);
-    if (arg0Str.compare(arg1Str) != 0) {//TODO change compare to regex_matches
+    std::regex arg1Regex (arg1Str);
+    if (! std::regex_match(arg0Str, arg1Regex)) {
       reduceAst = Z3_mk_false(ctx);
       breakDownAssert = NULL;
     } else {
       reduceAst = Z3_mk_true(ctx);
       breakDownAssert = NULL;
     }
-  } else if (isValidRegex(t, args[1])){
+  } else if (isValidRegex(arg1Str)){
     std::string regexStr = getRegexValue(t, args[1]);
     reduceAst = Z3_mk_eq(ctx, args[0], regex_parse(t, regexStr, breakDownAssert));
   } else { //TODO what if not validRegex??

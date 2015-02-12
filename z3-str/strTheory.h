@@ -21,6 +21,7 @@
 #include <utility>
 #include <limits.h>
 #include <iostream>
+#include <regex>
 
 #include "z3.h"
 
@@ -126,6 +127,8 @@ inline bool isConstStr(Z3_theory t, Z3_ast node);
 inline bool isConstInt(Z3_theory t, Z3_ast n);
 
 inline bool isValidRegex(Z3_theory t, Z3_ast n);
+
+inline bool isValidRegex(std::string regexStr);
 
 inline bool isSimpleRegex(Z3_theory t, Z3_ast n);
 
