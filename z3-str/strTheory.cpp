@@ -389,7 +389,7 @@ Z3_ast my_mk_regex_value(Z3_theory t, char const * str) {
 
   // if the empty regex is not created, create one
   if (regex_astNode_map.find("") == regex_astNode_map.end()) {
-    Z3_symbol empty_str_sym = Z3_mk_string_symbol(ctx, "\"\"");
+    Z3_symbol empty_str_sym = Z3_mk_string_symbol(ctx, "\'\'");
     Z3_ast emptyStrNode = Z3_theory_mk_value(ctx, t, empty_str_sym, td->Regex);
     regex_astNode_map[""] = emptyStrNode;
   }
@@ -715,7 +715,7 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
         result += n1Str;
       }
       starAst = my_mk_str_value(t, result.c_str());
-    } else if (getRegexValue(t, n1) == ""){
+    } else if (getRegexValue(t, n1).compare("") == 0){
       starAst = n1;
     } else if (isConstInt(t, n2) && getConstIntValue(t, n2) == 0){
       starAst = my_mk_str_value(t, "");
@@ -1014,9 +1014,44 @@ std::string getConstStrValue(Z3_theory t, Z3_ast n) {
     else
       strValue = std::string(str);
   } else {
-    strValue == std::string("__NotConstStr__");
+    strValue = std::string("__NotConstStr__");
   }
   return strValue;
+}
+/*
+ * OWN CODE
+ * get regex code error
+ */
+void printRegexError(std::regex_error & e){
+#ifdef DEBUGLOG
+  if (e.code() == std::regex_constants::error_brack){
+    __debugPrint(logFile, "error_brack");
+  } else        if (e.code() == std::regex_constants::error_collate){
+    __debugPrint(logFile, "error_collate");
+  } else         if (e.code() == std::regex_constants::error_ctype){
+    __debugPrint(logFile, "error_ctype");
+  } else         if (e.code() == std::regex_constants::error_escape){
+    __debugPrint(logFile, "error_escape");
+  } else         if (e.code() == std::regex_constants::error_backref){
+    __debugPrint(logFile, "error_backref");
+  } else         if (e.code() == std::regex_constants::error_paren){
+    __debugPrint(logFile, "error_paren");
+  } else         if (e.code() == std::regex_constants::error_brace){
+    __debugPrint(logFile, "error_brace");
+  } else         if (e.code() == std::regex_constants::error_badbrace){
+    __debugPrint(logFile, "error_badbrace");
+  } else         if (e.code() == std::regex_constants::error_range){
+    __debugPrint(logFile, "error_range");
+  } else         if (e.code() == std::regex_constants::error_space){
+    __debugPrint(logFile, "error_space");
+  } else         if (e.code() == std::regex_constants::error_badrepeat){
+    __debugPrint(logFile, "error_badrepeat");
+  } else         if (e.code() == std::regex_constants::error_complexity){
+    __debugPrint(logFile, "error_complexity");
+  } else         if (e.code() == std::regex_constants::error_stack){
+    __debugPrint(logFile, "error_stack");
+  }           
+#endif
 }
 /*
  * OWN CODE
@@ -1032,14 +1067,14 @@ std::string getRegexValue(Z3_theory t, Z3_ast n){
       strValue = std::string("");
     } else {
       try {
-        std::regex tempRegex(str);
         strValue = std::string(str);
+        std::regex tempRegex(strValue);
       } catch (std::regex_error & e){
-        strValue == std::string("__NotRegex__");      
+        strValue = std::string("__NotRegex__");      
       }
     }
   } else {
-    strValue == std::string("__NotRegex__");
+     strValue = std::string("__NotRegex__");      
   }
 
   return strValue;
@@ -1490,18 +1525,24 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
         addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
       } 
     } else {
-      bool result = false;
+      Z3_ast * or_items = new Z3_ast[length_const_str];
+      int countOr = 0;
+      Z3_ast implyL = Z3_mk_eq(ctx, starAst, constStr);
       for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
         if (dp[length_const_str - 1][id_dp2] > 0){
-          addAxiom(t, Z3_mk_eq(ctx, arg2, mk_int(ctx, id_dp2 + 1)), __LINE__);
-          result = true;
-          break;
+          or_items[countOr++] = Z3_mk_eq(ctx, arg2, mk_int(ctx, id_dp2 + 1));
         }
       }
-      if (! result){
+      if (countOr == 0){
         // negate
-        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, starAst, constStr)), __LINE__);
+        addAxiom(t, Z3_mk_not(ctx, implyL), __LINE__);
+      } else if (countOr == 1){
+        addAxiom(t, Z3_mk_implies(ctx, implyL, or_items[0]), __LINE__);
+      } else {
+        Z3_ast implyR = Z3_mk_or(ctx, countOr, or_items);
+        addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
       }
+      delete[] or_items;
     }
     
     for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
@@ -5489,6 +5530,11 @@ Z3_ast reduce_star(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
     }
     reduceAst = my_mk_str_value(t, result.c_str());
   } else if (! isValidRegex(t, args[0])){
+#ifdef DEBUGLOG
+      __debugPrint(logFile, ">> reduce_star(): not a valid regex (");
+      printZ3Node(t, args[0]);
+      __debugPrint(logFile, " )\n\n");
+#endif    
     reduceAst = Z3_mk_false(ctx);//TODO check this: If regex is not valid, star function fails
     breakDownAssert = NULL;
   } else {

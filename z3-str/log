@@ -3,16 +3,16 @@ Input file: /tmp/z3_str_convert/star-002
 
 Input loaded:
 -----------------------------------------------
-(and (= x (Star __regex__x61 n)) (= x __cOnStStR__x61_x61_x61))
+(and (= x (Star __regex__x2e n)) (= x __cOnStStR__x61_x61_x61))
 -----------------------------------------------
 
 
 ===================
-** cb_reduce_app(): Star( a, n )  =>  (Star a n)
+** cb_reduce_app(): Star( ., n )  =>  (Star . n)
 ===================
 >> cb_reduce_eq: (= x aaa)
 
->> Length added for: (= x aaa) @ 5110
+>> Length added for: (= x aaa) @ 5151
 
 >> cb_reduce_app(): Length( "aaa" ) = 3
 
@@ -21,7 +21,7 @@ Input loaded:
 ***********************************************
 *               Starting Search               *
 -----------------------------------------------
-(and (= x aaa) (= aaa (Star a n)))
+(and (= x aaa) (= aaa (Star . n)))
 ***********************************************
 >> Input Var Set: x, 
 
@@ -31,24 +31,21 @@ Input loaded:
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= x aaa) @ 3315
+>> Length added for: (= x aaa) @ 3356
 
 
 
 ===============================================
-** cb_new_eq():    "aaa" = (Star a n)
+** cb_new_eq():    "aaa" = (Star . n)
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= (Star a n) aaa) @ 3315
+>> Length added for: (= (Star . n) aaa) @ 3356
 
-** solve_star_eq_str: (Star a n) = "aaa"
-1 
-0 1 0 
-0 0 1 
+** solve_star_eq_str: (Star . n) = "aaa"
 ---------------------
-Axiom Add(@1496, Level 0):
-(= n 3)
+Axiom Add(@1540, Level 0):
+(=> (= (Star . n) aaa) (= n 3))
 ---------------------
 
 
