@@ -1083,6 +1083,13 @@ std::string getRegexValue(Z3_theory t, Z3_ast n){
 /*
  * OWN CODE
  */
+std::string getStringMatchesSimpleRegex(Z3_theory t, Z3_ast n){
+  return getRegexValue(t, n);//TODO change this
+}
+
+/*
+ * OWN CODE
+ */
 inline int getConstIntValue(Z3_theory t, Z3_ast n) {
   int result;
   Z3_context ctx = Z3_theory_get_context(t);
@@ -1939,11 +1946,11 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
     if (isSimpleRegex(t, nn2_arg0) && isConstInt(t, nn2_arg1)){
       solve_star_eq_str(t, nn1, mk_star(t, nn2_arg0, nn2_arg1));    
     } else if (isSimpleRegex(t, nn2_arg0) && !isConstInt(t, nn2_arg1)){
-      //*********************************************************************//
-      //  case 1: star(const_str1, var_int1) = star(constr_str2, var_int2)   //
-      //*********************************************************************//
-      std::string const_nn1_arg0 = getRegexValue(t, nn1_arg0);
-      std::string const_nn2_arg0 = getRegexValue(t, nn2_arg0);
+      //**********************************************************************************//
+      //  case 1: star(simple_regex_var1, var_int1) = star(simple_regex_var2, var_int2)   //
+      //**********************************************************************************//
+      std::string const_nn1_arg0 = getStringMatchesSimpleRegex(t, nn1_arg0);
+      std::string const_nn2_arg0 = getStringMatchesSimpleRegex(t, nn2_arg0);
       std::string smallStr, bigStr;
       if (const_nn1_arg0.length() < const_nn2_arg0.length()){
         smallStr = const_nn1_arg0;
@@ -1978,15 +1985,15 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
         addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, nn1, nn2)), __LINE__);
         return;
       }
-      //TODO calculate greatest common divisor of const_nn1_arg0.length() and const_nn2_arg0.length() to simplify below algorithm
+      //TODO calculate greatest common divisor of const_nn1_arg0.length() and const_nn2_arg0.length() to simplify below constraint
       Z3_ast firstMul = mk_2_mul(t, nn1_arg1, mk_int(ctx, const_nn1_arg0.length()));
       Z3_ast secondMul = mk_2_mul(t, nn2_arg1, mk_int(ctx, const_nn2_arg0.length()));
       Z3_ast implyR = Z3_mk_eq(ctx, firstMul, secondMul);
       addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
     } else {
-      //*********************************************************************//
-      //  case 2: star(const_str1, var_int1) = star(var_str1, var_int2)      //
-      //*********************************************************************//
+      //******************************************************************************//
+      //  case 2: star(simple_regex_var2, var_int1) = star(regex_var1, var_int2)      //
+      //******************************************************************************//
       
     }
   }
@@ -3011,10 +3018,10 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       solve_concat_eq_str(t, new_concat, mk_star(t, star_arg0, star_arg1));
     } else if (isSimpleRegex(t, star_arg0) && ! isConstInt(t, star_arg1)){
       //*********************************************************************//
-      //  case 1: star(const_str1, var_int) = concat(var_str, constr_str2)   //
+      //  case 1: star(simple_regex_var1, var_int) = concat(var_str, constr_str2)   //
       //*********************************************************************//
       
-      std::string const_star_arg0 = getRegexValue(t, star_arg0);
+/*      std::string const_star_arg0 = getStringMatchesSimpleRegex(t, star_arg0);
       std::string const_concat_arg1 = getConstStrValue(t, concat_arg1);
       if (const_star_arg0.length() == 0){
         if (const_concat_arg1.length() != 0){
@@ -3056,7 +3063,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       
       Z3_ast implyR = mk_2_and(t, mainImplyR, additionalAxiom);
       
-      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);*/
     } else if (! isSimpleRegex(t, star_arg0)){
       //*****************************************************************************//
       //  case 2: star(var_str1, const_int/var_int) = concat(var_str, constr_str2)   //TODO

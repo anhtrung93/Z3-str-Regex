@@ -168,6 +168,8 @@ std::string getConstStrValue(Z3_theory t, Z3_ast n);
 
 std::string getRegexValue(Z3_theory t, Z3_ast n);
 
+std::string getStringMatchesSimpleRegex(Z3_theory t, Z3_ast n);
+
 Z3_ast Concat(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
 void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr);

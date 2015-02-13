@@ -1,95 +1,31 @@
-Input file: /tmp/z3_str_convert/star-002
+Input file: /tmp/z3_str_convert/star-001
 
 
 Input loaded:
 -----------------------------------------------
-(and (= x (Star __regex__x2e n)) (= x __cOnStStR__x61_x61_x61))
+(and (= true
+        (Matches x __regex__x5c_x5b_x61_x62_x63_x64_x65_x66_x67_x5c_x5d_x61_x61))
+     (= x __cOnStStR__x61_x61_x61))
 -----------------------------------------------
+
+>> regex_parse(): currentAst = 361 "__NotRegex__"
+
+>> regex_parse(): 395
+"__NotRegex__"
 
 
 ===================
-** cb_reduce_app(): Star( ., n )  =>  (Star . n)
+** cb_reduce_app(): Matches( x, \[abcdefg\]aa )  =>  (= x __NotRegex__)
 ===================
 >> cb_reduce_eq: (= x aaa)
 
 >> Length added for: (= x aaa) @ 5151
 
->> cb_reduce_app(): Length( "aaa" ) = 3
-
-
-
-***********************************************
-*               Starting Search               *
------------------------------------------------
-(and (= x aaa) (= aaa (Star . n)))
-***********************************************
->> Input Var Set: x, 
-
-
-===============================================
-** cb_new_eq():    "aaa" = x
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= x aaa) @ 3356
-
-
-
-===============================================
-** cb_new_eq():    "aaa" = (Star . n)
-===============================================
->> New_eq Check: PASS
-
->> Length added for: (= (Star . n) aaa) @ 3356
-
-** solve_star_eq_str: (Star . n) = "aaa"
----------------------
-Axiom Add(@1540, Level 0):
-(=> (= (Star . n) aaa) (= n 3))
----------------------
-
-
-
-
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [0] 
-=============================================================
-
-******************************************
-       Dependence Analysis
-------------------------------------------
-(0) alias: variables
-
-(1) var = constStr:
-  x = "aaa"
-
-(2) var = concat:
-
-(3) concat = constStr:
-
-(4) eq concats:
-
-
--- Dependence Map -----------------
-x	-->	"aaa"(1), 
------------------------------------
-
--- L/R Most Var in eq concat ------
------------------------------------
-
--- L/R constraints ----------------
------------------------------------
-
-
- * All non-internal variables are assigned. Done!
-###########################################################
+>> cb_reduce_app(): Length( "__NotRegex__" ) = 12
 
 
 *****************************
-SAT
------------------------------
-x -> aaa
-n -> 3
+UNSAT
 *****************************
 
 ** Reset():
