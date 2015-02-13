@@ -21,7 +21,7 @@
 #include <utility>
 #include <limits.h>
 #include <iostream>
-#include <regex>
+#include <boost/regex.hpp>
 
 #include "z3.h"
 
@@ -165,6 +165,8 @@ inline bool isConcatFunc(Z3_theory t, Z3_ast n);
 inline int getConstIntValue(Z3_theory t, Z3_ast n);
 
 std::string getConstStrValue(Z3_theory t, Z3_ast n);
+
+void printRegexError(boost::regex_error & e);
 
 std::string getRegexValue(Z3_theory t, Z3_ast n);
 

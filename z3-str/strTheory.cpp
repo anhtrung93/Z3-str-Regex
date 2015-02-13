@@ -612,8 +612,9 @@ inline bool isValidRegex(std::string regexStr){
     return true;
   } else {
     try {
-      std::regex tempRegex(regexStr);
-    } catch(std::regex_error & e){
+      boost::regex tempRegex(regexStr);
+    } catch(boost::regex_error & e){
+      printRegexError(e);
       return false;
     }
     return true;
@@ -629,8 +630,8 @@ inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
   if (! isValidRegex(regexStr)){
     return false;
   } else {
-    std::regex regexTemp(regexStr);
-    if (std::regex_match(regexStr, regexTemp)){
+    boost::regex regexTemp(regexStr);
+    if (boost::regex_match(regexStr, regexTemp)){
       return true;
     } else {
       return false;
@@ -1022,33 +1023,33 @@ std::string getConstStrValue(Z3_theory t, Z3_ast n) {
  * OWN CODE
  * get regex code error
  */
-void printRegexError(std::regex_error & e){
+void printRegexError(boost::regex_error & e){
 #ifdef DEBUGLOG
-  if (e.code() == std::regex_constants::error_brack){
+  if (e.code() == boost::regex_constants::error_brack){
     __debugPrint(logFile, "error_brack");
-  } else        if (e.code() == std::regex_constants::error_collate){
+  } else        if (e.code() == boost::regex_constants::error_collate){
     __debugPrint(logFile, "error_collate");
-  } else         if (e.code() == std::regex_constants::error_ctype){
+  } else         if (e.code() == boost::regex_constants::error_ctype){
     __debugPrint(logFile, "error_ctype");
-  } else         if (e.code() == std::regex_constants::error_escape){
+  } else         if (e.code() == boost::regex_constants::error_escape){
     __debugPrint(logFile, "error_escape");
-  } else         if (e.code() == std::regex_constants::error_backref){
+  } else         if (e.code() == boost::regex_constants::error_backref){
     __debugPrint(logFile, "error_backref");
-  } else         if (e.code() == std::regex_constants::error_paren){
+  } else         if (e.code() == boost::regex_constants::error_paren){
     __debugPrint(logFile, "error_paren");
-  } else         if (e.code() == std::regex_constants::error_brace){
+  } else         if (e.code() == boost::regex_constants::error_brace){
     __debugPrint(logFile, "error_brace");
-  } else         if (e.code() == std::regex_constants::error_badbrace){
+  } else         if (e.code() == boost::regex_constants::error_badbrace){
     __debugPrint(logFile, "error_badbrace");
-  } else         if (e.code() == std::regex_constants::error_range){
+  } else         if (e.code() == boost::regex_constants::error_range){
     __debugPrint(logFile, "error_range");
-  } else         if (e.code() == std::regex_constants::error_space){
+  } else         if (e.code() == boost::regex_constants::error_space){
     __debugPrint(logFile, "error_space");
-  } else         if (e.code() == std::regex_constants::error_badrepeat){
+  } else         if (e.code() == boost::regex_constants::error_badrepeat){
     __debugPrint(logFile, "error_badrepeat");
-  } else         if (e.code() == std::regex_constants::error_complexity){
+  } else         if (e.code() == boost::regex_constants::error_complexity){
     __debugPrint(logFile, "error_complexity");
-  } else         if (e.code() == std::regex_constants::error_stack){
+  } else         if (e.code() == boost::regex_constants::error_stack){
     __debugPrint(logFile, "error_stack");
   }           
 #endif
@@ -1068,8 +1069,9 @@ std::string getRegexValue(Z3_theory t, Z3_ast n){
     } else {
       try {
         strValue = std::string(str);
-        std::regex tempRegex(strValue);
-      } catch (std::regex_error & e){
+        boost::regex tempRegex(strValue);
+      } catch (boost::regex_error & e){
+        printRegexError(e);
         strValue = std::string("__NotRegex__");      
       }
     }
@@ -1497,12 +1499,12 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
       return;
     }
     
-    std::regex regexTemp(regexStr);
+    boost::regex regexTemp(regexStr);
     std::string strTemp;
     
     for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
       strTemp = const_str.substr(0, id_dp + 1);
-      if (std::regex_match(strTemp, regexTemp)){
+      if (boost::regex_match(strTemp, regexTemp)){
         dp[id_dp][0] = 1;
       }
 //#ifdef DEBUGLOG
@@ -1511,7 +1513,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
       
       for (int id_const_str = 0; id_const_str < id_dp; ++ id_const_str){
         strTemp = const_str.substr(id_const_str + 1, id_dp - id_const_str);
-        if (std::regex_match(strTemp, regexTemp)){
+        if (boost::regex_match(strTemp, regexTemp)){
           for (int id_dp2 = 0; id_dp2 < length_const_str - 1; ++ id_dp2){
             dp[id_dp][id_dp2 + 1] = dp[id_const_str][id_dp2];
 //#ifdef DEBUGLOG
@@ -3009,7 +3011,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
   
   //TODO need understand this part in simplifyConcatEq and add here
   
-  Z3_ast implyL = Z3_mk_eq(ctx, starAst, new_concat);
+  //Z3_ast implyL = Z3_mk_eq(ctx, starAst, new_concat);
   
   if (isConstStr(t, concat_arg0) && isConstStr(t, concat_arg1)){
     solve_star_eq_str(t, starAst, mk_concat(t, concat_arg0, concat_arg1));
@@ -5500,8 +5502,8 @@ Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert
   std::string arg1Str = getRegexValue(t, args[1]);
   if ( isConstStr(t, args[0]) && isValidRegex(arg1Str)) {
     std::string arg0Str = getConstStrValue(t, args[0]);
-    std::regex arg1Regex (arg1Str);
-    if (! std::regex_match(arg0Str, arg1Regex)) {
+    boost::regex arg1Regex (arg1Str);
+    if (! boost::regex_match(arg0Str, arg1Regex)) {
       reduceAst = Z3_mk_false(ctx);
       breakDownAssert = NULL;
     } else {

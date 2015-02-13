@@ -7,14 +7,17 @@ default: all
 #      "/home/work/tool/z3/z3_src_4.1.1"
 # -------------------------------------------------------------------
 Z3_path = /opt/Workspace/z3-str_ws/z3
+Boost_path = /opt/Workspace/boost_1_57_0
 
 JUNK = str
 SOURCE = strTheory.cpp regexParser.cpp testMain.cpp
-INCLUDE = $(Z3_path)/lib
-LIB = $(Z3_path)/bin/external
+INCLUDE_Z3 = $(Z3_path)/lib
+INCLUDE_BOOST = $(Boost_path)
+LIB_Z3 = $(Z3_path)/bin/external
+LIB_BOOST = $(Boost_path)/lib/libboost_regex.a
 
 all: $(SOURCE)
-	g++ -O3 -fopenmp -std=c++11 -g -static -I$(INCLUDE) -L$(LIB) $(SOURCE) -lz3 -lrt -o str -Wall
+	g++ -O3 -fopenmp -g -static -I$(INCLUDE_Z3) -I$(INCLUDE_BOOST) -L$(LIB_Z3) $(SOURCE) -lz3 -lrt -o str -Wall $(LIB_BOOST)
 	@echo ""
 	
 clean:

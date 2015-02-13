@@ -1,7 +1,7 @@
 (declare-variable x String)
 (declare-variable n Int)
 
-(assert (= x (Star '.' n) ) )
+(assert (= x (Star '[abc]' n) ) )
 (assert (= x "aaa") )
   
 (check-sat)

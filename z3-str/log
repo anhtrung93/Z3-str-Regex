@@ -1,31 +1,78 @@
-Input file: /tmp/z3_str_convert/star-001
+Input file: /tmp/z3_str_convert/star-005
 
 
 Input loaded:
 -----------------------------------------------
-(and (= true
-        (Matches x __regex__x5c_x5b_x61_x62_x63_x64_x65_x66_x67_x5c_x5d_x61_x61))
-     (= x __cOnStStR__x61_x61_x61))
+(= true (Matches x __regex__x0e_x62_x74))
 -----------------------------------------------
 
->> regex_parse(): currentAst = 361 "__NotRegex__"
+>> regex_parse(): currentAst = 361 "bt"
 
 >> regex_parse(): 395
-"__NotRegex__"
+"bt"
 
 
 ===================
-** cb_reduce_app(): Matches( x, \[abcdefg\]aa )  =>  (= x __NotRegex__)
+** cb_reduce_app(): Matches( x, bt )  =>  (= x bt)
 ===================
->> cb_reduce_eq: (= x aaa)
 
->> Length added for: (= x aaa) @ 5151
 
->> cb_reduce_app(): Length( "__NotRegex__" ) = 12
+***********************************************
+*               Starting Search               *
+-----------------------------------------------
+(= x bt)
+***********************************************
+>> Input Var Set: x, 
+
+
+===============================================
+** cb_new_eq():    "bt" = x
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= x bt) @ 3365
+
+
+
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                cb_final_check @ Level [0] 
+=============================================================
+
+******************************************
+       Dependence Analysis
+------------------------------------------
+(0) alias: variables
+
+(1) var = constStr:
+  x = "bt"
+
+(2) var = concat:
+
+(3) concat = constStr:
+
+(4) eq concats:
+
+
+-- Dependence Map -----------------
+x	-->	"bt"(1), 
+-----------------------------------
+
+-- L/R Most Var in eq concat ------
+-----------------------------------
+
+-- L/R constraints ----------------
+-----------------------------------
+
+
+ * All non-internal variables are assigned. Done!
+###########################################################
 
 
 *****************************
-UNSAT
+SAT
+-----------------------------
+x -> bt
 *****************************
 
 ** Reset():
