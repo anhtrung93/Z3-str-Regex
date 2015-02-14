@@ -148,7 +148,7 @@ Z3_ast mk_concat(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2);
 
-Z3_ast normalize(Z3_theory t, Z3_ast unnomarlizedAst);
+Z3_ast normalize(Z3_theory t, Z3_ast unnomarlizedAst, Z3_ast & assert);
 
 bool isTwoStrEqual(std::string str1, std::string str2);
 
