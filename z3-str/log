@@ -1,78 +1,476 @@
-Input file: /tmp/z3_str_convert/star-005
+Input file: /tmp/z3_str_convert/star-006
 
 
 Input loaded:
 -----------------------------------------------
-(= true (Matches x __regex__x0e_x62_x74))
+(= (Star __regex__x61_x62_x63_x7c_x64_x62_x63_x61_x62_x63 n)
+   (Concat x __cOnStStR__x62_x63_x61_x62_x63))
 -----------------------------------------------
 
->> regex_parse(): currentAst = 361 "bt"
-
->> regex_parse(): 395
-"bt"
-
 
 ===================
-** cb_reduce_app(): Matches( x, bt )  =>  (= x bt)
+** cb_reduce_app(): Star( abc|dbcabc, n )  =>  (Star abc|dbcabc n)
 ===================
+>> make_concat: (Concat x bcabc)
+
 
 
 ***********************************************
 *               Starting Search               *
 -----------------------------------------------
-(= x bt)
+(and (= (+ (Length (Concat x bcabc)) (* (- 1) (Length x))) 5)
+     (= (Star abc|dbcabc n) (Concat x bcabc)))
 ***********************************************
 >> Input Var Set: x, 
 
 
 ===============================================
-** cb_new_eq():    "bt" = x
+** cb_new_eq():    (Concat x bcabc) = (Star abc|dbcabc n)
 ===============================================
 >> New_eq Check: PASS
 
->> Length added for: (= x bt) @ 3354
+>> Length added for: (= (Concat x bcabc) (Star abc|dbcabc n)) @ 3488
 
+
+===============================================
+** simplifyStarEqConcat():
+   starAst = (Star abc|dbcabc n)
+   concatAst = (Concat x bcabc)
+===============================================
+[simplifyStarEqConcat] starAst = (Star abc|dbcabc n)
+                   new_concat = (Concat x bcabc) @ 3063
+>> regex_parse(): currentAst = 353 "dbcabc"
+
+>> regex_parse(): currentAst = 353 "abc"
+
+>> regex_parse(): 385
+_t_str0
+ and assert: (or (= _t_str0 dbcabc) (= _t_str0 abc))
+
+>> make_concat: (Concat (Star abc|dbcabc (+ n (- 1))) _t_str0)
+
+---------------------
+Axiom Add(@3161, Level 0):
+(=> (= (Star abc|dbcabc n) (Concat x bcabc))
+    (and (= (Concat x bcabc) (Concat (Star abc|dbcabc (+ n (- 1))) _t_str0))
+         (and (or (= _t_str0 dbcabc) (= _t_str0 abc)) (>= n 1))))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    (Concat x bcabc) = (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat x bcabc) (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0)) @ 3488
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat x bcabc)
+   nn2 = (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat x bcabc)
+                   new_nn2 = (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0) @ 2162
+
+#############################
+#  SimplifyConcatEq Type 2  #
+#############################
+>> make_concat: (Concat _t_str1 bcabc)
+
+>> make_concat: (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str1)
+
+>> Length added for: (= x (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str1)) @ 2579
+
+>> Length added for: (= _t_str0 (Concat _t_str1 bcabc)) @ 2580
+
+>> Length added for: (= _t_str0 bcabc) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 1) n)) x) @ 2612
+
+>> make_concat: (Concat x b)
+
+>> Length added for: (= _t_str0 cabc) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 1) n)) (Concat x b)) @ 2612
+
+>> make_concat: (Concat x bc)
+
+>> Length added for: (= _t_str0 abc) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bc)) @ 2612
+
+>> make_concat: (Concat x bca)
+
+>> Length added for: (= _t_str0 bc) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bca)) @ 2612
+
+>> make_concat: (Concat x bcab)
+
+>> Length added for: (= _t_str0 c) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bcab)) @ 2612
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bcabc)) @ 2612
+
+---------------------
+Axiom Add(@2622, Level 0):
+(=> (= (Concat x bcabc) (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0))
+    (and (or (= _t_xor_0 0)
+             (= _t_xor_0 1)
+             (= _t_xor_0 2)
+             (= _t_xor_0 3)
+             (= _t_xor_0 4)
+             (= _t_xor_0 5)
+             (= _t_xor_0 6))
+         (= (= _t_xor_0 0) (= x (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str1)))
+         (= (= _t_xor_0 0) (= _t_str0 (Concat _t_str1 bcabc)))
+         (= (= _t_xor_0 0)
+            (> (Length x) (Length (Star abc|dbcabc (+ (- 1) n)))))
+         (= (= _t_xor_0 1) (= (Star abc|dbcabc (+ (- 1) n)) x))
+         (= (= _t_xor_0 1) (= _t_str0 bcabc))
+         (= (= _t_xor_0 2) (= (Star abc|dbcabc (+ (- 1) n)) (Concat x b)))
+         (= (= _t_xor_0 2) (= _t_str0 cabc))
+         (= (= _t_xor_0 3) (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bc)))
+         (= (= _t_xor_0 3) (= _t_str0 abc))
+         (= (= _t_xor_0 4) (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bca)))
+         (= (= _t_xor_0 4) (= _t_str0 bc))
+         (= (= _t_xor_0 5) (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bcab)))
+         (= (= _t_xor_0 5) (= _t_str0 c))
+         (= (= _t_xor_0 6) (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bcabc)))
+         (= (= _t_xor_0 6) (= _t_str0 ""))))
+---------------------
+
+
+===============================================
+** simplifyStarEqConcat():
+   starAst = (Star abc|dbcabc n)
+   concatAst = (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0)
+===============================================
+[simplifyStarEqConcat] starAst = (Star abc|dbcabc n)
+                   new_concat = (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0) @ 3063
+
+*******************************************
+[PUSH]: Level = 1
+*******************************************
+
+
+===============================================
+** cb_new_eq():    "dbcabc" = _t_str0
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str0 dbcabc) @ 3488
+
+>> [simplifyConcatStr 2 @ 1261] (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0)
+
+
+*******************************************
+[POP]: Level = 0
+*******************************************
+
+*******************************************
+[PUSH]: Level = 1
+*******************************************
+
+
+===============================================
+** cb_new_eq():    "abc" = _t_str0
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str0 abc) @ 3488
+
+>> [simplifyConcatStr 2 @ 1261] (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0)
+
+
+
+===============================================
+** cb_new_eq():    (Concat x bc) = (Star abc|dbcabc (+ (- 1) n))
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat x bc) (Star abc|dbcabc (+ (- 1) n))) @ 3488
+
+
+===============================================
+** simplifyStarEqConcat():
+   starAst = (Star abc|dbcabc (+ (- 1) n))
+   concatAst = (Concat x bc)
+===============================================
+[simplifyStarEqConcat] starAst = (Star abc|dbcabc (+ (- 1) n))
+                   new_concat = (Concat x bc) @ 3063
+>> regex_parse(): currentAst = 353 "dbcabc"
+
+>> regex_parse(): currentAst = 353 "abc"
+
+>> regex_parse(): 385
+_t_str2
+ and assert: (or (= _t_str2 dbcabc) (= _t_str2 abc))
+
+>> make_concat: (Concat (Star abc|dbcabc (+ (+ (- 1) n) (- 1))) _t_str2)
+
+---------------------
+Axiom Add(@3161, Level 1):
+(=> (= (Star abc|dbcabc (+ (- 1) n)) (Concat x bc))
+    (and (= (Concat x bc)
+            (Concat (Star abc|dbcabc (+ (+ (- 1) n) (- 1))) _t_str2))
+         (and (or (= _t_str2 dbcabc) (= _t_str2 abc)) (>= (+ (- 1) n) 1))))
+---------------------
+
+
+
+===============================================
+** cb_new_eq():    (Concat x bc) = (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat x bc) (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)) @ 3488
+
+
+===============================================
+** simplifyConcatEq():
+   nn1 = (Concat x bc)
+   nn2 = (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)
+===============================================
+[simplifyConcatEq] new_nn1 = (Concat x bc)
+                   new_nn2 = (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2) @ 2162
+
+#############################
+#  SimplifyConcatEq Type 2  #
+#############################
+>> make_concat: (Concat _t_str3 bc)
+
+>> make_concat: (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3)
+
+>> Length added for: (= x (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3)) @ 2579
+
+>> Length added for: (= _t_str2 (Concat _t_str3 bc)) @ 2580
+
+>> Length added for: (= _t_str2 bc) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 2) n)) x) @ 2612
+
+>> Length added for: (= _t_str2 c) @ 2611
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 2) n)) (Concat x b)) @ 2612
+
+>> Length added for: (= (Star abc|dbcabc (+ (- 2) n)) (Concat x bc)) @ 2612
+
+---------------------
+Axiom Add(@2622, Level 1):
+(=> (= (Concat x bc) (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2))
+    (and (or (= _t_xor_1 0) (= _t_xor_1 1) (= _t_xor_1 2) (= _t_xor_1 3))
+         (= (= _t_xor_1 0) (= x (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3)))
+         (= (= _t_xor_1 0) (= _t_str2 (Concat _t_str3 bc)))
+         (= (= _t_xor_1 0)
+            (> (Length x) (Length (Star abc|dbcabc (+ (- 2) n)))))
+         (= (= _t_xor_1 1) (= (Star abc|dbcabc (+ (- 2) n)) x))
+         (= (= _t_xor_1 1) (= _t_str2 bc))
+         (= (= _t_xor_1 2) (= (Star abc|dbcabc (+ (- 2) n)) (Concat x b)))
+         (= (= _t_xor_1 2) (= _t_str2 c))
+         (= (= _t_xor_1 3) (= (Star abc|dbcabc (+ (- 2) n)) (Concat x bc)))
+         (= (= _t_xor_1 3) (= _t_str2 ""))))
+---------------------
+
+
+===============================================
+** simplifyStarEqConcat():
+   starAst = (Star abc|dbcabc (+ (- 1) n))
+   concatAst = (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)
+===============================================
+[simplifyStarEqConcat] starAst = (Star abc|dbcabc (+ (- 1) n))
+                   new_concat = (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2) @ 3063
+
+*******************************************
+[PUSH]: Level = 2
+*******************************************
+
+*******************************************
+[PUSH]: Level = 3
+*******************************************
+
+*******************************************
+[PUSH]: Level = 4
+*******************************************
+
+*******************************************
+[PUSH]: Level = 5
+*******************************************
+
+*******************************************
+[PUSH]: Level = 6
+*******************************************
+
+
+===============================================
+** cb_new_eq():    "dbcabc" = _t_str2
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str2 dbcabc) @ 3488
+
+>> [simplifyConcatStr 2 @ 1261] (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)
+
+
+*******************************************
+[POP]: Level = 5
+*******************************************
+
+
+===============================================
+** cb_new_eq():    "abc" = _t_str2
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str2 abc) @ 3488
+
+>> [simplifyConcatStr 2 @ 1261] (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)
+
+
+*******************************************
+[POP]: Level = 4
+*******************************************
+
+*******************************************
+[POP]: Level = 3
+*******************************************
+
+*******************************************
+[POP]: Level = 2
+*******************************************
+
+*******************************************
+[POP]: Level = 1
+*******************************************
+
+
+===============================================
+** cb_new_eq():    (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3) = x
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3) x) @ 3488
+
+
+
+===============================================
+** cb_new_eq():    (Concat _t_str3 bc) = _t_str2
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= (Concat _t_str3 bc) _t_str2) @ 3488
+
+
+*******************************************
+[PUSH]: Level = 2
+*******************************************
+
+
+===============================================
+** cb_new_eq():    "abc" = _t_str2
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str2 abc) @ 3488
+
+** solve_concat_eq_str: (Concat _t_str3 bc) = "abc"
+>> Length added for: (= _t_str3 a) @ 1738
+
+---------------------
+Axiom Add(@1739, Level 2):
+(=> (= (Concat _t_str3 bc) abc) (= _t_str3 a))
+---------------------
+
+>> [simplifyConcatStr 2 @ 1261] (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2)
+
+
+
+===============================================
+** cb_new_eq():    "a" = _t_str3
+===============================================
+>> New_eq Check: PASS
+
+>> Length added for: (= _t_str3 a) @ 3488
+
+>> [simplifyConcatStr 1 @ 1226] (Concat _t_str3 bc)
+
+>> [simplifyConcatStr 2 @ 1261] (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3)
+
+
+*******************************************
+[PUSH]: Level = 3
+*******************************************
+
+*******************************************
+[PUSH]: Level = 4
+*******************************************
 
 
 
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-                cb_final_check @ Level [0] 
+                cb_final_check @ Level [4] 
 =============================================================
 
 ******************************************
        Dependence Analysis
 ------------------------------------------
 (0) alias: variables
+  * _t_str0	: _t_str2, 
 
 (1) var = constStr:
-  x = "bt"
+  _t_str0 = "abc"
+  _t_str3 = "a"
 
 (2) var = concat:
+  x = { (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3), }
+  _t_str0 = { (Concat _t_str3 bc), }
 
 (3) concat = constStr:
+  (Concat _t_str3 bc) = "abc"
 
 (4) eq concats:
+  >> (Concat x bcabc) , (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str0) , 
+  >> (Concat x bc) , (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str2) , 
 
 
 -- Dependence Map -----------------
-x	-->	"bt"(1), 
+x	-->	_t_str3(2), 
+_t_str0	-->	"bcabc"(5), "abc"(1), "bc"(5), _t_str3(2), 
+_t_str3	-->	"abc"(3), "a"(1), 
 -----------------------------------
 
 -- L/R Most Var in eq concat ------
+  >> [L] {x, (Star abc|dbcabc (+ (- 1) n)), (Star abc|dbcabc (+ (- 2) n)), }
 -----------------------------------
 
 -- L/R constraints ----------------
+x	<->	{(Star abc|dbcabc (+ (- 1) n)), (Star abc|dbcabc (+ (- 2) n)), }
+(Star abc|dbcabc (+ (- 1) n))	<->	{x, (Star abc|dbcabc (+ (- 2) n)), }
+(Star abc|dbcabc (+ (- 2) n))	<->	{x, (Star abc|dbcabc (+ (- 1) n)), }
 -----------------------------------
 
+* Free Variables:
+----------------------------------
 
- * All non-internal variables are assigned. Done!
+----------------------------------
+
 ###########################################################
 
 
 *****************************
 SAT
 -----------------------------
-x -> bt
+_t_xor_0 -> 3
+n -> 2
+_t_xor_1 -> 0
+_t_str0 -> abc
+_t_str1 -> String!val!1
+_t_str2 -> abc
+_t_str3 -> a
+x -> String!val!9
 *****************************
 
 ** Reset():

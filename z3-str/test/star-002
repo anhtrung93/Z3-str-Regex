@@ -2,7 +2,7 @@
 (declare-variable n Int)
 
 (assert (= x (Star '[abc]' n) ) )
-(assert (= x "aaa") )
+(assert (= x "aab") )
   
 (check-sat)
 (get-model)

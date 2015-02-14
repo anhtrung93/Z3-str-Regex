@@ -47,12 +47,8 @@ Z3_ast parseBraces(Z3_theory t, std::string strInBraces, Z3_ast & assert){
     assert = Z3_mk_not(ctx, assert);  
   }    
   Z3_ast charLen_eq_one = Z3_mk_eq(ctx, mk_int(ctx, 1), mk_length(t, character));
-  if (assert != NULL){
-    assert = mk_2_and(t, charLen_eq_one, assert);
-  } else {
-    assert = charLen_eq_one;
-  }
-  
+  assert = mk_2_and(t, charLen_eq_one, assert);
+ 
   delete[] or_items;
   return result;
 }
@@ -75,11 +71,7 @@ Z3_ast parseQuestion(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert
   
   Z3_ast assert = NULL;
   Z3_ast exist = regex_parse(t, regexStr, assert);
-  if (assert != NULL){
-    assert = mk_2_and(t, assert, Z3_mk_eq(ctx, result, exist));
-  } else {
-    assert = Z3_mk_eq(ctx, result, exist);
-  }
+  assert = mk_2_and(t, assert, Z3_mk_eq(ctx, result, exist));
   Z3_ast notExist = my_mk_str_value(t, "");
   breakDownAssert = mk_2_or(t, assert, Z3_mk_eq(ctx, result, notExist));
   
@@ -326,7 +318,7 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
         strAst = my_mk_str_value(t, tempStr.c_str());
       } else {
         char lastTempStr = tempStr[tempStr.length() - 1];
-        Z3_ast assert;
+        Z3_ast assert = NULL;
         if (lastTempStr == '*'){
           strAst = parseStar(t, tempStr, assert);
         } else if (lastTempStr == '+'){
@@ -384,9 +376,7 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
     for (it = or_list.begin(), pos = 0; it != or_list.end(); ++ it, ++ pos){
       ors[pos] = Z3_mk_eq(ctx, result, *it);
     }
-    if (breakDownAssert != NULL){
-      breakDownAssert = mk_2_and(t, breakDownAssert, Z3_mk_or(ctx, or_list.size(), ors));
-    }
+    breakDownAssert = mk_2_and(t, breakDownAssert, Z3_mk_or(ctx, or_list.size(), ors));
     delete[] ors;
   } else {
     result = currentAst;
@@ -394,6 +384,8 @@ Z3_ast regex_parse(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
 #ifdef DEBUGLOG
       __debugPrint(logFile, ">> regex_parse(): %d\n", __LINE__);
       printZ3Node(t, result);
+      __debugPrint(logFile, "\n and assert: ");
+      printZ3Node(t, breakDownAssert);
       __debugPrint(logFile, "\n\n");
 #endif          
   return result;

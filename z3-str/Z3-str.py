@@ -15,7 +15,7 @@ solver = "/opt/Workspace/z3-str_ws/z3-str/str"
 # inputs are saved
 tmpEncodingDir = "/tmp/z3_str_convert"
 clearTempFile = 1
-checkAnswer = 0
+checkAnswer = 1
 #=================================================================== 
 
 encodeDict = {
