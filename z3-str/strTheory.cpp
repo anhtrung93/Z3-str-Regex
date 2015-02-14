@@ -596,28 +596,11 @@ inline bool isConstInt(Z3_theory t, Z3_ast node) {
  * OWN CODE
  */
 inline bool isValidRegex(Z3_theory t, Z3_ast node){
-  std::string regexStr = getRegexValue(t, node);
+  std::string regexStr = getRegexString(t, node);
   if (regexStr.compare("__NotRegex__") != 0) {
     return true;
   } else {
     return false;
-  }
-}
-/*
- * OWN CODE
- * if it is "__NotRegex__" => notRegex
- */
-inline bool isValidRegex(std::string regexStr){
-  if (regexStr.compare("__NotRegex__") != 0) {
-    return true;
-  } else {
-    try {
-      boost::regex tempRegex(regexStr);
-    } catch(boost::regex_error & e){
-      printRegexError(e);
-      return false;
-    }
-    return true;
   }
 }
 /*
@@ -626,11 +609,11 @@ inline bool isValidRegex(std::string regexStr){
  * Alert: TODO for now this one is not right!!!!
  */
 inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
-  std::string regexStr = getRegexValue(t, node);
-  if (! isValidRegex(regexStr)){
+  if (! isValidRegex(t, node)){
     return false;
   } else {
-    boost::regex regexTemp(regexStr);
+    std::string regexStr = getRegexString(t, node);
+    boost::regex regexTemp = getRegexValue(t, node);
     if (boost::regex_match(regexStr, regexTemp)){
       return true;
     } else {
@@ -710,13 +693,13 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
     Z3_ast starAst = NULL;
     if (isSimpleRegex(t, n1) && isConstInt(t, n2)) {
       int intVal = getConstIntValue(t, n2);
-      std::string n1Str = getRegexValue(t, n1);
+      std::string n1Str = getStringMatchesSimpleRegex(t, n1);
       std::string result = ""; 
       for (int id = 0; id < intVal; ++ id){
         result += n1Str;
       }
       starAst = my_mk_str_value(t, result.c_str());
-    } else if (getRegexValue(t, n1).compare("") == 0){
+    } else if (getRegexString(t, n1).compare("") == 0){
       starAst = n1;
     } else if (isConstInt(t, n2) && getConstIntValue(t, n2) == 0){
       starAst = my_mk_str_value(t, "");
@@ -1059,34 +1042,41 @@ void printRegexError(boost::regex_error & e){
  * get regex from a term:regex 
  * if it is not a valid regex return "__NotRegex__"
  */
-std::string getRegexValue(Z3_theory t, Z3_ast n){
+std::string getRegexString(Z3_theory t, Z3_ast n){
   Z3_context ctx = Z3_theory_get_context(t);
-  std::string strValue;
+  std::string result;
   if (getNodeType(t, n) == my_Z3_Regex_Var) {
     char * str = (char *) Z3_ast_to_string(ctx, n);
     if (strcmp(str, "\'\'") == 0) {
-      strValue = std::string("");
+      result = std::string("");
     } else {
       try {
-        strValue = std::string(str);
-        boost::regex tempRegex(strValue);
+        result = std::string(str);
       } catch (boost::regex_error & e){
         printRegexError(e);
-        strValue = std::string("__NotRegex__");      
+        result = std::string("__NotRegex__");      
       }
     }
   } else {
-     strValue = std::string("__NotRegex__");      
+     result = std::string("__NotRegex__");      
   }
 
-  return strValue;
+  return result;
+}
+/*
+ * OWN CODE
+ * get regex from a term:regex 
+ * if it is not a valid regex return "__NotRegex__"
+ */
+boost::regex getRegexValue(Z3_theory t, Z3_ast n){
+  return boost::regex(getRegexString(t, n));
 }
 
 /*
  * OWN CODE
  */
 std::string getStringMatchesSimpleRegex(Z3_theory t, Z3_ast n){
-  return getRegexValue(t, n);//TODO change this
+  return getRegexString(t, n);//TODO change this
 }
 
 /*
@@ -1489,8 +1479,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
       }
     }
     
-    std::string regexStr = getRegexValue(t, arg1);
-    if (! isValidRegex(regexStr)){
+    if (! isValidRegex(t, arg1)){
 #ifdef DEBUGLOG
   __debugPrint(logFile, " invalid regular expression: ");
   printZ3Node(t, arg1);
@@ -1499,7 +1488,7 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
       return;
     }
     
-    boost::regex regexTemp(regexStr);
+    boost::regex regexTemp = getRegexValue(t, arg1);
     std::string strTemp;
     
     for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
@@ -2996,7 +2985,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
   } else if (starAstIsStar && !new_concatIsConcat) {
     if (getNodeType(t, new_concat) == my_Z3_ConstStr) {
       __debugPrint(logFile, ">> [simplifyStarEqConcat] new_concat is not concat @ %d\n\n", __LINE__);
-      //TODO simplifyStarStr(t, starAst, new_concat);
+      simplifyStarStr(t, starAst, new_concat);
     }
     return;
   } else if (!starAstIsStar && !new_concatIsConcat){
@@ -5499,20 +5488,22 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
 Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast reduceAst = NULL;
-  std::string arg1Str = getRegexValue(t, args[1]);
-  if ( isConstStr(t, args[0]) && isValidRegex(arg1Str)) {
-    std::string arg0Str = getConstStrValue(t, args[0]);
-    boost::regex arg1Regex (arg1Str);
-    if (! boost::regex_match(arg0Str, arg1Regex)) {
-      reduceAst = Z3_mk_false(ctx);
-      breakDownAssert = NULL;
+  bool isArg1Valid = isValidRegex(t, args[1]);
+  if (isArg1Valid){
+    boost::regex arg1Regex = getRegexValue(t, args[1]);
+    if ( isConstStr(t, args[0])) {
+      std::string arg0Str = getConstStrValue(t, args[0]);
+      if (! boost::regex_match(arg0Str, arg1Regex)) {
+        reduceAst = Z3_mk_false(ctx);
+        breakDownAssert = NULL;
+      } else {
+        reduceAst = Z3_mk_true(ctx);
+        breakDownAssert = NULL;
+      }
     } else {
-      reduceAst = Z3_mk_true(ctx);
-      breakDownAssert = NULL;
+      std::string regexStr = getRegexString(t, args[1]);
+      reduceAst = Z3_mk_eq(ctx, args[0], regex_parse(t, regexStr, breakDownAssert));
     }
-  } else if (isValidRegex(arg1Str)){
-    std::string regexStr = getRegexValue(t, args[1]);
-    reduceAst = Z3_mk_eq(ctx, args[0], regex_parse(t, regexStr, breakDownAssert));
   } else { //TODO what if not validRegex??
     //TODO
   }
@@ -5532,7 +5523,7 @@ Z3_ast reduce_star(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
 
   if (isSimpleRegex(t, args[0]) && isConstInt(t, args[1])) {
     int intVal = getConstIntValue(t, args[1]);
-    std::string arg0Str = getRegexValue(t, args[0]);
+    std::string arg0Str = getStringMatchesSimpleRegex(t, args[0]);
     std::string result = "";
     for (int id = 0; id < intVal; ++ id) {
       result += arg0Str;

@@ -128,8 +128,6 @@ inline bool isConstInt(Z3_theory t, Z3_ast n);
 
 inline bool isValidRegex(Z3_theory t, Z3_ast n);
 
-inline bool isValidRegex(std::string regexStr);
-
 inline bool isSimpleRegex(Z3_theory t, Z3_ast n);
 
 Z3_ast mk_1_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x);
@@ -168,7 +166,9 @@ std::string getConstStrValue(Z3_theory t, Z3_ast n);
 
 void printRegexError(boost::regex_error & e);
 
-std::string getRegexValue(Z3_theory t, Z3_ast n);
+boost::regex getRegexValue(Z3_theory t, Z3_ast n);
+
+std::string getRegexString(Z3_theory t, Z3_ast n);
 
 std::string getStringMatchesSimpleRegex(Z3_theory t, Z3_ast n);
 
