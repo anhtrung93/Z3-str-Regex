@@ -672,6 +672,21 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
       starAst = n1;
     } else if (isConstInt(t, n2) && getConstIntValue(t, n2) == 0){
       starAst = my_mk_str_value(t, "");
+    } else if (isConstInt(t, n2)) {
+      int repeatTimes = getConstIntValue(t, n2);
+      Z3_ast * asserts = new Z3_ast[repeatTimes];
+      int pos = 0;
+      for (int id = 0; id < repeatTimes; ++ id){
+        if (starAst == NULL){
+          starAst = regex_parse(t, getRegexString(t, n1), asserts[pos]);
+        } else {
+          starAst = mk_concat(t, starAst, regex_parse(t, getRegexString(t, n1), asserts[pos]));
+        }  
+        pos = (asserts[pos] != NULL) ? pos + 1 : pos;
+      }
+      Z3_ast finalAssert = Z3_mk_and(ctx, pos, asserts);
+      addAxiom(t, finalAssert, __LINE__);
+      delete[] asserts;
     } else {
       starAst = mk_2_arg_app(ctx, td->Star, n1, n2);
     }
@@ -683,93 +698,93 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
 }
 
 
-/*
- * OWN CODE
- */
-std::list<Z3_ast> getListAstInConcat(Z3_theory t, Z3_ast ast, Z3_ast & assert){
-  Z3_context ctx = Z3_theory_get_context(t);
-  if (isConcatFunc(t, ast)){
-    Z3_ast ast_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, ast), 0);
-    Z3_ast ast_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, ast), 1);
-    Z3_ast assert1 = NULL, assert2 = NULL;
-    std::list<Z3_ast> result = getListAstInConcat(t, ast_arg0, assert1);
-    std::list<Z3_ast> list_arg1 = getListAstInConcat(t, ast_arg1, assert2);
-    result.insert(result.end(), list_arg1.begin(), list_arg1.end());
-    assert = mk_2_and(t, assert1, assert2);
-    return result;
-  } else if (isStarFunc(t, ast)){
-    Z3_ast assert1 = NULL, assert2 = NULL;
-    Z3_ast new_ast = normalize(t, ast, assert1);
-    if (isConcatFunc(t, new_ast)){
-      std::list<Z3_ast> result = getListAstInConcat(t, new_ast, assert2);
-      assert = mk_2_and(t, assert1, assert2);
-      return result;
-    } else {
-      std::list<Z3_ast> result;
-      result.push_back(new_ast);
-      assert = assert1;
-      return result;
-    }
-  } else {
-    std::list<Z3_ast> result;
-    result.push_back(ast);
-    assert = NULL;
-    return result;
-  }
-}
+///*
+// * OWN CODE
+// */
+//std::list<Z3_ast> getListAstInConcat(Z3_theory t, Z3_ast ast, Z3_ast & assert){
+//  Z3_context ctx = Z3_theory_get_context(t);
+//  if (isConcatFunc(t, ast)){
+//    Z3_ast ast_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, ast), 0);
+//    Z3_ast ast_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, ast), 1);
+//    Z3_ast assert1 = NULL, assert2 = NULL;
+//    std::list<Z3_ast> result = getListAstInConcat(t, ast_arg0, assert1);
+//    std::list<Z3_ast> list_arg1 = getListAstInConcat(t, ast_arg1, assert2);
+//    result.insert(result.end(), list_arg1.begin(), list_arg1.end());
+//    assert = mk_2_and(t, assert1, assert2);
+//    return result;
+//  } else if (isStarFunc(t, ast)){
+//    Z3_ast assert1 = NULL, assert2 = NULL;
+//    Z3_ast new_ast = normalize(t, ast, assert1);
+//    if (isConcatFunc(t, new_ast)){
+//      std::list<Z3_ast> result = getListAstInConcat(t, new_ast, assert2);
+//      assert = mk_2_and(t, assert1, assert2);
+//      return result;
+//    } else {
+//      std::list<Z3_ast> result;
+//      result.push_back(new_ast);
+//      assert = assert1;
+//      return result;
+//    }
+//  } else {
+//    std::list<Z3_ast> result;
+//    result.push_back(ast);
+//    assert = NULL;
+//    return result;
+//  }
+//}
 
-/*
- * OWN CODE
- * Normalized an ast
- */
-Z3_ast normalize(Z3_theory t, Z3_ast unnomarlizedAst, Z3_ast & assert){
-  Z3_context ctx = Z3_theory_get_context(t);
-  if (isStarFunc(t, unnomarlizedAst)){
-    Z3_ast ast_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, unnomarlizedAst), 0);
-    Z3_ast ast_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, unnomarlizedAst), 1);
-    if (isConstInt(t, ast_arg1)){
-      Z3_ast result = NULL;
-      int repeatTimes = getConstIntValue(t, ast_arg1);
-      Z3_ast * andAssert = new Z3_ast[repeatTimes];
-      for (int id = 0; id < repeatTimes; ++ id){
-        if (result == NULL){
-          result = regex_parse(t, getRegexString(t, ast_arg0), andAssert[id]);
-        } else {
-          result = mk_concat(t, result, regex_parse(t, getRegexString(t, ast_arg0), andAssert[id]));
-        }
-      }
-      Z3_context ctx = Z3_theory_get_context(t);
-      assert = Z3_mk_and(ctx, repeatTimes, andAssert);
-      delete[] andAssert;
-      return result;
-    } else {
-      return unnomarlizedAst;
-    }
-  } else if (isConcatFunc(t, unnomarlizedAst)){
-    std::list<Z3_ast> list_elements = getListAstInConcat(t, unnomarlizedAst, assert);
-    std::list<Z3_ast>::iterator it;
-    for (it = list_elements.begin(); it != list_elements.end(); ++ it){
-      std::list<Z3_ast>::iterator it2 = it; ++ it2;
-      while (isConstStr(t, *it) && it2 != list_elements.end() && isConstStr(t, *it2)){
-        std::string const_str_it = getConstStrValue(t, *it);
-        std::string const_str_it_plus_one = getConstStrValue(t, *it2);
-        std::string combine = const_str_it + const_str_it_plus_one;
-        *it = my_mk_str_value(t, combine.c_str());
-        list_elements.erase(it2);
-        it2 = it; ++ it2;
-      }
-    }
-    Z3_ast result = *(list_elements.begin());
-    it = list_elements.begin(); ++ it;
-    for (; it != list_elements.end(); ++ it){
-      result = mk_concat(t, result, *it);
-    }
-    return result;
-  } else {
-    assert = NULL;
-    return unnomarlizedAst;//cannot normalize anymore
-  }
-}
+///*
+// * OWN CODE
+// * Normalized an ast
+// */
+//Z3_ast normalize(Z3_theory t, Z3_ast unnomarlizedAst, Z3_ast & assert){
+//  Z3_context ctx = Z3_theory_get_context(t);
+//  if (isStarFunc(t, unnomarlizedAst)){
+//    Z3_ast ast_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, unnomarlizedAst), 0);
+//    Z3_ast ast_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, unnomarlizedAst), 1);
+//    if (isConstInt(t, ast_arg1)){
+//      Z3_ast result = NULL;
+//      int repeatTimes = getConstIntValue(t, ast_arg1);
+//      Z3_ast * andAssert = new Z3_ast[repeatTimes];
+//      for (int id = 0; id < repeatTimes; ++ id){
+//        if (result == NULL){
+//          result = regex_parse(t, getRegexString(t, ast_arg0), andAssert[id]);
+//        } else {
+//          result = mk_concat(t, result, regex_parse(t, getRegexString(t, ast_arg0), andAssert[id]));
+//        }
+//      }
+//      Z3_context ctx = Z3_theory_get_context(t);
+//      assert = Z3_mk_and(ctx, repeatTimes, andAssert);
+//      delete[] andAssert;
+//      return result;
+//    } else {
+//      return unnomarlizedAst;
+//    }
+//  } else if (isConcatFunc(t, unnomarlizedAst)){
+//    std::list<Z3_ast> list_elements = getListAstInConcat(t, unnomarlizedAst, assert);
+//    std::list<Z3_ast>::iterator it;
+//    for (it = list_elements.begin(); it != list_elements.end(); ++ it){
+//      std::list<Z3_ast>::iterator it2 = it; ++ it2;
+//      while (isConstStr(t, *it) && it2 != list_elements.end() && isConstStr(t, *it2)){
+//        std::string const_str_it = getConstStrValue(t, *it);
+//        std::string const_str_it_plus_one = getConstStrValue(t, *it2);
+//        std::string combine = const_str_it + const_str_it_plus_one;
+//        *it = my_mk_str_value(t, combine.c_str());
+//        list_elements.erase(it2);
+//        it2 = it; ++ it2;
+//      }
+//    }
+//    Z3_ast result = *(list_elements.begin());
+//    it = list_elements.begin(); ++ it;
+//    for (; it != list_elements.end(); ++ it){
+//      result = mk_concat(t, result, *it);
+//    }
+//    return result;
+//  } else {
+//    assert = NULL;
+//    return unnomarlizedAst;//cannot normalize anymore
+//  }
+//}
 
 /*
  * OWN CODE
@@ -5621,17 +5636,8 @@ Z3_ast reduce_star(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
   }
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast reduceAst = NULL;
-  std::string result = "";
 
-  if (isSimpleRegex(t, args[0]) && isConstInt(t, args[1])) {
-    int intVal = getConstIntValue(t, args[1]);
-    std::string arg0Str = getStringMatchesSimpleRegex(t, args[0]);
-    std::string result = "";
-    for (int id = 0; id < intVal; ++ id) {
-      result += arg0Str;
-    }
-    reduceAst = my_mk_str_value(t, result.c_str());
-  } else if (! isValidRegex(t, args[0])){
+  if (! isValidRegex(t, args[0])){
 #ifdef DEBUGLOG
       __debugPrint(logFile, ">> reduce_star(): not a valid regex (");
       printZ3Node(t, args[0]);
