@@ -19,6 +19,8 @@ std::map<Z3_ast, Z3_ast> containsReduced_bool_subStr_map;
 std::map<Z3_ast, int> basicStrVarAxiom_added;
 std::map<Z3_ast, Z3_ast> concat_eqc_index;
 
+std::map<Z3_ast, Z3_ast> simple_regex_map; //OWN CODE: ast2 != NULL => simple; ast2 == NULL => not simple or not regex 
+
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> concat_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> contains_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> star_astNode_map; //OWN CODE
@@ -575,18 +577,28 @@ inline bool isValidRegex(Z3_theory t, Z3_ast node){
 /*
  * OWN CODE
  * whether this regex is simple (regex itself is a string))
- * Alert: TODO for now this one is not right!!!!
  */
 inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
   if (! isValidRegex(t, node)){
     return false;
   } else {
-    std::string regexStr = getRegexString(t, node);
-    boost::regex regexTemp = getRegexValue(t, node);
-    if (boost::regex_match(regexStr, regexTemp)){
-      return true;
+    std::map<Z3_ast, Z3_ast>::iterator it = simple_regex_map.find(node);
+    if (it != simple_regex_map.end()){
+      if (it->second != NULL){
+        return true;
+      } else {//it->second == NULL
+        return false;
+      }
     } else {
-      return false;
+      Z3_ast assert = NULL;
+      Z3_ast temp = simplifyConcat1(t, regex_parse(t, getRegexString(t, node), assert));
+      if (isConstStr(t, temp)){
+        simple_regex_map[node] = temp;
+        return true;
+      } else {
+        simple_regex_map[node] = NULL;
+        return false;
+      }
     }
   }
 }
@@ -1149,7 +1161,16 @@ boost::regex getRegexValue(Z3_theory t, Z3_ast n){
  * OWN CODE
  */
 std::string getStringMatchesSimpleRegex(Z3_theory t, Z3_ast n){
-  return getRegexString(t, n);//TODO change this
+  if (isSimpleRegex(t, n)){
+    return getConstStrValue(t, simple_regex_map[n]);
+  } else {
+#ifdef DEBUGLOG
+    __debugPrint(logFile, "getStringMatchesSimpleRegex(): get String from not-simpleRegex ");
+    printZ3Node(t, n);
+    __debugPrint(logFile, "\n\n");
+#endif   
+    return "__NotConstStr__";
+  }
 }
 
 /*
