@@ -284,47 +284,6 @@ void setAlphabet() {
 }
 
 /*
- * OWN CODE 
- */
-std::vector<std::string> getStarableFromStart(const std::string & first){//TODO update to format getStarableFromStart(string, regex)
-  std::vector<std::string> result;
-  for (unsigned int idFirst = 0; idFirst < first.length(); ++ idFirst){
-    bool capable = true;
-    for (unsigned int idFirst2 = idFirst + 1; idFirst2 < first.length(); ++ idFirst2){
-      if (first[idFirst2] != first[idFirst2 % (idFirst + 1)]){
-        capable = false;
-        break;
-      }
-    }
-    if (capable == true){
-      result.push_back(first.substr(0, idFirst + 1));
-    }
-  }
-  return result;
-}
-
-/*
- * OWN CODE 
- */
-std::vector<std::string> getStarableFromEnd(const std::string & first){//TODO update to format getStarableFromEnd(string, regex)
-  std::vector<std::string> result;
-  
-  for (unsigned int idFirst = 0; idFirst < first.length(); ++ idFirst){
-    bool capable = true;
-    for (unsigned int idFirst2 = idFirst + 1; idFirst2 < first.length(); ++ idFirst2){
-      if (first[first.length() - 1 - idFirst2] != first[first.length() - 1 - (idFirst2 % (idFirst + 1))]){
-        capable = false;
-        break;
-      }
-    }
-    if (capable == true){
-      result.push_back(first.substr(first.length() - 1 - idFirst, idFirst + 1));
-    }
-  }
-  return result;
-}
-
-/*
  *
  */
 Z3_ast mk_var(Z3_context ctx, const char * name, Z3_sort ty) {
@@ -2037,7 +1996,7 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
       solve_star_eq_str(t, nn1, mk_star(t, nn2_arg0, nn2_arg1));    
     } else if (isSimpleRegex(t, nn2_arg0) && !isConstInt(t, nn2_arg1)){
       //**********************************************************************************//
-      //  case 1: star(simple_regex_var1, var_int1) = star(simple_regex_var2, var_int2)   //
+      //  case 1: star(simple_regex_var1, var_int1) = star(simple_regex_var2, var_int2)   //TODO var_int1=var_int2=0
       //**********************************************************************************//
       std::string const_nn1_arg0 = getStringMatchesSimpleRegex(t, nn1_arg0);
       std::string const_nn2_arg0 = getStringMatchesSimpleRegex(t, nn2_arg0);
@@ -2084,7 +2043,7 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
       //******************************************************************************//
       //  case 2: star(simple_regex_var2, var_int1) = star(regex_var1, var_int2)      //
       //******************************************************************************//
-      
+      //TODO maybe var_int1 = var_int2 = 0;
     }
   }
 }
