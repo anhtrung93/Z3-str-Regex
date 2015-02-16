@@ -2003,13 +2003,13 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
   if (!nn1IsStar && nn2IsStar) {
     if (getNodeType(t, nn1) == my_Z3_ConstStr) {
       __debugPrint(logFile, ">> [simplifyStarEq] nn1 is not star @ %d\n\n", __LINE__);
-      //TODO simplifyStarStr(t, nn2, nn1);
+      simplifyConcatStr(t, nn2, nn1);
     }
     return;
   } else if (nn1IsStar && !nn2IsStar) {
     if (getNodeType(t, nn2) == my_Z3_ConstStr) {
       __debugPrint(logFile, ">> [simplifyStarEq] nn2 is not star @ %d\n\n", __LINE__);
-      //TODO simplifyStarStr(t, nn1, nn2);
+      simplifyConcatStr(t, nn1, nn2);
     }
     return;
   } else if (!nn1IsStar && !nn2IsStar){
@@ -2026,61 +2026,74 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
   
   Z3_ast implyL = Z3_mk_eq(ctx, nn1, nn2);  
   if (isSimpleRegex(t, nn1_arg0) && isConstInt(t, nn1_arg1)){
-    solve_star_eq_str(t, nn2, mk_star(t, nn1_arg0, nn1_arg1));    
-  } else if (isSimpleRegex(t, nn1_arg0) && !isConstInt(t, nn1_arg1)){
-    if (isSimpleRegex(t, nn2_arg0) && isConstInt(t, nn2_arg1)){
-      solve_star_eq_str(t, nn1, mk_star(t, nn2_arg0, nn2_arg1));    
-    } else if (isSimpleRegex(t, nn2_arg0) && !isConstInt(t, nn2_arg1)){
-      //**********************************************************************************//
-      //  case 1: star(simple_regex_var1, var_int1) = star(simple_regex_var2, var_int2)   //TODO var_int1=var_int2=0
-      //**********************************************************************************//
-      std::string const_nn1_arg0 = getStringMatchesSimpleRegex(t, nn1_arg0);
-      std::string const_nn2_arg0 = getStringMatchesSimpleRegex(t, nn2_arg0);
-      std::string smallStr, bigStr;
-      if (const_nn1_arg0.length() < const_nn2_arg0.length()){
-        smallStr = const_nn1_arg0;
-        bigStr = const_nn2_arg0;
-      } else if (const_nn1_arg0.length() > const_nn2_arg0.length()) {
-        smallStr = const_nn2_arg0;
-        bigStr = const_nn1_arg0;
-      } else {
-        if (const_nn1_arg0 != const_nn2_arg0){
-          //negate
-          addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, nn1, nn2)), __LINE__);
-          return;
-        } else {
-          Z3_ast implyR = mk_2_and(t, Z3_mk_eq(ctx, nn1_arg0, nn2_arg0), Z3_mk_eq(ctx, nn1_arg1, nn2_arg1));
-          addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-          return;
-        }
-      }
-      if (smallStr.length() == 0){//as bigStr.length() != smallStr.length => false
-        //negate
-        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, nn1, nn2)), __LINE__);
-        return;
-      }
-      int repeatStar = ceil(bigStr.length() / (double)smallStr.length());
-      std::string temp = "";
-      for (int id_repeat = 0; id_repeat < repeatStar; ++ id_repeat){
-        temp += smallStr;
-      }
-      std::string firstPart = temp.substr(0, bigStr.length());
-      if (firstPart != bigStr){
-        //negate
-        addAxiom(t, Z3_mk_not(ctx, Z3_mk_eq(ctx, nn1, nn2)), __LINE__);
-        return;
-      }
-      //TODO calculate greatest common divisor of const_nn1_arg0.length() and const_nn2_arg0.length() to simplify below constraint
-      Z3_ast firstMul = mk_2_mul(t, nn1_arg1, mk_int(ctx, const_nn1_arg0.length()));
-      Z3_ast secondMul = mk_2_mul(t, nn2_arg1, mk_int(ctx, const_nn2_arg0.length()));
-      Z3_ast implyR = Z3_mk_eq(ctx, firstMul, secondMul);
-      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+    solve_star_eq_str(t, nn2, mk_star(t, nn1_arg0, nn1_arg1));
+  } else if (isSimpleRegex(t, nn2_arg0) && isConstInt(t, nn2_arg1)){
+    solve_star_eq_str(t, nn2, mk_star(t, nn2_arg0, nn2_arg1));
+  } else if (isSimpleRegex(t, nn1_arg0) && isSimpleRegex(t, nn2_arg0)){
+    //**********************************************************************************//
+    //  case 1: star(simple_regex_var1, var_int1) = star(simple_regex_var2, var_int2)   //
+    //**********************************************************************************//
+    Z3_ast zeroEq = mk_2_and(t, Z3_mk_eq(ctx, nn1_arg1, mk_int(ctx, 0)), Z3_mk_eq(ctx, nn2_arg1, mk_int(ctx, 0)));
+    std::string const_nn1_arg0 = getStringMatchesSimpleRegex(t, nn1_arg0);
+    std::string const_nn2_arg0 = getStringMatchesSimpleRegex(t, nn2_arg0);
+    std::string smallStr, bigStr;
+    if (const_nn1_arg0.length() < const_nn2_arg0.length()){
+      smallStr = const_nn1_arg0;
+      bigStr = const_nn2_arg0;
+    } else if (const_nn1_arg0.length() > const_nn2_arg0.length()) {
+      smallStr = const_nn2_arg0;
+      bigStr = const_nn1_arg0;
     } else {
-      //******************************************************************************//
-      //  case 2: star(simple_regex_var2, var_int1) = star(regex_var1, var_int2)      //
-      //******************************************************************************//
-      //TODO maybe var_int1 = var_int2 = 0;
+      if (const_nn1_arg0 != const_nn2_arg0){
+        addAxiom(t, Z3_mk_implies(ctx, implyL, zeroEq), __LINE__);
+        return;
+      } else {
+        Z3_ast implyR = mk_2_and(t, Z3_mk_eq(ctx, nn1_arg0, nn2_arg0), Z3_mk_eq(ctx, nn1_arg1, nn2_arg1));
+        addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+        return;
+      }
     }
+    if (smallStr.length() == 0){//as bigStr.length() != smallStr.length => false
+      addAxiom(t, Z3_mk_implies(ctx, implyL, zeroEq), __LINE__);
+      return;
+    }
+    int repeatStar = ceil(bigStr.length() / (double)smallStr.length());
+    std::string temp = "";
+    for (int id_repeat = 0; id_repeat < repeatStar; ++ id_repeat){
+      temp += smallStr;
+    }
+    std::string firstPart = temp.substr(0, bigStr.length());
+    if (firstPart != bigStr){
+      addAxiom(t, Z3_mk_implies(ctx, implyL, zeroEq), __LINE__);
+      return;
+    }
+    //TODO calculate greatest common divisor of const_nn1_arg0.length() and const_nn2_arg0.length() to simplify below constraint
+    Z3_ast firstMul = mk_2_mul(t, nn1_arg1, mk_int(ctx, const_nn1_arg0.length()));
+    Z3_ast secondMul = mk_2_mul(t, nn2_arg1, mk_int(ctx, const_nn2_arg0.length()));
+    Z3_ast implyR = mk_2_or(t, Z3_mk_eq(ctx, firstMul, secondMul), zeroEq);
+    addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+  } else if (isConstInt(t, nn1_arg1)){
+    Z3_ast implyR = Z3_mk_eq(ctx, nn2, mk_star(t, nn1_arg0, nn1_arg1));
+    addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+  } else if (isConstInt(t, nn2_arg1)){
+    Z3_ast implyR = Z3_mk_eq(ctx, nn1, mk_star(t, nn2_arg0, nn2_arg1));
+    addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+  } else {
+    //******************************************************************************//
+    //  case 2: star(simple_regex_var2, var_int1) = star(regex_var1, var_int2)      //
+    //  case 3: star(regex_var1, var_int1) = star(regex_var2, var_int2)             //
+    //******************************************************************************//
+    Z3_ast zeroEq = mk_2_and(t, Z3_mk_eq(ctx, nn1_arg1, mk_int(ctx, 0)), Z3_mk_eq(ctx, nn2_arg1, mk_int(ctx, 0)));
+    Z3_ast assert[2];
+    Z3_ast parseFirst = regex_parse(t, getRegexString(t, nn1_arg0), assert[0]);
+    Z3_ast nn1_arg1_minus_one = mk_2_add(t, nn1_arg1, mk_int(ctx, -1));
+    Z3_ast newFirstAst = mk_concat(t, parseFirst, mk_star(t, nn1_arg0, nn1_arg1_minus_one));
+    Z3_ast parseSecond = regex_parse(t, getRegexString(t, nn2_arg0), assert[1]);
+    Z3_ast nn2_arg1_minus_one = mk_2_add(t, nn2_arg1, mk_int(ctx, -1));
+    Z3_ast newSecondAst = mk_concat(t, parseSecond, mk_star(t, nn2_arg0, nn2_arg1_minus_one));
+    Z3_ast mainImplyR = mk_2_and(t, mk_2_and(t, assert[0], assert[1]), Z3_mk_eq(ctx, newFirstAst, newSecondAst));
+    Z3_ast implyR = mk_2_or(t, zeroEq, mainImplyR);
+    addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
   }
 }
 
@@ -3098,15 +3111,15 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
   
   if (isConstStr(t, concat_arg0) && isConstStr(t, concat_arg1)){
     solve_star_eq_str(t, starAst, mk_concat(t, concat_arg0, concat_arg1));
+  } else if (isConstInt(t, star_arg1)){
+    Z3_ast implyR = Z3_mk_eq(ctx, mk_star(t, star_arg0, star_arg1), new_concat);
+    addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
   } else if (!isConstStr(t, concat_arg0) && isConstStr(t, concat_arg1)){
     std::string const_concat_arg1 = getConstStrValue(t, concat_arg1);
     if (const_concat_arg1.length() == 0){
       Z3_ast implyR = Z3_mk_eq(ctx, starAst, concat_arg0);
       addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
       return;
-    }
-    if (isSimpleRegex(t, star_arg0) && isConstInt(t, star_arg1)){
-      solve_concat_eq_str(t, new_concat, mk_star(t, star_arg0, star_arg1));
     } else if (isSimpleRegex(t, star_arg0) && ! isConstInt(t, star_arg1)){
       //****************************************************************************//
       //  case 1: star(simple_regex_var1, var_int) = concat(var_str, constr_str2)   //
@@ -3153,17 +3166,11 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       std::string complex_regex = getRegexString(t, star_arg0);
       Z3_ast assert = NULL;
       Z3_ast regexInStr = regex_parse(t, complex_regex, assert);
-      if (isConstInt(t, star_arg1) && getConstIntValue(t, star_arg1) == 1){
-        Z3_ast mainImplyR = Z3_mk_eq(ctx, new_concat, regexInStr);
-        Z3_ast implyR = mk_2_and(t, mainImplyR, assert);
-        addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-      } else {
-        Z3_ast star_arg1_minus_one = mk_2_add(t, star_arg1, mk_int(ctx, -1));
-        assert = mk_2_and(t, assert, Z3_mk_ge(ctx, star_arg1, mk_int(ctx, 1)));
-        Z3_ast mainImplyR = Z3_mk_eq(ctx, new_concat, mk_concat(t, mk_star(t, star_arg0, star_arg1_minus_one), regexInStr));
-        Z3_ast implyR = mk_2_and(t, mainImplyR, assert);
-        addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-      }
+      Z3_ast star_arg1_minus_one = mk_2_add(t, star_arg1, mk_int(ctx, -1));
+      assert = mk_2_and(t, assert, Z3_mk_ge(ctx, star_arg1, mk_int(ctx, 1)));
+      Z3_ast mainImplyR = Z3_mk_eq(ctx, new_concat, mk_concat(t, mk_star(t, star_arg0, star_arg1_minus_one), regexInStr));
+      Z3_ast implyR = mk_2_and(t, mainImplyR, assert);
+      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
     }
   } else if (isConstStr(t, concat_arg0) && ! isConstStr(t, concat_arg1)){
     std::string const_concat_arg0 = getConstStrValue(t, concat_arg0);
@@ -3171,14 +3178,10 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       Z3_ast implyR = Z3_mk_eq(ctx, starAst, concat_arg1);
       addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
       return;
-    }
-    if (isSimpleRegex(t, star_arg0) && isConstInt(t, star_arg1)){
-      solve_concat_eq_str(t, new_concat, mk_star(t, star_arg0, star_arg1));
     } else if (isSimpleRegex(t, star_arg0) && ! isConstInt(t, star_arg1)){
       //****************************************************************************//
       //  case 3: star(simple_regex_var1, var_int) = concat(constr_str2, var_str)   //
       //****************************************************************************//
-      
       std::string const_star_arg0 = getStringMatchesSimpleRegex(t, star_arg0);
       if (const_star_arg0.length() == 0){
         //negate
@@ -3222,23 +3225,15 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       std::string complex_regex = getRegexString(t, star_arg0);
       Z3_ast assert = NULL;
       Z3_ast regexInStr = regex_parse(t, complex_regex, assert);
-      if (isConstInt(t, star_arg1) && getConstIntValue(t, star_arg1) == 1){
-        Z3_ast mainImplyR = Z3_mk_eq(ctx, new_concat, regexInStr);
-        Z3_ast implyR = mk_2_and(t, mainImplyR, assert);
-        addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-      } else {
-        Z3_ast star_arg1_minus_one = mk_2_add(t, star_arg1, mk_int(ctx, -1));
-        assert = mk_2_and(t, assert, Z3_mk_ge(ctx, star_arg1, mk_int(ctx, 1)));
-        Z3_ast mainImplyR = Z3_mk_eq(ctx, new_concat, mk_concat(t, regexInStr, mk_star(t, star_arg0, star_arg1_minus_one)));
-        Z3_ast implyR = mk_2_and(t, mainImplyR, assert);
-        addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
-      }
+      Z3_ast star_arg1_minus_one = mk_2_add(t, star_arg1, mk_int(ctx, -1));
+      assert = mk_2_and(t, assert, Z3_mk_ge(ctx, star_arg1, mk_int(ctx, 1)));
+      Z3_ast mainImplyR = Z3_mk_eq(ctx, new_concat, mk_concat(t, regexInStr, mk_star(t, star_arg0, star_arg1_minus_one)));
+      Z3_ast implyR = mk_2_and(t, mainImplyR, assert);
+      addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
     }
   } else {
     //TODO
   }
-
-
 }
 
 /*
