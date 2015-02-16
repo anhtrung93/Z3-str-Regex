@@ -686,19 +686,14 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
       starAst = my_mk_str_value(t, "");
     } else if (isConstInt(t, n2)) {
       int repeatTimes = getConstIntValue(t, n2);
-      Z3_ast * asserts = new Z3_ast[repeatTimes];
-      int pos = 0;
+      std::string tempRegex = "";
+      std::string regexInStar = getRegexString(t, n1);
       for (int id = 0; id < repeatTimes; ++ id){
-        if (starAst == NULL){
-          starAst = regex_parse(t, getRegexString(t, n1), asserts[pos]);
-        } else {
-          starAst = mk_concat(t, starAst, regex_parse(t, getRegexString(t, n1), asserts[pos]));
-        }  
-        pos = (asserts[pos] != NULL) ? pos + 1 : pos;
+        tempRegex = tempRegex + regexInStar;
       }
-      Z3_ast finalAssert = Z3_mk_and(ctx, pos, asserts);
-      addAxiom(t, finalAssert, __LINE__);
-      delete[] asserts;
+      Z3_ast assert = NULL;
+      starAst = simplifyConcat1(t, regex_parse(t, tempRegex, assert));
+      addAxiom(t, assert, __LINE__);
     } else {
       starAst = mk_2_arg_app(ctx, td->Star, n1, n2);
     }
@@ -3092,7 +3087,7 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
   } else if (starAstIsStar && !new_concatIsConcat) {
     if (getNodeType(t, new_concat) == my_Z3_ConstStr) {
       __debugPrint(logFile, ">> [simplifyStarEqConcat] new_concat is not concat @ %d\n\n", __LINE__);
-      //simplifyStarStr(t, starAst, new_concat);
+      simplifyConcatStr(t, starAst, new_concat);
     }
     return;
   } else if (!starAstIsStar && !new_concatIsConcat){
@@ -5621,8 +5616,7 @@ Z3_ast reduce_replace(Z3_theory t, Z3_ast const args[], Z3_ast & breakdownAssert
 Z3_ast reduce_matches(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast reduceAst = NULL;
-  bool isArg1Valid = isValidRegex(t, args[1]);
-  if (isArg1Valid){
+  if (isValidRegex(t, args[1])){
     boost::regex arg1Regex = getRegexValue(t, args[1]);
     if ( isConstStr(t, args[0])) {
       std::string arg0Str = getConstStrValue(t, args[0]);
