@@ -1,0 +1,15 @@
+(declare-variable s String)
+(declare-variable s1 String)
+(declare-variable s2 String)
+
+(assert (In s1 (Star "ab")))
+(assert (In s2 (Star "bc")))
+(assert (= s (Concat s1 s2)))
+(assert (= s "ababbc"))
+
+(check-sat)
+(get-model)
+
+
+
+

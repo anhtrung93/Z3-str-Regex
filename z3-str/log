@@ -469,8 +469,16 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   (Concat _t_str4 bc) = "dbcabc"
 
 (4) eq concats:
-  >> (Concat x bcabc) , (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str1) , 
-  >> (Concat x bc) , (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3) , 
+(Concat x bcabc)  >> (Concat x bcabc) , (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str1) , 
+
+(Concat x bc)  >> (Concat x bc) , (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3) , 
+
+(5) star = constStr:
+
+(6) eq stars:
+(7) star = concat:
+(Star abc|dbcabc n)  >> (Concat x bcabc) , (Concat (Star abc|dbcabc (+ (- 1) n)) _t_str1) , 
+(Star abc|dbcabc (+ (- 1) n))  >> (Concat x bc) , (Concat (Star abc|dbcabc (+ (- 2) n)) _t_str3) , 
 
 
 -- Dependence Map -----------------

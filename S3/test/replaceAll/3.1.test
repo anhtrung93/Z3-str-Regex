@@ -1,0 +1,11 @@
+(declare-variable s1 String)
+(declare-variable s2 String)
+
+(assert (= s2 (ReplaceAll s1 "a" "")))
+(assert (>= (- (Length s1) (Length s2)) 4))
+
+(check-sat)
+(get-model)
+
+
+

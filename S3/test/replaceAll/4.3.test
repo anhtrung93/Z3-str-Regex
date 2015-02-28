@@ -1,0 +1,13 @@
+(declare-variable str String)
+(declare-variable s1 String)
+(declare-variable s2 String)
+
+(assert (= s1 (Substring str 0 6)))
+(assert (= s2 (ReplaceAll s1 "e" "")))
+(assert (>= (- (Length s1) (Length s2)) 2))
+
+(check-sat)
+(get-model)
+
+
+

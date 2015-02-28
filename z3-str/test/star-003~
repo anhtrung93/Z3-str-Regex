@@ -1,0 +1,10 @@
+(declare-variable x String)
+(declare-variable n Int)
+(declare-variable b Int)
+
+(assert (= true (Matches x 'color') ) )
+(assert (= true (EndsWith x "ur") ) )
+  
+(check-sat)
+(get-model)
+

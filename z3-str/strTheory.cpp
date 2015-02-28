@@ -3550,7 +3550,10 @@ void basicConcatAxiom(Z3_theory t, Z3_ast vNode, int line) {
 /*
  * Mark variable appeared in map "varAppearMap"
  */
-void classifyAstByType(Z3_theory t, Z3_ast node, std::map<Z3_ast, int> & varMap, std::map<Z3_ast, int> & concatMap) {
+void classifyAstByType(Z3_theory t, Z3_ast node, 
+	std::map<Z3_ast, int> & varMap, 
+	std::map<Z3_ast, int> & concatMap, 
+	std::map<Z3_ast, int> & starMap) {
   PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
   Z3_context ctx = Z3_theory_get_context(t);
   T_myZ3Type nodeType = getNodeType(t, node);
@@ -3569,13 +3572,19 @@ void classifyAstByType(Z3_theory t, Z3_ast node, std::map<Z3_ast, int> & varMap,
     }
 
     if (funcDecl == td->Concat) {
-      if (concatMap.find(node) == concatMap.end())
+      if (concatMap.find(node) == concatMap.end()){
         concatMap[node] = 1;
+      }
+    }
+    if (funcDecl == td->Star) {
+      if (starMap.find(node) == starMap.end()){
+        starMap[node] = 1;
+      }
     }
     int argCount = Z3_get_app_num_args(ctx, func_app);
     for (int i = 0; i < argCount; i++) {
       Z3_ast argAst = Z3_get_app_arg(ctx, func_app, i);
-      classifyAstByType(t, argAst, varMap, concatMap);
+      classifyAstByType(t, argAst, varMap, concatMap, starMap);
     }
   } else {
 //#ifdef DEBUGLOG
@@ -3613,7 +3622,10 @@ bool isInterestingFuncKind(Z3_decl_kind func_decl) {
   return result;
 }
 
-void classifyAstByTypeInPositiveContext(Z3_theory t, Z3_ast node, std::map<Z3_ast, int> & varMap, std::map<Z3_ast, int> & concatMap) {
+void classifyAstByTypeInPositiveContext(Z3_theory t, Z3_ast node, 
+	std::map<Z3_ast, int> & varMap, 
+	std::map<Z3_ast, int> & concatMap, 
+	std::map<Z3_ast, int> & starMap) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast ctxAssign = Z3_get_context_assignment(ctx);
 
@@ -3622,7 +3634,7 @@ void classifyAstByTypeInPositiveContext(Z3_theory t, Z3_ast node, std::map<Z3_as
       Z3_app func_app = Z3_to_app(ctx, ctxAssign);
       Z3_decl_kind func_decl = Z3_get_decl_kind(ctx, Z3_get_app_decl(ctx, func_app));
       if (isInterestingFuncKind(func_decl)) {
-        classifyAstByType(t, ctxAssign, varMap, concatMap);
+        classifyAstByType(t, ctxAssign, varMap, concatMap, starMap);
       }
     }
   } else {
@@ -3634,7 +3646,7 @@ void classifyAstByTypeInPositiveContext(Z3_theory t, Z3_ast node, std::map<Z3_as
         Z3_decl_kind func_decl = Z3_get_decl_kind(ctx, Z3_get_app_decl(ctx, func_app));
 
         if (isInterestingFuncKind(func_decl)) {
-          classifyAstByType(t, argAst, varMap, concatMap);
+          classifyAstByType(t, argAst, varMap, concatMap, starMap);
         }
       }
     }
@@ -3819,10 +3831,11 @@ void print_All_Eqc(Z3_theory t) {
   std::map<Z3_ast, int> strVarMap;
   std::map<Z3_ast, int> concatMap;
   std::map<Z3_ast, int> printedMap;
+  std::map<Z3_ast, int> starMap;
 
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast ctxAssign = Z3_get_context_assignment(ctx);
-  classifyAstByType(t, ctxAssign, strVarMap, concatMap);
+  classifyAstByType(t, ctxAssign, strVarMap, concatMap, starMap);
 
   __debugPrint(logFile, "\n\n=== EQC =======================================\n");
 
@@ -3896,11 +3909,21 @@ void print_All_Eqc(Z3_theory t) {
 /*
  * Dependence analysis from current context assignment
  */
-int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_ast, int> & concatMap, std::map<Z3_ast, Z3_ast> & aliasIndexMap,
-    std::map<Z3_ast, Z3_ast> & var_eq_constStr_map, std::map<Z3_ast, std::map<Z3_ast, int> > & var_eq_concat_map,
-    std::map<Z3_ast, Z3_ast> & concat_eq_constStr_map, std::map<Z3_ast, std::map<Z3_ast, int> > & concat_eq_concat_map,
-    std::map<Z3_ast, int> & freeVarMap, std::map<Z3_ast, std::map<Z3_ast, int> > & depMap,
-    std::map<std::pair<Z3_ast, Z3_ast>, std::pair<Z3_ast, Z3_ast> > & toBreakMap) {
+int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, 
+	std::map<Z3_ast, int> & concatMap, 
+	std::map<Z3_ast, Z3_ast> & aliasIndexMap,
+	std::map<Z3_ast, Z3_ast> & var_eq_constStr_map, 
+	std::map<Z3_ast, std::map<Z3_ast, int> > & var_eq_concat_map,
+    	std::map<Z3_ast, Z3_ast> & concat_eq_constStr_map, 
+	std::map<Z3_ast, std::map<Z3_ast, int> > & concat_eq_concat_map,
+    	std::map<Z3_ast, int> & freeVarMap, 
+	std::map<Z3_ast, std::map<Z3_ast, int> > & depMap,
+    	std::map<std::pair<Z3_ast, Z3_ast>, 
+	std::pair<Z3_ast, Z3_ast> > & toBreakMap,
+    	std::map<Z3_ast, int> & starMap,
+	std::map<Z3_ast, Z3_ast> & star_eq_constStr_map,
+	std::map<Z3_ast, std::map<Z3_ast, int> > & star_eq_star_map,
+	std::map<Z3_ast, std::map<Z3_ast, int> > & star_eq_concat_map) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast ctxAssign = Z3_get_context_assignment(ctx);
 
@@ -3913,13 +3936,13 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_a
   //--------------------------------------------
   // Step 1. get variables/Concat AST appeared in context
   //--------------------------------------------
-//    classifyAstByType(t, ctxAssign, strVarMap, concatMap);
+//    classifyAstByType(t, ctxAssign, strVarMap, concatMap, starMap);
 
   for (std::map<Z3_ast, int>::iterator it = inputVarMap.begin(); it != inputVarMap.end(); it++) {
     strVarMap[it->first] = 1;
   }
 
-  classifyAstByTypeInPositiveContext(t, ctxAssign, strVarMap, concatMap);
+  classifyAstByTypeInPositiveContext(t, ctxAssign, strVarMap, concatMap, starMap); // modified
 
   //--------------------------------------------
   // Step 2. Collect alias relation
@@ -4026,6 +4049,74 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_a
         curr = Z3_theory_get_eqc_next(t, curr);
       } while (curr != deAliasConcat);
     }
+    // (8) concat_eq_star:
+    //     collect twice
+    if (star_eq_concat_map.find(deAliasConcat) == star_eq_concat_map.end()) {
+      Z3_ast curr = deAliasConcat;
+      do {
+        if (isStarFunc(t, curr))
+          star_eq_concat_map[deAliasConcat][curr] = 1;
+        curr = Z3_theory_get_eqc_next(t, curr);
+      } while (curr != deAliasConcat);
+    }
+  }
+
+// OWN CODE
+  std::map<Z3_ast, Z3_ast> stars_eq_Index_map;
+  std::map<Z3_ast, int>::iterator starItor = starMap.begin();
+  for (; starItor != starMap.end(); starItor++) {
+    if (stars_eq_Index_map.find(starItor->first) != stars_eq_Index_map.end())
+      continue;
+
+    Z3_ast aRoot = NULL;
+    Z3_ast curr = starItor->first;
+    do {
+      if (isStarFunc(t, curr)) {
+        if (aRoot == NULL)
+          aRoot = curr;
+        else
+          stars_eq_Index_map[curr] = aRoot;
+      }
+      curr = Z3_theory_get_eqc_next(t, curr);
+    } while (curr != starItor->first);
+  }
+  starItor = starMap.begin();
+  for (; starItor != starMap.end(); starItor++) {
+    Z3_ast deAliasStar = NULL;
+    if (stars_eq_Index_map.find(starItor->first) != stars_eq_Index_map.end())
+      deAliasStar = stars_eq_Index_map[starItor->first];
+
+    else
+      deAliasStar = starItor->first;
+
+    //(5) star_eq_constStr:
+    //    e.g,  star ('abc' n) = "abcabc"
+    if (star_eq_constStr_map.find(deAliasStar) == star_eq_constStr_map.end()) {
+      Z3_ast nodeValue = get_eqc_value(t, deAliasStar);
+      if (deAliasStar != nodeValue)
+        star_eq_constStr_map[deAliasStar] = nodeValue;
+
+    }
+    // (6) star_eq_star:
+    if (star_eq_star_map.find(deAliasStar) == star_eq_star_map.end()) {
+      Z3_ast curr = deAliasStar;
+      do {
+        if (isStarFunc(t, curr))
+          star_eq_star_map[deAliasStar][curr] = 1;
+        curr = Z3_theory_get_eqc_next(t, curr);
+      } while (curr != deAliasStar);
+    }
+    // (7) star_eq_concat:
+    if (star_eq_concat_map.find(deAliasStar) == star_eq_concat_map.end()) {
+      Z3_ast curr = deAliasStar;
+	
+      do {
+        if (isConcatFunc(t, curr)){
+          star_eq_concat_map[deAliasStar][curr] = 1;
+	}
+        curr = Z3_theory_get_eqc_next(t, curr);
+      } while (curr != deAliasStar);
+    }
   }
 
 #ifdef DEBUGLOG
@@ -4104,8 +4195,56 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_a
     for (; itor4 != concat_eq_concat_map.end(); itor4++) {
       if (itor4->second.size() > 1) {
         std::map<Z3_ast, int>::iterator i_itor = itor4->second.begin();
+	printZ3Node(t, itor4->first);
         __debugPrint(logFile, "  >> ");
         for (; i_itor != itor4->second.end(); i_itor++) {
+          printZ3Node(t, i_itor->first);
+          __debugPrint(logFile, " , ");
+        }
+        __debugPrint(logFile, "\n\n");
+      }
+    }
+  }
+
+  {
+    __debugPrint(logFile, "(6) star = constStr:\n");
+    std::map<Z3_ast, Z3_ast>::iterator itor5 = star_eq_constStr_map.begin();
+    for (; itor5 != star_eq_constStr_map.end(); itor5++) {
+      __debugPrint(logFile, "  ");
+      printZ3Node(t, itor5->first);
+      __debugPrint(logFile, " = ");
+      printZ3Node(t, itor5->second);
+      __debugPrint(logFile, "\n");
+
+    }
+    __debugPrint(logFile, "\n");
+  }
+
+  {
+    __debugPrint(logFile, "(7) eq stars:\n");
+    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor6 = star_eq_star_map.begin();
+    for (; itor6 != star_eq_star_map.end(); itor6++) {
+      if (itor6->second.size() > 1) {
+        std::map<Z3_ast, int>::iterator i_itor = itor6->second.begin();
+        __debugPrint(logFile, "  >> ");
+        for (; i_itor != itor6->second.end(); i_itor++) {
+          printZ3Node(t, i_itor->first);
+          __debugPrint(logFile, " , ");
+        }
+        __debugPrint(logFile, "\n");
+      }
+    }
+  }
+
+  {
+    __debugPrint(logFile, "(8) star = concat:\n");
+    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor7 = star_eq_concat_map.begin();
+    for (; itor7 != star_eq_concat_map.end(); itor7++) {
+      if (itor7->second.size() > 1) {
+        std::map<Z3_ast, int>::iterator i_itor = itor7->second.begin();
+	printZ3Node(t, itor7->first);
+        __debugPrint(logFile, "  >> ");
+        for (; i_itor != itor7->second.end(); i_itor++) {
           printZ3Node(t, i_itor->first);
           __debugPrint(logFile, " , ");
         }
@@ -4133,7 +4272,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_a
       Z3_ast concat = itor1->first;
       std::map<Z3_ast, int> inVarMap;
       std::map<Z3_ast, int> inConcatMap;
-      classifyAstByType(t, concat, inVarMap, inConcatMap);
+      std::map<Z3_ast, int> inStarMap;
+      classifyAstByType(t, concat, inVarMap, inConcatMap, inStarMap);
       for (std::map<Z3_ast, int>::iterator itor2 = inVarMap.begin(); itor2 != inVarMap.end(); itor2++) {
         Z3_ast varInConcat = getAliasIndexAst(aliasIndexMap, itor2->first);
         if (!(depMap[var].find(varInConcat) != depMap[var].end() && depMap[var][varInConcat] == 1))
@@ -4148,7 +4288,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_a
     Z3_ast constStr = itor->second;
     std::map<Z3_ast, int> inVarMap;
     std::map<Z3_ast, int> inConcatMap;
-    classifyAstByType(t, concatAst, inVarMap, inConcatMap);
+    std::map<Z3_ast, int> inStarMap;
+    classifyAstByType(t, concatAst, inVarMap, inConcatMap, inStarMap);
     for (std::map<Z3_ast, int>::iterator itor2 = inVarMap.begin(); itor2 != inVarMap.end(); itor2++) {
       Z3_ast varInConcat = getAliasIndexAst(aliasIndexMap, itor2->first);
       if (!(depMap[varInConcat].find(constStr) != depMap[varInConcat].end() && depMap[varInConcat][constStr] == 1))
@@ -4291,6 +4432,24 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, std::map<Z3_a
       }
     }
   }
+// Own code
+
+//(6) star = constStr
+  for (std::map<Z3_ast, Z3_ast>::iterator itor = star_eq_constStr_map.begin(); itor != star_eq_constStr_map.end(); itor++) {
+    Z3_ast starAst = itor->first;
+    Z3_ast constStr = itor->second;
+    std::map<Z3_ast, int> inVarMap;
+    std::map<Z3_ast, int> inConcatMap;
+    std::map<Z3_ast, int> inStarMap;
+    classifyAstByType(t, starAst, inVarMap, inConcatMap, inStarMap);
+    for (std::map<Z3_ast, int>::iterator itor2 = inVarMap.begin(); itor2 != inVarMap.end(); itor2++) {
+      Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
+      if (!(depMap[varInStar].find(constStr) != depMap[varInStar].end() && depMap[varInStar][constStr] == 1))
+        depMap[varInStar][constStr] = 6;
+    }
+  }
+// (7) star = star
+	
 
 #ifdef DEBUGLOG
   __debugPrint(logFile, "\n\n-- Dependence Map -----------------\n");
@@ -4681,7 +4840,7 @@ bool getNextValEncode(std::vector<int> & base, std::vector<int> & next) {
   }
 }
 
-/*
+/*n
  *
  */
 Z3_ast genValOptions(Z3_theory t, Z3_ast freeVar, Z3_ast len_indicator, Z3_ast val_indicator, std::string lenStr, int tries) {
@@ -4991,9 +5150,13 @@ Z3_bool cb_final_check(Z3_theory t) {
   std::map<Z3_ast, std::map<Z3_ast, int> > depMap;
   std::map<Z3_ast, int> freeVar_map;
   std::map<std::pair<Z3_ast, Z3_ast>, std::pair<Z3_ast, Z3_ast> > toBreakMap;
+  std::map<Z3_ast, int> starMap;
+  std::map<Z3_ast, Z3_ast> star_eq_constStr_map;
+  std::map<Z3_ast, std::map<Z3_ast, int> > star_eq_star_map;
+  std::map<Z3_ast, std::map<Z3_ast, int> > star_eq_concat_map;
 
-  int conflictInDep = ctxDepAnalysis(t, varAppearInAssign, concatMap, aliasIndexMap, var_eq_constStr_map, var_eq_concat_map, concat_eq_constStr_map,
-      concat_eq_concat_map, freeVar_map, depMap, toBreakMap);
+  int conflictInDep = ctxDepAnalysis(t, varAppearInAssign, concatMap, aliasIndexMap, var_eq_constStr_map, var_eq_concat_map, concat_eq_constStr_map, concat_eq_concat_map, freeVar_map, depMap, toBreakMap, starMap, star_eq_constStr_map, 
+star_eq_star_map, star_eq_concat_map);
 
   if (conflictInDep == -1) {
     __debugPrint(logFile, "\n\n###########################################################\n\n");
@@ -6168,7 +6331,7 @@ void display_model(Z3_theory t, FILE * out, Z3_model m) {
     Z3_sort v_sort = Z3_get_sort(c, v);
 
     display_symbol(c, out, name);
-    fprintf(out, " : ");
+    fprintf(out, " :z ");
     display_sort(t, out, v_sort);
 
     fprintf(out, " -> ");

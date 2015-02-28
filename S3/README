@@ -1,0 +1,16 @@
+1. + S3 is built on top of Z3-str (version 2013-10-03), 
+   + Is updated with the patch of Z3-str (version 2014-07-20).
+
+2. How to run:
+   $ ./run.py -f inputFile
+   
+3. Input format:
+  * The input language of S3 extends that of Z3-str with:
+    + Regular expressions
+    + Membership predicates
+    + High-level string operations that work on regular expressions such as replaceAll
+  * For the extension, we provide some examples to guide users to express inputs.
+  * The documentation for input format will be done soon. 
+  * If you have any problem with parsing inputs, please feel free to contact me at trinhmt@comp.nus.edu.sg
+  
+4. Please send us feedback/bug reports if any (to the following email address trinhmt@comp.nus.edu.sg).
