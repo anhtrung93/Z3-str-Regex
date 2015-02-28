@@ -3907,7 +3907,7 @@ void print_All_Eqc(Z3_theory t) {
 }
 
 /*
- * Dependence analysis from current context assignment
+ * ếce analysis from current context assignment
  */
 int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, 
 	std::map<Z3_ast, int> & concatMap, 

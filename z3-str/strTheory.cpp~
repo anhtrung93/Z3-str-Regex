@@ -4449,6 +4449,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     }
   }
 // (7) star = star
+	
 
 #ifdef DEBUGLOG
   __debugPrint(logFile, "\n\n-- Dependence Map -----------------\n");
