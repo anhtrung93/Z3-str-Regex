@@ -1,9 +1,0 @@
-(declare-variable x String)
-(declare-variable y String)
-(declare-variable n Int)
-
-(assert (= (Star 'abc|dbcabc' n ) (Concat x "bcabc") ) )
-  
-(check-sat-using (then simplify solve-eqs smt))
-(get-model)
-

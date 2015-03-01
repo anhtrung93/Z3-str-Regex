@@ -27,5 +27,9 @@
 *.out
 *.app
 
-Makefile
-Makefile~
+*~
+z3-str/*~
+z3-str/test/*~
+z3-str/log
+z3-str/str
+.gitignore~
