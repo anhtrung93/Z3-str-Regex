@@ -9,7 +9,8 @@ import subprocess
 
 # "solver" should point to the binary built. 
 # e.g. "/home/z3-str/str" or "/home/work/tool/z3/myStrTheory/str"
-solver = "/opt/Workspace/z3-str_ws/z3-str/str" #"/home/lumtics/Z3-str-Regex/z3-str/str"
+#solver = "/opt/Workspace/z3-str_ws/z3-str/str" 
+solver = "/home/lumtics/Z3-str-Regex/z3-str/str"
 # Before sovling the constraints, Z3-str has to properly encodes inputs as intermediated 
 # format. (E.g. "\n" and "\t" should be encoded). Variable "tmpEncodingDir" where the intermediated
 # inputs are saved

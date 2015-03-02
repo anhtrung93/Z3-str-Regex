@@ -4081,7 +4081,7 @@ void print_All_Eqc(Z3_theory t) {
 }
 
 /*
- * ếce analysis from current context assignment
+ * Dependence analysis from current context assignment
  */
 int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, 
 	std::map<Z3_ast, int> & concatMap, 
@@ -4095,7 +4095,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     	std::map<std::pair<Z3_ast, Z3_ast>, 
 	std::pair<Z3_ast, Z3_ast> > & toBreakMap,
     	std::map<Z3_ast, int> & starMap,
-	std::map<Z3_ast, Z3_ast> & star_eq_constStr_map,
+	std::map<Z3_ast, std::map<Z3_ast, int> > & var_eq_star_map,
 	std::map<Z3_ast, std::map<Z3_ast, int> > & star_eq_star_map,
 	std::map<Z3_ast, std::map<Z3_ast, int> > & star_eq_concat_map) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -4176,6 +4176,27 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         curr = Z3_theory_get_eqc_next(t, curr);
       }
     }
+    // (6) var_eq_star       : e.g,  z = Star('abc', b)
+    //-----------------------------------------------------------------
+    if (var_eq_star_map.find(deAliasNode) == var_eq_star_map.end()) {
+      Z3_ast curr = Z3_theory_get_eqc_next(t, deAliasNode);
+      while (curr != deAliasNode) {
+        if (isStarFunc(t, curr)) {
+          Z3_ast arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, curr), 0);
+          Z3_ast arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, curr), 1);
+          Z3_ast arg0_value = get_eqc_value(t, arg0);
+          Z3_ast arg1_value = get_eqc_value(t, arg1);
+          T_myZ3Type arg0_vType = getNodeType(t, arg0_value);
+          T_myZ3Type arg1_vType = getNodeType(t, arg1_value);
+          bool is_arg0_emptyStr = (arg0_vType == my_Z3_ConstStr) && (getConstStrValue(t, arg0_value) == "");
+          bool is_arg1_emptyStr = (arg1_vType == my_Z3_ConstStr) && (getConstStrValue(t, arg1_value) == "");
+          if (!is_arg0_emptyStr && !is_arg1_emptyStr) {
+            var_eq_star_map[deAliasNode][curr] = 1;
+          }
+        }
+        curr = Z3_theory_get_eqc_next(t, curr);
+      }
+    }
   }
 
   std::map<Z3_ast, Z3_ast> concats_eq_Index_map;
@@ -4223,16 +4244,6 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         curr = Z3_theory_get_eqc_next(t, curr);
       } while (curr != deAliasConcat);
     }
-    // (8) concat_eq_star:
-    //     collect twice
-    if (star_eq_concat_map.find(deAliasConcat) == star_eq_concat_map.end()) {
-      Z3_ast curr = deAliasConcat;
-      do {
-        if (isStarFunc(t, curr))
-          star_eq_concat_map[deAliasConcat][curr] = 1;
-        curr = Z3_theory_get_eqc_next(t, curr);
-      } while (curr != deAliasConcat);
-    }
   }
 
 // OWN CODE
@@ -4263,15 +4274,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     else
       deAliasStar = starItor->first;
 
-    //(5) star_eq_constStr:
-    //    e.g,  star ('abc' n) = "abcabc"
-    if (star_eq_constStr_map.find(deAliasStar) == star_eq_constStr_map.end()) {
-      Z3_ast nodeValue = get_eqc_value(t, deAliasStar);
-      if (deAliasStar != nodeValue)
-        star_eq_constStr_map[deAliasStar] = nodeValue;
-
-    }
-    // (6) star_eq_star:
+    // (7) star_eq_star:
     if (star_eq_star_map.find(deAliasStar) == star_eq_star_map.end()) {
       Z3_ast curr = deAliasStar;
       do {
@@ -4280,7 +4283,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         curr = Z3_theory_get_eqc_next(t, curr);
       } while (curr != deAliasStar);
     }
-    // (7) star_eq_concat:
+    // (8) star_eq_concat:
     if (star_eq_concat_map.find(deAliasStar) == star_eq_concat_map.end()) {
       Z3_ast curr = deAliasStar;
 	
@@ -4369,27 +4372,29 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     for (; itor4 != concat_eq_concat_map.end(); itor4++) {
       if (itor4->second.size() > 1) {
         std::map<Z3_ast, int>::iterator i_itor = itor4->second.begin();
-	printZ3Node(t, itor4->first);
-        __debugPrint(logFile, "  >> ");
         for (; i_itor != itor4->second.end(); i_itor++) {
           printZ3Node(t, i_itor->first);
           __debugPrint(logFile, " , ");
         }
-        __debugPrint(logFile, "\n\n");
-      }
+        __debugPrint(logFile, "\n");
+      }  
     }
+    __debugPrint(logFile, "\n");
   }
 
   {
-    __debugPrint(logFile, "(6) star = constStr:\n");
-    std::map<Z3_ast, Z3_ast>::iterator itor5 = star_eq_constStr_map.begin();
-    for (; itor5 != star_eq_constStr_map.end(); itor5++) {
+    __debugPrint(logFile, "(6) star = varStr:\n");
+    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor6 = var_eq_star_map.begin();
+    for (; itor6 != var_eq_star_map.end(); itor6++) {
       __debugPrint(logFile, "  ");
-      printZ3Node(t, itor5->first);
-      __debugPrint(logFile, " = ");
-      printZ3Node(t, itor5->second);
-      __debugPrint(logFile, "\n");
-
+      printZ3Node(t, itor6->first);
+      __debugPrint(logFile, " = { ");
+      std::map<Z3_ast, int>::iterator i_itor = itor6->second.begin();
+      for (; i_itor != itor6->second.end(); i_itor++) {
+        printZ3Node(t, i_itor->first);
+        __debugPrint(logFile, ", ");
+      }
+      __debugPrint(logFile, "}\n");
     }
     __debugPrint(logFile, "\n");
   }
@@ -4424,6 +4429,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         }
         __debugPrint(logFile, "\n");
       }
+      __debugPrint(logFile, "\n");
     }
   }
 
@@ -4437,6 +4443,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     Z3_ast var = getAliasIndexAst(aliasIndexMap, itor->first);
     Z3_ast strAst = itor->second;
     depMap[var][strAst] = 1;
+
   }
 
   // (2) var = concat
@@ -4468,6 +4475,51 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
       Z3_ast varInConcat = getAliasIndexAst(aliasIndexMap, itor2->first);
       if (!(depMap[varInConcat].find(constStr) != depMap[varInConcat].end() && depMap[varInConcat][constStr] == 1))
         depMap[varInConcat][constStr] = 3;
+    }
+  }
+// Own code
+
+  //(6) star = varStr
+  for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = var_eq_star_map.begin(); itor != var_eq_star_map.end(); itor++) {
+    Z3_ast var = getAliasIndexAst(aliasIndexMap, itor->first);
+    for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
+      Z3_ast star = itor1->first;
+      Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, star), 1);
+      if (depMap[var].find(varInt) == depMap[var].end()) {
+        depMap[var][varInt] = 6;
+      }
+    }
+  }
+  /*/ (7) star = star
+  for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = star_eq_star_map.begin(); itor != star_eq_star_map.end(); itor++) {
+    Z3_ast starL = itor->first;
+    for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
+       Z3_ast starR = itor1->first;
+       std::map<Z3_ast, int> inVarMap;
+       std::map<Z3_ast, int> inConcatMap;
+       std::map<Z3_ast, int> inStarMap;
+       classifyAstByType(t, starL, inVarMap, inConcatMap, inStarMap);
+       for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
+         Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
+         if (!(depMap[varInStar].find(starR) != depMap[varInStar].end()))
+         depMap[varInStar][starR] = 7;
+       }
+    }
+  }*/
+// (8) star = concat
+  for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = star_eq_concat_map.begin(); itor != star_eq_concat_map.end(); itor++) {
+    Z3_ast starAst = itor->first;
+    for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
+       Z3_ast concatAst = itor1->first;
+       std::map<Z3_ast, int> inVarMap;
+       std::map<Z3_ast, int> inConcatMap;
+       std::map<Z3_ast, int> inStarMap;
+       classifyAstByType(t, starAst, inVarMap, inConcatMap, inStarMap);
+       for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
+         Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
+         if (!(depMap[varInStar].find(concatAst) != depMap[varInStar].end()))
+         depMap[varInStar][concatAst] = 8;
+       }
     }
   }
 
@@ -4606,23 +4658,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
       }
     }
   }
-// Own code
 
-//(6) star = constStr
-  for (std::map<Z3_ast, Z3_ast>::iterator itor = star_eq_constStr_map.begin(); itor != star_eq_constStr_map.end(); itor++) {
-    Z3_ast starAst = itor->first;
-    Z3_ast constStr = itor->second;
-    std::map<Z3_ast, int> inVarMap;
-    std::map<Z3_ast, int> inConcatMap;
-    std::map<Z3_ast, int> inStarMap;
-    classifyAstByType(t, starAst, inVarMap, inConcatMap, inStarMap);
-    for (std::map<Z3_ast, int>::iterator itor2 = inVarMap.begin(); itor2 != inVarMap.end(); itor2++) {
-      Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
-      if (!(depMap[varInStar].find(constStr) != depMap[varInStar].end() && depMap[varInStar][constStr] == 1))
-        depMap[varInStar][constStr] = 6;
-    }
-  }
-// (7) star = star
 	
 
 #ifdef DEBUGLOG
@@ -5325,11 +5361,11 @@ Z3_bool cb_final_check(Z3_theory t) {
   std::map<Z3_ast, int> freeVar_map;
   std::map<std::pair<Z3_ast, Z3_ast>, std::pair<Z3_ast, Z3_ast> > toBreakMap;
   std::map<Z3_ast, int> starMap;
-  std::map<Z3_ast, Z3_ast> star_eq_constStr_map;
+  std::map<Z3_ast, std::map<Z3_ast, int> > var_eq_star_map;
   std::map<Z3_ast, std::map<Z3_ast, int> > star_eq_star_map;
   std::map<Z3_ast, std::map<Z3_ast, int> > star_eq_concat_map;
 
-  int conflictInDep = ctxDepAnalysis(t, varAppearInAssign, concatMap, aliasIndexMap, var_eq_constStr_map, var_eq_concat_map, concat_eq_constStr_map, concat_eq_concat_map, freeVar_map, depMap, toBreakMap, starMap, star_eq_constStr_map, 
+  int conflictInDep = ctxDepAnalysis(t, varAppearInAssign, concatMap, aliasIndexMap, var_eq_constStr_map, var_eq_concat_map, concat_eq_constStr_map, concat_eq_concat_map, freeVar_map, depMap, toBreakMap, starMap, var_eq_star_map, 
 star_eq_star_map, star_eq_concat_map);
 
   if (conflictInDep == -1) {
