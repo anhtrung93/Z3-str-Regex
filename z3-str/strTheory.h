@@ -130,6 +130,10 @@ inline bool isValidRegex(Z3_theory t, Z3_ast n);
 
 inline bool isSimpleRegex(Z3_theory t, Z3_ast n);
 
+void getStarableFromStart(int * * dp, boost::regex regexTemp, std::string const_str);
+
+void getStarableFromEnd(int * * dp, boost::regex regexTemp, std::string const_str);
+
 Z3_ast mk_1_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x);
 
 Z3_ast mk_2_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x, Z3_ast y);

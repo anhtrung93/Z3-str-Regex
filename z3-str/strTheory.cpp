@@ -345,6 +345,12 @@ Z3_ast my_mk_str_value(Z3_theory t, char const * str) {
  * OWN CODE
  */
 Z3_ast my_mk_regex_value(Z3_theory t, char const * str) {
+  if (t == NULL || str == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "my_mk_regex_value(): ERROR: t == NULL || str == NULL");
+#endif
+    return NULL;
+  }
   Z3_context ctx = Z3_theory_get_context(t);
   PATheoryData * td = (PATheoryData *) Z3_theory_get_ext_data(t);
 
@@ -428,9 +434,15 @@ Z3_ast my_mk_and(Z3_theory t, Z3_ast * item, int count) {
 }
 
 /*
- *
+ * CHANGE_ORIGINAL_CODE
  */
 Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_or(): t == NULL");
+#endif
+    return NULL;
+  }
   if (and1 == NULL){
     return and2;
   } else if (and2 == NULL){
@@ -445,6 +457,12 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
  * OWN CODE
  */
 Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_or(): t == NULL");
+#endif
+    return NULL;
+  }
   if (or1 == NULL){
     return or2;
   } else if (or2 == NULL){
@@ -459,6 +477,23 @@ Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2) {
  * OWN CODE
  */
 Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_add(): t == NULL");
+#endif
+    return NULL;
+  }
+  if (add1 == NULL || add2 == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_add(): add1 == NULL || add2 == NULL\n");
+  __debugPrint(logFile, "add1 = ");
+  printZ3Node(t, add1);
+  __debugPrint(logFile, "\nadd2 = ");
+  printZ3Node(t, add1);
+  __debugPrint(logFile, "\n\n");
+#endif
+    return NULL;
+  }  
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast add_items[2] = { add1, add2 };
   return Z3_mk_add(ctx, 2, add_items);
@@ -468,6 +503,23 @@ Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2) {
  * OWN CODE
  */
 Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_mul(): t == NULL");
+#endif
+    return NULL;
+  }
+  if (mul1 == NULL || mul2 == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_mul(): mul1 == NULL || mul2 == NULL\n");
+  __debugPrint(logFile, "mul1 = ");
+  printZ3Node(t, mul1);
+  __debugPrint(logFile, "\nmul2 = ");
+  printZ3Node(t, mul2);
+  __debugPrint(logFile, "\n\n");
+#endif
+    return NULL;
+  }  
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast mul_items[2] = { mul1, mul2 };
   return Z3_mk_mul(ctx, 2, mul_items);
@@ -476,6 +528,7 @@ Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2) {
 /* ---------------------------------
  * Return the node type in Enum
  * ---------------------------------
+ * CHANGE_ORIGINAL_CODE
  */
 T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
   Z3_context ctx = Z3_theory_get_context(t);
@@ -554,6 +607,17 @@ inline bool isConstStr(Z3_theory t, Z3_ast node) {
  * OWN CODE
  */
 inline bool isConstInt(Z3_theory t, Z3_ast node) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "isConstInt(): t == NULL");
+#endif
+    return false;
+  } else if (node == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "isConstInt(): node == NULL");
+#endif
+    return false;
+  }
   int temp;
   Z3_context ctx = Z3_theory_get_context(t);
   if (getNodeType(t, node) == my_Z3_Num
@@ -567,6 +631,17 @@ inline bool isConstInt(Z3_theory t, Z3_ast node) {
  * OWN CODE
  */
 inline bool isValidRegex(Z3_theory t, Z3_ast node){
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "isValidRegex(): t == NULL");
+#endif
+    return false;
+  } else if (node == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "isValidRegex(): node == NULL");
+#endif
+    return false;
+  }  
   std::string regexStr = getRegexString(t, node);
   if (regexStr.compare("__NotRegex__") != 0) {
     return true;
@@ -579,6 +654,17 @@ inline bool isValidRegex(Z3_theory t, Z3_ast node){
  * whether this regex is simple (regex itself is a string))
  */
 inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "isSimpleRegex(): t == NULL");
+#endif
+    return false;
+  } else if (node == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "isSimpleRegex(): node == NULL");
+#endif
+    return false;
+  }  
   if (! isValidRegex(t, node)){
     return false;
   } else {
@@ -602,6 +688,115 @@ inline bool isSimpleRegex(Z3_theory t, Z3_ast node){
     }
   }
 }
+
+/*
+ * OWN_CODE
+ */
+void getStarableFromStart(int * * dp, boost::regex regexTemp, std::string const_str){
+  int length_const_str = (int) const_str.size();
+  if (dp == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "getStarableFromStart(): dp == NULL");
+#endif      
+    return;
+  } else {
+    for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+      if (dp[id_dp] == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "getStarableFromStart(): dp[%d] == NULL", id_dp);
+#endif      
+        return;
+      } else {
+        for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
+          dp[id_dp][id_dp2] = 0;
+        }
+      }
+    }
+  }
+
+  for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+    std::string strTemp = const_str.substr(0, id_dp + 1);
+    if (boost::regex_match(strTemp, regexTemp)){
+      dp[id_dp][0] = 1;
+    }
+    for (int id_const_str = 0; id_const_str < id_dp; ++ id_const_str){
+      strTemp = const_str.substr(id_const_str + 1, id_dp - id_const_str);
+      if (boost::regex_match(strTemp, regexTemp)){
+        for (int id_dp2 = 0; id_dp2 < length_const_str - 1; ++ id_dp2){
+           dp[id_dp][id_dp2 + 1] = dp[id_const_str][id_dp2];
+        }
+      }
+    }
+  }
+  
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "dp = \n");
+  for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+    for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
+      __debugPrint(logFile, "%d ", dp[id_dp][id_dp2]);
+    } 
+    __debugPrint(logFile, "\n");
+  }
+  __debugPrint(logFile, "\n");
+#endif
+
+}
+
+
+/*
+ * OWN CODE
+ * TODO on working
+ */
+void getStarableFromEnd(int * * dp, boost::regex regexTemp, std::string const_str){
+  int length_const_str = (int) const_str.size();
+  if (dp == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "getStarableFromEnd(): dp == NULL");
+#endif      
+    return;
+  } else {
+    for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+      if (dp[id_dp] == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "getStarableFromEnd(): dp[%d] == NULL", id_dp);
+#endif      
+        return;
+      } else {
+        for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
+          dp[id_dp][id_dp2] = 0;
+        }
+      }
+    }
+  }
+
+  for (int id_dp = length_const_str - 1; id_dp >= 0; -- id_dp){
+    std::string strTemp = const_str.substr(id_dp, length_const_str - id_dp);
+    if (boost::regex_match(strTemp, regexTemp)){
+      dp[id_dp][0] = 1;
+    }
+    for (int id_const_str = length_const_str - 1; id_const_str > id_dp; -- id_const_str){
+      strTemp = const_str.substr(id_dp, id_const_str - id_dp + 1);
+      if (boost::regex_match(strTemp, regexTemp)){
+        for (int id_dp2 = 0; id_dp2 < length_const_str - 1; ++ id_dp2){
+           dp[id_dp][id_dp2 + 1] = dp[id_const_str][id_dp2];
+        }
+      }
+    }
+  }
+  
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "dp = \n");
+  for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
+    for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
+      __debugPrint(logFile, "%d ", dp[id_dp][id_dp2]);
+    } 
+    __debugPrint(logFile, "\n");
+  }
+  __debugPrint(logFile, "\n");
+#endif
+
+}
+
 
 /*
  *
@@ -662,6 +857,12 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
  * OWN CODE
  */
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_star(): t == NULL");
+#endif
+    return NULL;
+  }
   if (n1 == NULL || n2 == NULL) {
     fprintf(stdout, "> Error: the string and number to be star cannot be NULL (@ %d).\n", __LINE__);
     exit(0);
@@ -1560,14 +1761,6 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
     Z3_ast arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 0);
     Z3_ast arg2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
     
-    int * * dp = new int * [length_const_str];
-    for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
-      dp[id_dp] = new int [length_const_str];
-      for (int id_dp2 = 0; id_dp2 < length_const_str; ++ id_dp2){
-        dp[id_dp][id_dp2] = 0;
-      }
-    }
-    
     if (! isValidRegex(t, arg1)){
 #ifdef DEBUGLOG
   __debugPrint(logFile, " invalid regular expression: ");
@@ -1578,32 +1771,13 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
     }
     
     boost::regex regexTemp = getRegexValue(t, arg1);
-    std::string strTemp;
     
+    int * * dp = new int * [length_const_str];
     for (int id_dp = 0; id_dp < length_const_str; ++ id_dp){
-      strTemp = const_str.substr(0, id_dp + 1);
-      if (boost::regex_match(strTemp, regexTemp)){
-        dp[id_dp][0] = 1;
-      }
-//#ifdef DEBUGLOG
-//  __debugPrint(logFile, "%d ", dp[id_dp][0]);
-//#endif
-      
-      for (int id_const_str = 0; id_const_str < id_dp; ++ id_const_str){
-        strTemp = const_str.substr(id_const_str + 1, id_dp - id_const_str);
-        if (boost::regex_match(strTemp, regexTemp)){
-          for (int id_dp2 = 0; id_dp2 < length_const_str - 1; ++ id_dp2){
-            dp[id_dp][id_dp2 + 1] = dp[id_const_str][id_dp2];
-//#ifdef DEBUGLOG
-//  __debugPrint(logFile, "%d ", dp[id_dp][id_dp2 + 1]);
-//#endif
-          }
-        }
-      }
-//#ifdef DEBUGLOG
-//  __debugPrint(logFile, "\n");
-//#endif
+      dp[id_dp] = new int [length_const_str];
     }
+    
+    getStarableFromStart(dp, regexTemp, const_str);
     
     if (isConstInt(t, arg2)){
       int const_arg2 = getConstIntValue(t, arg2);
