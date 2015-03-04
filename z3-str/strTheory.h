@@ -98,10 +98,6 @@ typedef enum
 //--------------------------------------------------
 void setAlphabet();
 
-std::vector<std::string> getStarableFromStart(const std::string &);
-
-std::vector<std::string> getStarableFromEnd(const std::string &);
-
 Z3_ast mk_var(Z3_context ctx, const char * name, Z3_sort ty);
 
 Z3_ast mk_bool_var(Z3_context ctx, const char * name);
@@ -130,9 +126,9 @@ inline bool isValidRegex(Z3_theory t, Z3_ast n);
 
 inline bool isSimpleRegex(Z3_theory t, Z3_ast n);
 
-void getStarableFromStart(int * * dp, boost::regex regexTemp, std::string const_str);
+void getStarableFromStart(int * * dp, const boost::regex & regexTemp, const std::string & const_str);
 
-void getStarableFromEnd(int * * dp, boost::regex regexTemp, std::string const_str);
+void getStarableFromEnd(int * * dp, const boost::regex & regexTemp, const std::string & const_str);
 
 Z3_ast mk_1_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x);
 
