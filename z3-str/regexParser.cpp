@@ -94,8 +94,8 @@ Z3_ast parseStar(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
   
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast intVar = my_mk_internal_int_var(t);
+  Z3_ast result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), intVar, breakDownAssert);
   breakDownAssert = Z3_mk_ge(ctx, intVar, mk_int(ctx, 0));
-  Z3_ast result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), intVar);
   
   return result;
 }
@@ -115,8 +115,8 @@ Z3_ast parsePlus(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert){
   
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast intVar = my_mk_internal_int_var(t);
+  Z3_ast result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), intVar, breakDownAssert);
   breakDownAssert = Z3_mk_ge(ctx, intVar, mk_int(ctx, 1));
-  Z3_ast result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), intVar);
   
   return result;
 }
@@ -158,8 +158,8 @@ Z3_ast parseCounter(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert)
       int second = atoi(counterStr.substr(temp + 1, counterStr.length() - temp - 1).c_str());
       breakDownAssert = mk_2_and(t, breakDownAssert, Z3_mk_le(ctx, intVar, mk_int(ctx, second)));
     }
-    result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), intVar);
-    
+    Z3_ast assert = NULL;//don't need to use this one
+    result = mk_star(t, my_mk_regex_value(t, regexStr.c_str()), intVar, assert);    
   } else {
     int repeatTimes = atoi(counterStr.c_str());
     std::string new_regex = "";
