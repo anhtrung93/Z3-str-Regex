@@ -2269,36 +2269,18 @@ void simplifyStarEq(Z3_theory t, Z3_ast nn1, Z3_ast nn2, int duplicateCheck) {
     //  case 3: star(regex_var1, var_int1) = star(regex_var2, var_int2)             //
     //******************************************************************************//
     Z3_ast zeroEq = mk_2_and(t, Z3_mk_eq(ctx, nn1_arg1, mk_int(ctx, 0)), Z3_mk_eq(ctx, nn2_arg1, mk_int(ctx, 0)));
-    Z3_ast assert[5];
-    Z3_ast parseFirst = regex_parse(t, getRegexString(t, nn1_arg0), assert[2]);
+    Z3_ast assert1 = NULL, assert2 = NULL;
+    Z3_ast parseFirst = regex_parse(t, getRegexString(t, nn1_arg0), assert1);
     Z3_ast nn1_arg1_minus_one = mk_2_add(t, nn1_arg1, mk_int(ctx, -1));
-    Z3_ast newFirstAst = mk_concat(t, parseFirst, mk_star(t, nn1_arg0, nn1_arg1_minus_one, assert[0]));
-    Z3_ast parseSecond = regex_parse(t, getRegexString(t, nn2_arg0), assert[3]);
+    Z3_ast newFirstAst = mk_concat(t, parseFirst, mk_star(t, nn1_arg0, nn1_arg1_minus_one, assert2));
+    assert1 = mk_2_and(t, assert1, assert2);
+    Z3_ast parseSecond = regex_parse(t, getRegexString(t, nn2_arg0), assert2);
+    assert1 = mk_2_and(t, assert1, assert2);
     Z3_ast nn2_arg1_minus_one = mk_2_add(t, nn2_arg1, mk_int(ctx, -1));
-    Z3_ast newSecondAst = mk_concat(t, parseSecond, mk_star(t, nn2_arg0, nn2_arg1_minus_one, assert[1]));
-    int num_asserts = 2;
-    if (assert[2] != NULL){
-      ++ num_asserts;
-      if (assert[3] != NULL){
-        ++ num_asserts;
-      }
-    } else {
-      if (assert[3] != NULL){
-        assert[2] = assert[3];
-        ++ num_asserts;
-      }      
-    }
+    Z3_ast newSecondAst = mk_concat(t, parseSecond, mk_star(t, nn2_arg0, nn2_arg1_minus_one, assert2));
+    assert1 = mk_2_and(t, assert1, assert2);
         
-#ifdef DEBUGLOG
-  __debugPrint(logFile, "\n===============================================\n");
-  __debugPrint(logFile, "** simplifyStarEq(): Z3_mk_and(ctx, num_asserts, assert) = ");
-  printZ3Node(t, Z3_mk_and(ctx, num_asserts, assert));
-  __debugPrint(logFile, "\n Z3_mk_eq(ctx, newFirstAst, newSecondAst) = ");
-  printZ3Node(t, Z3_mk_eq(ctx, newFirstAst, newSecondAst));
-  __debugPrint(logFile, "\n");
-#endif    
-    
-    Z3_ast mainImplyR = mk_2_and(t, Z3_mk_and(ctx, 4, assert), Z3_mk_eq(ctx, newFirstAst, newSecondAst));
+    Z3_ast mainImplyR = mk_2_and(t, assert1, Z3_mk_eq(ctx, newFirstAst, newSecondAst));
     Z3_ast implyR = mk_2_or(t, zeroEq, mainImplyR);
     addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
   }
