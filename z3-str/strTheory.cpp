@@ -4334,6 +4334,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         curr = Z3_theory_get_eqc_next(t, curr);
       }
     }
+    // Own code
     // (6) var_eq_star       : e.g,  z = Star('abc', b)
     //-----------------------------------------------------------------
     if (var_eq_star_map.find(deAliasNode) == var_eq_star_map.end()) {
@@ -4559,29 +4560,31 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
 
   {
     __debugPrint(logFile, "(7) eq stars:\n");
-    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor6 = star_eq_star_map.begin();
-    for (; itor6 != star_eq_star_map.end(); itor6++) {
-      if (itor6->second.size() > 1) {
-        std::map<Z3_ast, int>::iterator i_itor = itor6->second.begin();
+    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor7 = star_eq_star_map.begin();
+    for (; itor7 != star_eq_star_map.end(); itor7++) {
+      if (itor7->second.size() > 1) {
+        std::map<Z3_ast, int>::iterator i_itor = itor7->second.begin();
+        printZ3Node(t, itor7->first);
         __debugPrint(logFile, "  >> ");
-        for (; i_itor != itor6->second.end(); i_itor++) {
+        for (; i_itor != itor7->second.end(); i_itor++) {
           printZ3Node(t, i_itor->first);
           __debugPrint(logFile, " , ");
         }
         __debugPrint(logFile, "\n");
       }
     }
+    __debugPrint(logFile, "\n");
   }
 
   {
     __debugPrint(logFile, "(8) star = concat:\n");
-    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor7 = star_eq_concat_map.begin();
-    for (; itor7 != star_eq_concat_map.end(); itor7++) {
-      if (itor7->second.size() > 1) {
-        std::map<Z3_ast, int>::iterator i_itor = itor7->second.begin();
-	printZ3Node(t, itor7->first);
+    std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor8 = star_eq_concat_map.begin();
+    for (; itor8 != star_eq_concat_map.end(); itor8++) {
+      if (itor8->second.size() >= 1) {
+        std::map<Z3_ast, int>::iterator i_itor = itor8->second.begin();
+	printZ3Node(t, itor8->first);
         __debugPrint(logFile, "  >> ");
-        for (; i_itor != itor7->second.end(); i_itor++) {
+        for (; i_itor != itor8->second.end(); i_itor++) {
           printZ3Node(t, i_itor->first);
           __debugPrint(logFile, " , ");
         }
@@ -4637,47 +4640,67 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
   }
 // Own code
 
-  //(6) star = varStr
+  //(6) star(regex, varInt) = varStr : varStr --> varInt
   for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = var_eq_star_map.begin(); itor != var_eq_star_map.end(); itor++) {
     Z3_ast var = getAliasIndexAst(aliasIndexMap, itor->first);
     for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
       Z3_ast star = itor1->first;
       Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, star), 1);
-      if (depMap[var].find(varInt) == depMap[var].end()) {
+      if (depMap[var].find(varInt) == depMap[var].end())
         depMap[var][varInt] = 6;
+    }
+  }
+  // (7) star = star
+  // (7.1) star(regex1, varInt) = star(regex2, constInt) : varInt --> constInt
+  // (7.2) star(regex1, constInt) = star(regex2, varInt) : varInt --> constInt
+  // (7.3) star(regex1, varInt1) = star(regex2, varInt2) : varInt1 --> varInt2 && varInt2 --> varInt1
+  for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = star_eq_star_map.begin(); itor != star_eq_star_map.end(); itor++) {
+    Z3_ast starL = itor->first;
+    Z3_ast int1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starL), 1);
+    if (itor->second.size() > 1){
+      for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
+         Z3_ast starR = itor1->first;
+         Z3_ast int2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starR), 1);
+         if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end())
+           depMap[int2][int1] = 7;
+         if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end())
+	   depMap[int1][int2] = 7;
       }
     }
   }
-  /*/ (7) star = star
-  for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = star_eq_star_map.begin(); itor != star_eq_star_map.end(); itor++) {
-    Z3_ast starL = itor->first;
-    for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
-       Z3_ast starR = itor1->first;
-       std::map<Z3_ast, int> inVarMap;
-       std::map<Z3_ast, int> inConcatMap;
-       std::map<Z3_ast, int> inStarMap;
-       classifyAstByType(t, starL, inVarMap, inConcatMap, inStarMap);
-       for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
-         Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
-         if (!(depMap[varInStar].find(starR) != depMap[varInStar].end()))
-         depMap[varInStar][starR] = 7;
-       }
-    }
-  }*/
-// (8) star = concat
+  // (8) star = concat
+  // (8.1) star(regex, varInt) = concat(constStr, varStr) : varStr --> varInt
+  // (8.2) star(regex, varInt) = concat(varStr, constStr) : varStr --> varInt
+  // (8.3) star(regex, constInt) = concat(varStr, constStr) : varStr --> constStr
+  // (8.4) star(regex, constInt) = concat(constStr, varStr) : varStr --> constStr
   for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = star_eq_concat_map.begin(); itor != star_eq_concat_map.end(); itor++) {
     Z3_ast starAst = itor->first;
-    for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
-       Z3_ast concatAst = itor1->first;
-       std::map<Z3_ast, int> inVarMap;
-       std::map<Z3_ast, int> inConcatMap;
-       std::map<Z3_ast, int> inStarMap;
-       classifyAstByType(t, starAst, inVarMap, inConcatMap, inStarMap);
-       for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
-         Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
-         if (!(depMap[varInStar].find(concatAst) != depMap[varInStar].end()))
-         depMap[varInStar][concatAst] = 8;
-       }
+    if (itor->second.size() >= 1){
+      for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
+         Z3_ast concatAst = itor1->first;
+         std::map<Z3_ast, int> inVarMap;
+         std::map<Z3_ast, int> inConcatMap;
+         std::map<Z3_ast, int> inStarMap;
+         classifyAstByType(t, starAst, inVarMap, inConcatMap, inStarMap);
+         for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
+           Z3_ast varInStar = getAliasIndexAst(aliasIndexMap, itor2->first);
+	   Z3_ast intAst = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInStar), 1);
+	   Z3_ast strAst1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concatAst), 0);
+	   Z3_ast strAst2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concatAst), 1);
+	   if (!isConstInt(t, intAst)){
+	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2) && depMap[strAst2].find(intAst) == depMap[strAst2].end())
+               depMap[strAst2][intAst] = 8;
+             if (! isConstStr(t, strAst1) && isConstStr(t, strAst2) && depMap[strAst1].find(intAst) == depMap[strAst1].end())
+               depMap[strAst1][intAst] = 8;
+           }
+           else{
+	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2) && depMap[strAst2].find(strAst1) == depMap[strAst2].end())
+               depMap[strAst2][strAst1] = 8;
+             if (! isConstStr(t, strAst1) && isConstStr(t, strAst2) && depMap[strAst1].find(strAst2) == depMap[strAst1].end())
+               depMap[strAst1][strAst2] = 8; 
+           }
+         }
+      }
     }
   }
 
@@ -4822,13 +4845,15 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
 #ifdef DEBUGLOG
   __debugPrint(logFile, "\n\n-- Dependence Map -----------------\n");
   for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = depMap.begin(); itor != depMap.end(); itor++) {
-    printZ3Node(t, itor->first);
-    __debugPrint(logFile, "\t-->\t");
-    for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
-      printZ3Node(t, itor1->first);
-      __debugPrint(logFile, "(%d), ", itor1->second);
+    if (itor->second.size() >= 1){
+      printZ3Node(t, itor->first);
+      __debugPrint(logFile, "\t-->\t");
+      for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
+        printZ3Node(t, itor1->first);
+        __debugPrint(logFile, "(%d), ", itor1->second);
+      }
+      __debugPrint(logFile, "\n");
     }
-    __debugPrint(logFile, "\n");
   }
   __debugPrint(logFile, "-----------------------------------\n\n");
 

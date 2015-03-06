@@ -1,0 +1,8 @@
+(declare-variable x String)
+(declare-variable y String)
+(declare-variable n Int)
+
+(assert (= (Star 'abc|dbcabc' n ) x ) )
+(assert (= n 1))
+(check-sat)
+(get-model)
