@@ -439,7 +439,7 @@ Z3_ast my_mk_and(Z3_theory t, Z3_ast * item, int count) {
 Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
   if (t == NULL){
 #ifdef DEBUGLOG
-  __debugPrint(logFile, "mk_2_or(): t == NULL");
+  __debugPrint(logFile, "mk_2_and(): t == NULL");
 #endif
     return NULL;
   }
@@ -523,6 +523,29 @@ Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2) {
   Z3_context ctx = Z3_theory_get_context(t);
   Z3_ast mul_items[2] = { mul1, mul2 };
   return Z3_mk_mul(ctx, 2, mul_items);
+}
+
+/*
+ * OWN_CODE
+ */
+bool isIntAst(Z3_theory t, Z3_ast intAst){
+  Z3_context ctx = Z3_theory_get_context(t);
+  if (Z3_get_sort_kind(ctx, Z3_get_sort(ctx, intAst)) != Z3_INT_SORT && Z3_get_ast_kind(ctx, intAst) != Z3_NUMERAL_AST){
+    return false;
+  }
+  return true;
+}
+
+/*
+ * OWN_CODE
+ */ 
+bool isStringAst(Z3_theory t, Z3_ast stringAst){
+  Z3_context ctx = Z3_theory_get_context(t);
+  PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
+  if (Z3_get_sort(ctx, stringAst) != td->String){
+    return false;
+  }
+  return true;
 }
 
 /* ---------------------------------
@@ -820,6 +843,13 @@ Z3_ast mk_2_arg_app(Z3_context ctx, Z3_func_decl f, Z3_ast x, Z3_ast y) {
  */
 Z3_ast mk_length(Z3_theory t, Z3_ast n) {
   Z3_context ctx = Z3_theory_get_context(t);
+  if (getNodeType(t, n) != my_Z3_Str_Var && getNodeType(t, n) != my_Z3_ConstStr && getNodeType(t, n) != my_Z3_Func){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "wrong sort type n = ");
+  printZ3Node(t, n);
+  __debugPrint(logFile, "\n");
+#endif
+  }
   PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
   if (length_astNode_map.find(n) == length_astNode_map.end()) {
     if (isConstStr(t, n)) {
@@ -857,15 +887,15 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
  * OWN CODE
  */
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2, Z3_ast & assert) {
-  assert = NULL;
-  Z3_context ctx = Z3_theory_get_context(t);
-
   if (t == NULL){
 #ifdef DEBUGLOG
   __debugPrint(logFile, "mk_star(): t == NULL");
 #endif
     return NULL;
   }
+  assert = NULL;
+  Z3_context ctx = Z3_theory_get_context(t);
+
   if (n1 == NULL || ! isValidRegex(t, n1)) {
 #ifdef DEBUGLOG
   __debugPrint(logFile, "mk_star(): n1 == NULL || not valid regex: n1 = ");
@@ -873,9 +903,9 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2, Z3_ast & assert) {
   __debugPrint(logFile, "\n");
 #endif
     return NULL;
-  } else if (n2 == NULL || (isConstInt(t, n2) && getConstIntValue(t, n2) < 0)){
+  } else if (n2 == NULL || ! isIntAst(t, n2) || (isConstInt(t, n2) && getConstIntValue(t, n2) < 0)){
 #ifdef DEBUGLOG
-  __debugPrint(logFile, "mk_star(): n1 == NULL || not int sort || or is a const < 0 n2 =");
+  __debugPrint(logFile, "mk_star(): n1 == NULL || not int sort || or is a const < 0: n2 =");
   printZ3Node(t, n2);
   __debugPrint(logFile, "\n");
 #endif
@@ -2051,10 +2081,34 @@ void getconstStrAstsInNode(Z3_theory t, Z3_ast node, std::list<Z3_ast> & astList
 }
 
 /*
- *
+ * CHANGE_ORIGINAL_CODE
  */
 void strEqLengthAxiom(Z3_theory t, Z3_ast varAst, Z3_ast strAst, int line) {
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_star(): t == NULL");
+#endif
+    return;
+  }
   Z3_context ctx = Z3_theory_get_context(t);
+
+  if (varAst == NULL || ! isStringAst(t, varAst)){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_star(): invalid varAst = ");
+  printZ3Node(t, varAst);
+  __debugPrint(logFile, "\n");
+#endif
+    return;
+  }
+  
+  if (varAst == NULL || ! isStringAst(t, strAst)){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_star(): invalid strAst = ");
+  printZ3Node(t, strAst);
+  __debugPrint(logFile, "\n");
+#endif
+    return;
+  }
 
   if (getNodeType(t, varAst) == my_Z3_Str_Var) {
     std::string vName = std::string(Z3_ast_to_string(ctx, varAst));
