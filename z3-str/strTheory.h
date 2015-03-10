@@ -88,6 +88,7 @@ typedef enum
   my_Z3_Var,         //
   my_Z3_Str_Var,     //
   my_Z3_Regex_Var,   //
+  my_Z3_Int_Var,     //  
   my_Z3_Quantifier,  //
   my_Z3_Unknown      //
 } T_myZ3Type;

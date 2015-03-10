@@ -557,6 +557,7 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
   Z3_context ctx = Z3_theory_get_context(t);
   PATheoryData * td = (PATheoryData*) Z3_theory_get_ext_data(t);
   Z3_ast_kind z3Kind = Z3_get_ast_kind(ctx, n);
+  Z3_sort IntSort = Z3_mk_int_sort(ctx);
 
   switch (z3Kind) {
     case Z3_NUMERAL_AST: {
@@ -589,6 +590,8 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
             }
           } else if (s == td->Regex){
             return my_Z3_Regex_Var;
+          } else if (s == IntSort){
+            return my_Z3_Int_Var;
           }
         }
       } else {
@@ -598,9 +601,11 @@ T_myZ3Type getNodeType(Z3_theory t, Z3_ast n) {
           return my_Z3_Str_Var;
         } if (s == td->Regex) {
           return my_Z3_Regex_Var;
+        } if (s == IntSort) {
+          return my_Z3_Int_Var;
         } else {
           return my_Z3_Func;
-        }
+        } 
       }
       break;
     }
@@ -1222,6 +1227,10 @@ void __printZ3Node(Z3_theory t, Z3_ast node) {
       break;
     }
     case my_Z3_Regex_Var: {
+      __debugPrint(logFile, "%s", Z3_ast_to_string(ctx, node));
+      break;
+    }
+    case my_Z3_Int_Var: {
       __debugPrint(logFile, "%s", Z3_ast_to_string(ctx, node));
       break;
     }
@@ -4669,8 +4678,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     }
   }
   // (8) star = concat
-  // (8.1) star(regex, varInt) = concat(constStr, varStr) : varStr --> varInt
-  // (8.2) star(regex, varInt) = concat(varStr, constStr) : varStr --> varInt
+  // (8.1) star(regex, varInt) = concat(constStr, varStr) : varStr --> varInt, varInt --> constStr
+  // (8.2) star(regex, varInt) = concat(varStr, constStr) : varStr --> varInt, varInt --> constStr
   // (8.3) star(regex, constInt) = concat(varStr, constStr) : varStr --> constStr
   // (8.4) star(regex, constInt) = concat(constStr, varStr) : varStr --> constStr
   for (std::map<Z3_ast, std::map<Z3_ast, int> >::iterator itor = star_eq_concat_map.begin(); itor != star_eq_concat_map.end(); itor++) {
@@ -4688,10 +4697,14 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
 	   Z3_ast strAst1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concatAst), 0);
 	   Z3_ast strAst2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concatAst), 1);
 	   if (!isConstInt(t, intAst)){
-	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2) && depMap[strAst2].find(intAst) == depMap[strAst2].end())
+	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2) && depMap[strAst2].find(intAst) == depMap[strAst2].end()){
                depMap[strAst2][intAst] = 8;
-             if (! isConstStr(t, strAst1) && isConstStr(t, strAst2) && depMap[strAst1].find(intAst) == depMap[strAst1].end())
+               depMap[intAst][strAst1] = 8;
+             }
+             if (! isConstStr(t, strAst1) && isConstStr(t, strAst2) && depMap[strAst1].find(intAst) == depMap[strAst1].end()){
                depMap[strAst1][intAst] = 8;
+               depMap[intAst][strAst2] = 8;
+             }
            }
            else{
 	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2) && depMap[strAst2].find(strAst1) == depMap[strAst2].end())
@@ -5632,8 +5645,10 @@ star_eq_star_map, star_eq_concat_map);
       continue;
 
     Z3_ast vNode = get_eqc_value(t, itor->first);
-    if (itor->first == vNode) {
+    if (itor->first == vNode){ 
       needToAssignFreeVar = 1;
+	printZ3Node(t, vNode);
+	__debugPrint(logFile, "\n");
       break;
     }
   }
@@ -5666,9 +5681,9 @@ star_eq_star_map, star_eq_concat_map);
   std::map<Z3_ast, int>::iterator freeVarItor = freeVar_map.begin();
   for (; freeVarItor != freeVar_map.end(); freeVarItor++) {
     Z3_ast freeVar = freeVarItor->first;
-    Z3_ast toAssert = genLenValOptionsForFreeVar(t, freeVar, NULL, "");
-
-    addAxiom(t, toAssert, __LINE__, false);
+    if (getNodeType(t, freeVar) != my_Z3_Int_Var){
+      Z3_ast toAssert = genLenValOptionsForFreeVar(t, freeVar, NULL, "");
+      addAxiom(t, toAssert, __LINE__, false);
 
 #ifdef DEBUGLOG
     __debugPrint(logFile, "\n---------------------\n");
@@ -5678,7 +5693,7 @@ star_eq_star_map, star_eq_concat_map);
     printZ3Node(t, toAssert);
     __debugPrint(logFile, "\n---------------------\n");
 #endif
-
+    }
   }
   __debugPrint(logFile, "\n###########################################################\n\n");
   return Z3_TRUE;
@@ -5846,8 +5861,10 @@ void getVarsInInput(Z3_theory t, Z3_ast node) {
   Z3_context ctx = Z3_theory_get_context(t);
   T_myZ3Type nodeType = getNodeType(t, node);
 
-  if (nodeType == my_Z3_Str_Var){// || nodeType == my_Z3_Num) {
+  if (nodeType == my_Z3_Str_Var || nodeType == my_Z3_Int_Var) {
     std::string vName = std::string(Z3_ast_to_string(ctx, node));
+  printZ3Node(t, node);
+  __debugPrint(logFile, "abc \n");
     if (vName.length() >= 11 && vName.substr(0, 11) == "__cOnStStR_") {
       return;
     }
