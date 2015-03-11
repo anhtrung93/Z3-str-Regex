@@ -3,7 +3,7 @@
 (declare-variable n Int)
 (declare-variable m Int)
 
-(assert (= (Star 'abc|abcabe' n ) (Concat y x) ) )
+(assert (= (Star 'abc|abcabe' n) (Concat y x) ) )
   
 (check-sat)
 (get-model)

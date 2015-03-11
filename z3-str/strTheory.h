@@ -147,6 +147,8 @@ Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2);
 
 Z3_ast mk_2_add(Z3_theory t, Z3_ast add1, Z3_ast add2);
 
+Z3_ast mk_sub(Z3_theory t, Z3_ast sub1, Z3_ast sub2);
+
 Z3_ast mk_2_mul(Z3_theory t, Z3_ast mul1, Z3_ast mul2);
 
 Z3_ast mk_concat(Z3_theory t, Z3_ast n1, Z3_ast n2);

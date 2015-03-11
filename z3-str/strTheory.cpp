@@ -454,6 +454,21 @@ Z3_ast mk_2_and(Z3_theory t, Z3_ast and1, Z3_ast and2) {
 }
 
 /*
+ * OWN_CODE
+ */
+Z3_ast mk_sub(Z3_theory t, Z3_ast sub1, Z3_ast sub2){
+  if (t == NULL){
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_2_and(): t == NULL");
+#endif
+    return NULL;
+  }
+  Z3_context ctx = Z3_theory_get_context(t);
+  Z3_ast sub_items[2] = { sub1, sub2 };
+  return Z3_mk_sub(ctx, 2, sub_items);
+}
+
+/*
  * OWN CODE
  */
 Z3_ast mk_2_or(Z3_theory t, Z3_ast or1, Z3_ast or2) {
@@ -1812,6 +1827,11 @@ void solve_star_eq_str(Z3_theory t, Z3_ast starAst, Z3_ast constStr) {
     
     Z3_ast arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 0);
     Z3_ast arg2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
+    
+    if (length_const_str == 0){
+      addAxiom(t, Z3_mk_eq(ctx, arg2, mk_int(ctx, 0)), __LINE__);
+      return;
+    }
     
     if (! isValidRegex(t, arg1)){
 #ifdef DEBUGLOG
@@ -3352,14 +3372,34 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
     return;
   }
   
+  Z3_ast implyL = Z3_mk_eq(ctx, starAst, new_concat);
+  
+  std::vector<Z3_ast> nodesInConcat;
+  getNodesInConcat(t, new_concat, nodesInConcat);
+  
+  if (isStarFunc(t, nodesInConcat[0]) || isConstStr(t, nodesInConcat[0])){
+    new_concat = nodesInConcat[1];
+    for (int idNodesInConcat = 2; idNodesInConcat < (int) nodesInConcat.size(); ++ idNodesInConcat){
+      new_concat = mk_concat(t, new_concat, nodesInConcat[idNodesInConcat]);
+    }
+    new_concat = mk_concat(t, nodesInConcat[0], new_concat);
+  } else {
+    int lastIdNodesInConcat = (int) nodesInConcat.size() - 1;
+    if (isStarFunc(t, nodesInConcat[lastIdNodesInConcat]) || isConstStr(t, nodesInConcat[lastIdNodesInConcat])){
+      new_concat = nodesInConcat[0];
+      for (int idNodesInConcat = 1; idNodesInConcat < lastIdNodesInConcat; ++ idNodesInConcat){
+        new_concat = mk_concat(t, new_concat, nodesInConcat[idNodesInConcat]);
+      }
+      new_concat = mk_concat(t, new_concat, nodesInConcat[lastIdNodesInConcat]);
+    }
+  }
+  
   Z3_ast star_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 0);
   Z3_ast star_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
   Z3_ast concat_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_concat), 0);
   Z3_ast concat_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, new_concat), 1);
   
   //TODO need understand this part in simplifyConcatEq and add here
-  
-  Z3_ast implyL = Z3_mk_eq(ctx, starAst, new_concat);
   
   if (isConstStr(t, concat_arg0) && isConstStr(t, concat_arg1)){
     solve_star_eq_str(t, starAst, mk_concat(t, concat_arg0, concat_arg1));
@@ -3568,8 +3608,85 @@ void simplifyStarEqConcat(Z3_theory t, Z3_ast starAst, Z3_ast concatAst, int dup
       delete[] or_cases;
     }
   } else {
-    //TODO
+    Z3_ast * or_cases = new Z3_ast[3];
+    Z3_ast * allEmptyItems = new Z3_ast[3];
+    allEmptyItems[0] = Z3_mk_eq(ctx, star_arg1, mk_int(ctx, 0));
+    allEmptyItems[1] = Z3_mk_eq(ctx, concat_arg0, my_mk_str_value(t, ""));
+    allEmptyItems[2] = Z3_mk_eq(ctx, concat_arg1, my_mk_str_value(t, ""));
+    or_cases[0] = my_mk_and(t, allEmptyItems, 3);
+    delete[] allEmptyItems;
+    
+    if (isStarFunc(t, concat_arg0)){
+      //*****************************************************************************//
+      //  case 5: star(regex_var1, const_int/var_int) = concat(star(), var_str)      //
+      //*****************************************************************************//
+
+      Z3_ast concat_arg0_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concat_arg0), 0);
+      Z3_ast concat_arg0_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concat_arg0), 1);
+      or_cases[1] = mk_2_and(t, Z3_mk_eq(ctx, concat_arg0_arg1, mk_int(ctx, 0)), Z3_mk_eq(ctx, starAst, concat_arg1));
+      
+      Z3_ast assert1 = NULL, assert2 = NULL;
+      Z3_ast parse_concat_arg0_arg0 = regex_parse(t, getRegexString(t, concat_arg0_arg0), assert1);
+      Z3_ast parse_starAst_arg0 = regex_parse(t, getRegexString(t, star_arg0), assert2);
+      assert1 = mk_2_and(t, assert1, assert2);
+      
+      Z3_ast concat_arg0_new = mk_star(t, concat_arg0_arg0, mk_2_add(t, concat_arg0_arg1, mk_int(ctx, -1)), assert2);
+      assert1 = mk_2_and(t, assert1, assert2);
+      Z3_ast starAst_new = mk_concat(t, parse_starAst_arg0, mk_star(t, star_arg0, mk_2_add(t, star_arg1, mk_int(ctx, -1)), assert2));
+      assert1 = mk_2_and(t, assert1, assert2);
+      Z3_ast new_concat_new = mk_concat(t, parse_concat_arg0_arg0, mk_concat(t, concat_arg0_new, concat_arg1));
+      or_cases[2] = mk_2_and(t, Z3_mk_eq(ctx, starAst_new, new_concat_new), assert1);
+    } else if (isStarFunc(t, concat_arg1)){
+      //*****************************************************************************//
+      //  case 6: star(regex_var1, const_int/var_int) = concat(var_str, star())      //
+      //*****************************************************************************//
+
+      Z3_ast concat_arg1_arg0 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concat_arg1), 0);
+      Z3_ast concat_arg1_arg1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, concat_arg1), 1);
+      or_cases[1] = mk_2_and(t, Z3_mk_eq(ctx, concat_arg1_arg1, mk_int(ctx, 0)), Z3_mk_eq(ctx, starAst, concat_arg0));
+      
+      Z3_ast assert1 = NULL, assert2 = NULL;
+      Z3_ast parse_concat_arg1_arg0 = regex_parse(t, getRegexString(t, concat_arg1_arg0), assert1);
+      Z3_ast parse_starAst_arg0 = regex_parse(t, getRegexString(t, star_arg0), assert2);
+      assert1 = mk_2_and(t, assert1, assert2);
+      
+      Z3_ast concat_arg1_new = mk_star(t, concat_arg1_arg0, mk_2_add(t, concat_arg1_arg1, mk_int(ctx, -1)), assert2);
+      assert1 = mk_2_and(t, assert1, assert2);
+      Z3_ast starAst_new = mk_concat(t, mk_star(t, star_arg0, mk_2_add(t, star_arg1, mk_int(ctx, -1)), assert2), parse_starAst_arg0);
+      assert1 = mk_2_and(t, assert1, assert2);
+      Z3_ast new_concat_new = mk_concat(t, mk_concat(t, concat_arg0, concat_arg1_new), parse_concat_arg1_arg0);
+      or_cases[2] = mk_2_and(t, Z3_mk_eq(ctx, starAst_new, new_concat_new), assert1);
+    } else {
+      //*****************************************************************************//
+      //  case 7: star(regex_var1, const_int/var_int) = concat(var_str, var_str)     //
+      //*****************************************************************************//
+      
+      Z3_ast assert1 = NULL, assert2 = NULL;
+      Z3_ast intVarArg0 = my_mk_internal_int_var(t);
+      Z3_ast intVarArg1 = mk_sub(t, star_arg1, intVarArg0);
+      Z3_ast axiomConcat_arg0 = Z3_mk_eq(ctx, concat_arg0, mk_star(t, star_arg0, intVarArg0, assert1));
+      Z3_ast axiomConcat_arg1 = Z3_mk_eq(ctx, concat_arg1, mk_star(t, star_arg0, intVarArg1, assert2));
+      or_cases[1] = mk_2_and(t, mk_2_and(t, axiomConcat_arg0, axiomConcat_arg1), mk_2_and(t, assert1, assert2));
+      
+      assert1 = NULL; assert2 = NULL;
+      intVarArg0 = my_mk_internal_int_var(t);
+      intVarArg1 = mk_sub(t, mk_sub(t, star_arg1, intVarArg0), mk_int(ctx, 1));
+      Z3_ast tempStrArg0 = my_mk_internal_string_var(t);
+      Z3_ast tempStrArg1 = my_mk_internal_string_var(t);
+      axiomConcat_arg0 = Z3_mk_eq(ctx, concat_arg0, mk_concat(t, mk_star(t, star_arg0, intVarArg0, assert1), tempStrArg0));
+      axiomConcat_arg1 = Z3_mk_eq(ctx, concat_arg1, mk_concat(t, tempStrArg1, mk_star(t, star_arg0, intVarArg1, assert2)));
+      assert1 = mk_2_and(t, assert1, assert2);
+      Z3_ast axiomMiddle = Z3_mk_eq(ctx, mk_concat(t, tempStrArg0, tempStrArg1), regex_parse(t, getRegexString(t, star_arg0), assert2));
+      assert1 = mk_2_and(t, assert1, assert2);
+      or_cases[2] = mk_2_and(t, mk_2_and(t, axiomConcat_arg0, axiomConcat_arg1), mk_2_and(t, assert1, axiomMiddle));
+    }
+    
+    Z3_ast implyR = Z3_mk_or(ctx, 3, or_cases);
+    addAxiom(t, Z3_mk_implies(ctx, implyL, implyR), __LINE__);
+    
+    delete[] or_cases;
   }
+  
 }
 
 /*
