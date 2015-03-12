@@ -4746,6 +4746,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     Z3_ast var = getAliasIndexAst(aliasIndexMap, itor->first);
     for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
       Z3_ast concat = itor1->first;
+
       std::map<Z3_ast, int> inVarMap;
       std::map<Z3_ast, int> inConcatMap;
       std::map<Z3_ast, int> inStarMap;
@@ -4754,6 +4755,18 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         Z3_ast varInConcat = getAliasIndexAst(aliasIndexMap, itor2->first);
         if (!(depMap[var].find(varInConcat) != depMap[var].end() && depMap[var][varInConcat] == 1))
           depMap[var][varInConcat] = 2;
+      }
+      // Own code
+      // Special case: Concat(Star varStr) = varStr
+      for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
+        Z3_ast starAst = getAliasIndexAst(aliasIndexMap, itor2->first);
+        Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
+        Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 0);
+        Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 1);
+	if (getNodeType(t, nn2) == my_Z3_Int_Var)
+		nn1 = nn2;
+        if (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))
+          depMap[var][nn1] = 2;
       }
     }
   }
@@ -5988,8 +6001,6 @@ void getVarsInInput(Z3_theory t, Z3_ast node) {
 
   if (nodeType == my_Z3_Str_Var || nodeType == my_Z3_Int_Var) {
     std::string vName = std::string(Z3_ast_to_string(ctx, node));
-  printZ3Node(t, node);
-  __debugPrint(logFile, "abc \n");
     if (vName.length() >= 11 && vName.substr(0, 11) == "__cOnStStR_") {
       return;
     }
