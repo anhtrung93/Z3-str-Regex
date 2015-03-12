@@ -164,7 +164,7 @@ Z3_ast parseCounter(Z3_theory t, std::string regexStr, Z3_ast & breakDownAssert)
     int repeatTimes = atoi(counterStr.c_str());
     std::string new_regex = "";
     for (int id = 0; id < repeatTimes; ++ id){
-      new_regex += regexStr;
+      new_regex += "(" + regexStr + ")";
     }
     result = regex_parse(t, new_regex, breakDownAssert);
   }

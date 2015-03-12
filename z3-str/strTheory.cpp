@@ -907,6 +907,14 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
  * OWN CODE
  */
 Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2, Z3_ast & assert) {
+#ifdef DEBUGLOG
+  __debugPrint(logFile, "mk_star(): n1 = ");
+  printZ3Node(t, n1);
+  __debugPrint(logFile, "\nn2 = ");
+  printZ3Node(t, n2);
+  __debugPrint(logFile, "\n");
+#endif
+
   if (t == NULL){
 #ifdef DEBUGLOG
   __debugPrint(logFile, "mk_star(): t == NULL");
@@ -939,7 +947,7 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2, Z3_ast & assert) {
     Z3_ast starAst = NULL;
     if (isSimpleRegex(t, n1) && isConstInt(t, n2)) {
       int intVal = getConstIntValue(t, n2);
-      std::string n1Str = getStringMatchesSimpleRegex(t, n1);
+      std::string n1Str = "(" + getStringMatchesSimpleRegex(t, n1) + ")";
       std::string result = ""; 
       for (int id = 0; id < intVal; ++ id){
         result += n1Str;
@@ -952,7 +960,7 @@ Z3_ast mk_star(Z3_theory t, Z3_ast n1, Z3_ast n2, Z3_ast & assert) {
     } else if (isConstInt(t, n2)) {
       int repeatTimes = getConstIntValue(t, n2);
       std::string tempRegex = "";
-      std::string regexInStar = getRegexString(t, n1);
+      std::string regexInStar = "(" + getRegexString(t, n1) + ")";
       for (int id = 0; id < repeatTimes; ++ id){
         tempRegex = tempRegex + regexInStar;
       }
