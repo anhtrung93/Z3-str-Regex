@@ -897,7 +897,7 @@ Z3_ast mk_contains(Z3_theory t, Z3_ast n1, Z3_ast n2) {
       else
         contains_astNode_map[containsKey] = Z3_mk_false(ctx);
     } else {
-      contains_astNode_map[containsKey] = mk_2_arg_app(ctx, td->Star, n1, n2);
+      contains_astNode_map[containsKey] = mk_2_arg_app(ctx, td->Contains, n1, n2);
     }
   }
   return contains_astNode_map[containsKey];
