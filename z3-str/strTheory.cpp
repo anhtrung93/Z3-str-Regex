@@ -4383,6 +4383,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     	std::map<Z3_ast, Z3_ast> & concat_eq_constStr_map, 
 	std::map<Z3_ast, std::map<Z3_ast, int> > & concat_eq_concat_map,
     	std::map<Z3_ast, int> & freeVarMap, 
+        std::map<Z3_ast, int> & varIntMap,
 	std::map<Z3_ast, std::map<Z3_ast, int> > & depMap,
     	std::map<std::pair<Z3_ast, Z3_ast>, 
 	std::pair<Z3_ast, Z3_ast> > & toBreakMap,
@@ -4763,10 +4764,14 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
         Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 0);
         Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 1);
-	if (getNodeType(t, nn2) == my_Z3_Int_Var)
-		nn1 = nn2;
-        if (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))
-          depMap[var][nn1] = 2;
+	if (getNodeType(t, nn1) == my_Z3_Int_Var && (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))){
+	  depMap[var][nn1] = 2;
+          varIntMap[nn1] = 1; 
+        }
+        if (getNodeType(t, nn2) == my_Z3_Int_Var && (!(depMap[var].find(nn2) != depMap[var].end() && depMap[var][nn2] == 1))){
+	  depMap[var][nn2] = 2;
+	  varIntMap[nn2] = 1;
+        }
       }
     }
   }
@@ -4793,8 +4798,10 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
       Z3_ast star = itor1->first;
       Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, star), 1);
-      if (depMap[var].find(varInt) == depMap[var].end())
+      if (depMap[var].find(varInt) == depMap[var].end()){
         depMap[var][varInt] = 6;
+	varIntMap[varInt] = 1;
+      }
     }
   }
   // (7) star = star
@@ -4808,10 +4815,14 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
       for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++){
          Z3_ast starR = itor1->first;
          Z3_ast int2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starR), 1);
-         if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end())
+         if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end()){
            depMap[int2][int1] = 7;
-         if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end())
+           varIntMap[int1] = 1;
+         }
+         if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end()){
 	   depMap[int1][int2] = 7;
+           varIntMap[int2] = 1;
+         } 
       }
     }
   }
@@ -4843,6 +4854,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
                depMap[strAst1][intAst] = 8;
                depMap[intAst][strAst2] = 8;
              }
+             varIntMap[intAst] = 1;
            }
            else{
 	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2) && depMap[strAst2].find(strAst1) == depMap[strAst2].end())
@@ -5080,7 +5092,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     for (; itor != strVarMap.end(); itor++) {
       Z3_ast var = getAliasIndexAst(aliasIndexMap, itor->first);
       if (lrConstrainedMap.find(var) == lrConstrainedMap.end()) {
-        freeVarMap[var] = 1;
+        if (varIntMap.find(var) == varIntMap.end()) // Own code
+          freeVarMap[var] = 1;
       } else {
         int lrConstainted = 0;
         std::map<Z3_ast, int>::iterator lrit = freeVarMap.begin();
@@ -5091,7 +5104,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
           }
         }
         if (lrConstainted == 0) {
-          freeVarMap[var] = 1;
+          if (varIntMap.find(var) == varIntMap.end()) // Own code
+            freeVarMap[var] = 1;
         }
       }
     }
@@ -5107,7 +5121,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         Z3_ast var = aliasIndexMap[itor2->first];
         if (depMap.find(var) == depMap.end()) {
           if (lrConstrainedMap.find(var) == lrConstrainedMap.end()) {
-            freeVarMap[var] = 1;
+            if (varIntMap.find(var) == varIntMap.end()) // Own code
+              freeVarMap[var] = 1;
           } else {
             int lrConstainted = 0;
             std::map<Z3_ast, int>::iterator lrit = freeVarMap.begin();
@@ -5118,7 +5133,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
               }
             }
             if (lrConstainted == 0) {
-              freeVarMap[var] = 1;
+              if (varIntMap.find(var) == varIntMap.end()) // Own code
+                freeVarMap[var] = 1;
             }
           }
         }
@@ -5127,7 +5143,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         if (depMap.find(itor2->first) == depMap.end()) {
           Z3_ast var = itor2->first;
           if (lrConstrainedMap.find(var) == lrConstrainedMap.end()) {
-            freeVarMap[var] = 1;
+	    if (varIntMap.find(var) == varIntMap.end()) // Own code
+              freeVarMap[var] = 1;
           } else {
             int lrConstainted = 0;
             std::map<Z3_ast, int>::iterator lrit = freeVarMap.begin();
@@ -5138,7 +5155,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
               }
             }
             if (lrConstainted == 0) {
-              freeVarMap[var] = 1;
+              if (varIntMap.find(var) == varIntMap.end()) // Own code
+                freeVarMap[var] = 1;
             }
           }
         }
@@ -5156,7 +5174,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
             if (depMap.find(var) == depMap.end()) {
               if (freeVarMap.find(var) == freeVarMap.end()) {
                 if (lrConstrainedMap.find(var) == lrConstrainedMap.end()) {
-                  freeVarMap[var] = 1;
+                  if (varIntMap.find(var) == varIntMap.end()) // Own code
+                    freeVarMap[var] = 1;
                 } else {
                   int lrConstainted = 0;
                   std::map<Z3_ast, int>::iterator lrit = freeVarMap.begin();
@@ -5167,7 +5186,8 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
                     }
                   }
                   if (lrConstainted == 0) {
-                    freeVarMap[var] = 1;
+                    if (varIntMap.find(var) == varIntMap.end()) // Own code
+                      freeVarMap[var] = 1;
                   }
                 }
 
@@ -5693,13 +5713,14 @@ Z3_bool cb_final_check(Z3_theory t) {
   std::map<Z3_ast, std::map<Z3_ast, int> > concat_eq_concat_map;
   std::map<Z3_ast, std::map<Z3_ast, int> > depMap;
   std::map<Z3_ast, int> freeVar_map;
+  std::map<Z3_ast, int> varIntMap; // Own code: varInt in Star()
   std::map<std::pair<Z3_ast, Z3_ast>, std::pair<Z3_ast, Z3_ast> > toBreakMap;
   std::map<Z3_ast, int> starMap;
   std::map<Z3_ast, std::map<Z3_ast, int> > var_eq_star_map;
   std::map<Z3_ast, std::map<Z3_ast, int> > star_eq_star_map;
   std::map<Z3_ast, std::map<Z3_ast, int> > star_eq_concat_map;
 
-  int conflictInDep = ctxDepAnalysis(t, varAppearInAssign, concatMap, aliasIndexMap, var_eq_constStr_map, var_eq_concat_map, concat_eq_constStr_map, concat_eq_concat_map, freeVar_map, depMap, toBreakMap, starMap, var_eq_star_map, 
+  int conflictInDep = ctxDepAnalysis(t, varAppearInAssign, concatMap, aliasIndexMap, var_eq_constStr_map, var_eq_concat_map, concat_eq_constStr_map, concat_eq_concat_map, freeVar_map, varIntMap, depMap, toBreakMap, starMap, var_eq_star_map, 
 star_eq_star_map, star_eq_concat_map);
 
   if (conflictInDep == -1) {
@@ -5819,9 +5840,8 @@ star_eq_star_map, star_eq_concat_map);
   std::map<Z3_ast, int>::iterator freeVarItor = freeVar_map.begin();
   for (; freeVarItor != freeVar_map.end(); freeVarItor++) {
     Z3_ast freeVar = freeVarItor->first;
-    if (getNodeType(t, freeVar) != my_Z3_Int_Var){
-      Z3_ast toAssert = genLenValOptionsForFreeVar(t, freeVar, NULL, "");
-      addAxiom(t, toAssert, __LINE__, false);
+    Z3_ast toAssert = genLenValOptionsForFreeVar(t, freeVar, NULL, "");
+    addAxiom(t, toAssert, __LINE__, false);
 
 #ifdef DEBUGLOG
     __debugPrint(logFile, "\n---------------------\n");
@@ -5831,7 +5851,6 @@ star_eq_star_map, star_eq_concat_map);
     printZ3Node(t, toAssert);
     __debugPrint(logFile, "\n---------------------\n");
 #endif
-    }
   }
   __debugPrint(logFile, "\n###########################################################\n\n");
   return Z3_TRUE;
