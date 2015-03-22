@@ -4849,12 +4849,12 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
          if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end()){
            depMap[int2][int1] = 7;
            varIntMap[int1] = 1;
-           varToStarMap[int1].push_back(std::make_pair(starR, starL));
+           //varToStarMap[int1].push_back(std::make_pair(starR, starL));
          }
          if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end()){
 	   depMap[int1][int2] = 7;
            varIntMap[int2] = 1;
-           varToStarMap[int2].push_back(std::make_pair(starL, starR));
+           //varToStarMap[int2].push_back(std::make_pair(starL, starR));
          } 
       }
     }
