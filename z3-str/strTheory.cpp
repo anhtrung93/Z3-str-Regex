@@ -4848,12 +4848,12 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
          Z3_ast int2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, starR), 1);
          if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end()){
            depMap[int2][int1] = 7;
-           varIntMap[int1] = 1;
+           //varIntMap[int1] = 1;
            //varToStarMap[int1].push_back(std::make_pair(starR, starL));
          }
          if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end()){
 	   depMap[int1][int2] = 7;
-           varIntMap[int2] = 1;
+           //varIntMap[int2] = 1;
            //varToStarMap[int2].push_back(std::make_pair(starL, starR));
          } 
       }
@@ -5929,7 +5929,7 @@ star_eq_star_map, star_eq_concat_map);
       __debugPrint(logFile,"\n");
       std::vector<Z3_ast> orList;
       Z3_ast tempAssert;      
-      for (int i = 0; i <= 5; i++){
+      for (int i = 0; i <= 6; i++){
         Z3_ast and_items[2];
         and_items[0] = Z3_mk_eq(ctx, freeVar, mk_int(ctx, i));
         for (int j = 0; j < (int) varToStarMap[freeVar].size(); j++){
@@ -5946,7 +5946,7 @@ star_eq_star_map, star_eq_concat_map);
               Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
               Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
               Z3_func_decl app = Z3_get_app_decl(ctx, Z3_to_app(ctx,intAst));
-              Z3_ast newIntAst;
+              Z3_ast newIntAst = NULL;
 	      if (getNodeType(t, nn1) == my_Z3_Int_Var && getNodeType(t, nn2) != my_Z3_Int_Var){ 
                 Z3_ast newIntAst_items[2];
                 newIntAst_items[0] = mk_int(ctx,i);
@@ -5978,7 +5978,7 @@ star_eq_star_map, star_eq_concat_map);
                 Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
                 Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
                 Z3_func_decl app = Z3_get_app_decl(ctx, Z3_to_app(ctx,intAst));
-                Z3_ast newIntAst;
+                Z3_ast newIntAst = NULL;
 	        if (getNodeType(t, nn1) == my_Z3_Int_Var && getNodeType(t, nn2) != my_Z3_Int_Var){ 
                   Z3_ast newIntAst_items[2];
                   newIntAst_items[0] = mk_int(ctx,i);
@@ -6006,7 +6006,7 @@ star_eq_star_map, star_eq_concat_map);
                 Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
                 Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
                 Z3_func_decl app = Z3_get_app_decl(ctx, Z3_to_app(ctx,intAst));
-                Z3_ast newIntAst;
+                Z3_ast newIntAst = NULL;
 	        if (getNodeType(t, nn1) == my_Z3_Int_Var && getNodeType(t, nn2) != my_Z3_Int_Var){ 
                   Z3_ast newIntAst_items[2];
                   newIntAst_items[0] = mk_int(ctx,i);
@@ -6027,14 +6027,17 @@ star_eq_star_map, star_eq_concat_map);
           }
         }
         orList.push_back(Z3_mk_and(ctx, 2, and_items));
-        Z3_ast * or_items = new Z3_ast[orList.size()];
-	for (int i = 0; i < (int) orList.size(); i++) {
-		or_items[i] = orList[i];
-	}
-       Z3_ast toAssert = Z3_mk_or(ctx, orList.size(), or_items);
-       printZ3Node(t, toAssert);
-       __debugPrint(logFile, " chua \n"); 
       }  
+      Z3_ast * or_items = new Z3_ast[orList.size()];
+      for (int i = 0; i < (int) orList.size(); i++) {
+        or_items[i] = orList[i];
+      }
+      Z3_ast toAssert = Z3_mk_or(ctx, orList.size(), or_items);
+      addAxiom(t, toAssert, __LINE__, false);
+      ;
+      delete[] or_items;
+      printZ3Node(t, toAssert);
+      __debugPrint(logFile, "\n"); 
     }
   __debugPrint(logFile, "\n###########################################################\n\n");
   }
