@@ -24,7 +24,7 @@ std::map<Z3_ast, Z3_ast> simple_regex_map; //OWN CODE: ast2 != NULL => simple; a
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> concat_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> contains_astNode_map;
 std::map<std::pair<Z3_ast, Z3_ast>, Z3_ast> star_astNode_map; //OWN CODE
-std::map<Z3_ast, std::vector<std::pair<Z3_ast, Z3_ast> > > varToStarMap; //OWN CODE
+std::map<Z3_ast, std::vector<Z3_ast> > varToStarMap; //OWN CODE
 std::map<std::pair<Z3_ast, Z3_ast>, std::map<int, Z3_ast> > varForBreakConcat;
 
 //----------------------------------------------------------------
@@ -4758,34 +4758,6 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         if (!(depMap[var].find(varInConcat) != depMap[var].end() && depMap[var][varInConcat] == 1))
           depMap[var][varInConcat] = 2;
       }
-      // Own code
-      // Special case: Concat(Star varStr) = varStr
-      for (std::map<Z3_ast, int>::iterator itor2 = inStarMap.begin(); itor2 != inStarMap.end(); itor2++) {
-        Z3_ast starAst = getAliasIndexAst(aliasIndexMap, itor2->first);
-        Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
-	if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, varInt)) == 1){
-          printZ3Node(t, varInt);
-          if (!(depMap[var].find(varInt) != depMap[var].end() && depMap[var][varInt] == 1)){
-            depMap[var][varInt] = 2;
-            varIntMap[varInt] = 1;
-            varToStarMap[varInt].push_back(std::make_pair(var, concat));
-          }
-        }
-        else{
-          Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 0);
-          Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 1);
-	  if (getNodeType(t, nn1) == my_Z3_Int_Var && (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))){
-	    depMap[var][nn1] = 2;
-            varIntMap[nn1] = 1; 
-	    varToStarMap[nn1].push_back(std::make_pair(var, concat));
-          }
-          if (getNodeType(t, nn2) == my_Z3_Int_Var && (!(depMap[var].find(nn2) != depMap[var].end() && depMap[var][nn2] == 1))){
-	    depMap[var][nn2] = 2;
-	    varIntMap[nn2] = 1;
-            varToStarMap[nn2].push_back(std::make_pair(var, concat));
-          }
-        }
-      }
     }
   }
 
@@ -4811,11 +4783,11 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
     for (std::map<Z3_ast, int>::iterator itor1 = itor->second.begin(); itor1 != itor->second.end(); itor1++) {
       Z3_ast star = itor1->first;
       Z3_ast varInt = Z3_get_app_arg(ctx, Z3_to_app(ctx, star), 1);
-      if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, varInt)) == 1){
+      if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, varInt)) <= 1){
         if (!(depMap[var].find(varInt) != depMap[var].end() && depMap[var][varInt] == 1)){
           depMap[var][varInt] = 6;
-          varIntMap[varInt] = 1;
-          varToStarMap[varInt].push_back(std::make_pair(var, star));
+          //varIntMap[varInt] = 1;
+          //varToStarMap[varInt].push_back(star);
         }
       }
       else{
@@ -4823,13 +4795,13 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
         Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, varInt), 1);
 	if (getNodeType(t, nn1) == my_Z3_Int_Var && (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))){
 	  depMap[var][nn1] = 6;
-          varIntMap[nn1] = 1; 
-	  varToStarMap[nn1].push_back(std::make_pair(var, star));
+          //varIntMap[nn1] = 1; 
+	  //varToStarMap[nn1].push_back(star);
         }
         if (getNodeType(t, nn2) == my_Z3_Int_Var && (!(depMap[var].find(nn2) != depMap[var].end() && depMap[var][nn2] == 1))){
 	  depMap[var][nn2] = 6;
-	  varIntMap[nn2] = 1;
-          varToStarMap[nn2].push_back(std::make_pair(var, star));
+	  //varIntMap[nn2] = 1;
+          //varToStarMap[nn2].push_back(star);
         }
       }
     }
@@ -4849,12 +4821,12 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
          if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end()){
            depMap[int2][int1] = 7;
            //varIntMap[int1] = 1;
-           //varToStarMap[int1].push_back(std::make_pair(starR, starL));
+           //varToStarMap[int1].push_back(starL);
          }
          if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end()){
 	   depMap[int1][int2] = 7;
            //varIntMap[int2] = 1;
-           //varToStarMap[int2].push_back(std::make_pair(starL, starR));
+           //varToStarMap[int2].push_back(starR);
          } 
       }
     }
@@ -4881,11 +4853,11 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
 	   if (!isConstInt(t, intAst)){
 	     if (isConstStr(t, strAst1) && ! isConstStr(t, strAst2)){
                Z3_ast var = strAst2;
-               if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) == 1){
+               if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) <= 1){
                  if (!(depMap[var].find(intAst) != depMap[var].end() && depMap[var][intAst] == 1)){
                    depMap[var][intAst] = 8;
-                   varIntMap[intAst] = 1;
-                   varToStarMap[intAst].push_back(std::make_pair(concatAst, starAst));
+                   //varIntMap[intAst] = 1;
+                   //varToStarMap[intAst].push_back(starAst);
                  }
                }
                else{
@@ -4893,23 +4865,23 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
                  Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
 	         if (getNodeType(t, nn1) == my_Z3_Int_Var && (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))){
 	           depMap[var][nn1] = 8;
-                   varIntMap[nn1] = 1; 
-	           varToStarMap[nn1].push_back(std::make_pair(concatAst, starAst));
+                   //varIntMap[nn1] = 1; 
+	           //varToStarMap[nn1].push_back(starAst);
                  }
                  if (getNodeType(t, nn2) == my_Z3_Int_Var && (!(depMap[var].find(nn2) != depMap[var].end() && depMap[var][nn2] == 1))){
 	           depMap[var][nn2] = 8;
-	           varIntMap[nn2] = 1;
-                   varToStarMap[nn2].push_back(std::make_pair(concatAst, starAst));
+	           //varIntMap[nn2] = 1;
+                   //varToStarMap[nn2].push_back(starAst);
                  }
                }
              }
              if (! isConstStr(t, strAst1) && isConstStr(t, strAst2)){
                Z3_ast var = strAst1;
-               if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) == 1){
+               if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) <= 1){
                  if (!(depMap[var].find(intAst) != depMap[var].end() && depMap[var][intAst] == 1)){
                    depMap[var][intAst] = 8;
-                   varIntMap[intAst] = 1;
-                   varToStarMap[intAst].push_back(std::make_pair(concatAst, starAst));
+                   //varIntMap[intAst] = 1;
+                   //varToStarMap[intAst].push_back(starAst);
                  }
                }
                else{
@@ -4917,13 +4889,13 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
                  Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
 	         if (getNodeType(t, nn1) == my_Z3_Int_Var && (!(depMap[var].find(nn1) != depMap[var].end() && depMap[var][nn1] == 1))){
 	           depMap[var][nn1] = 8;
-                   varIntMap[nn1] = 1; 
-	           varToStarMap[nn1].push_back(std::make_pair(concatAst, starAst));
+                   //varIntMap[nn1] = 1; 
+	           //varToStarMap[nn1].push_back(starAst);
                  }
                  if (getNodeType(t, nn2) == my_Z3_Int_Var && (!(depMap[var].find(nn2) != depMap[var].end() && depMap[var][nn2] == 1))){
 	           depMap[var][nn2] = 8;
-	           varIntMap[nn2] = 1;
-                   varToStarMap[nn2].push_back(std::make_pair(concatAst, starAst));
+	           //varIntMap[nn2] = 1;
+                   //varToStarMap[nn2].push_back(starAst);
                  }
                }
              }
@@ -5110,6 +5082,30 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
   // Step 6. Compute free variables based on dependence map.
   // the case dependence map is empty, every var in VarMap is free
   //---------------------------------------------------------------
+
+//Own code
+
+  starItor = starMap.begin();
+  for (; starItor != starMap.end(); starItor++) {
+     Z3_ast starAst = starItor->first;
+     Z3_ast intAst = Z3_get_app_arg(ctx, Z3_to_app(ctx, starAst), 1);
+     while (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) > 1){
+        Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
+        Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
+        if (getNodeType(t, nn1) == my_Z3_Int_Var){
+           intAst = nn1;
+        }
+        else if (getNodeType(t, nn2) == my_Z3_Int_Var){
+	   intAst = nn2;
+        }
+        else break;
+     }
+     if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) <= 1){
+        varIntMap[intAst] = 1;
+        varToStarMap[intAst].push_back(starAst);
+     }
+  }
+
   // remove L/R most var in eq concat since they are constrained with each other
   std::map<Z3_ast, std::map<Z3_ast, int> > lrConstrainedMap;
   for (std::map<int, std::set<Z3_ast> >::iterator itor = mLMap.begin(); itor != mLMap.end(); itor++) {
@@ -5927,117 +5923,11 @@ star_eq_star_map, star_eq_concat_map);
       Z3_ast freeVar = itor->first;
       printZ3Node(t, freeVar);
       __debugPrint(logFile,"\n");
-      std::vector<Z3_ast> orList;
-      Z3_ast tempAssert;      
-      for (int i = 0; i <= 6; i++){
-        Z3_ast and_items[2];
-        and_items[0] = Z3_mk_eq(ctx, freeVar, mk_int(ctx, i));
-        for (int j = 0; j < (int) varToStarMap[freeVar].size(); j++){
-          Z3_ast left = varToStarMap[freeVar][j].first;
-          Z3_ast right = varToStarMap[freeVar][j].second;
-	  if (isStarFunc(t, right)){// Case 1: var/Star()/Concat() = Star()
-            Z3_ast regex = Z3_get_app_arg(ctx, Z3_to_app(ctx, right), 0);
-            Z3_ast intAst = Z3_get_app_arg(ctx, Z3_to_app(ctx, right), 1);
-            Z3_ast newStar;
-            if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) == 1){
-	      newStar = mk_star(t, regex, mk_int(ctx,i), tempAssert);
-            }
-            else{ 
-              Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
-              Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
-              Z3_func_decl app = Z3_get_app_decl(ctx, Z3_to_app(ctx,intAst));
-              Z3_ast newIntAst = NULL;
-	      if (getNodeType(t, nn1) == my_Z3_Int_Var && getNodeType(t, nn2) != my_Z3_Int_Var){ 
-                Z3_ast newIntAst_items[2];
-                newIntAst_items[0] = mk_int(ctx,i);
-                newIntAst_items[1] = nn2;
-	        newIntAst = Z3_mk_app(ctx, app, 2, newIntAst_items);
-              }
-              if (getNodeType(t, nn2) == my_Z3_Int_Var && getNodeType(t, nn1) != my_Z3_Int_Var){ 
-                Z3_ast newIntAst_items[2];
-                newIntAst_items[1] = mk_int(ctx,i);
-                newIntAst_items[0] = nn1;
-	        newIntAst = Z3_mk_app(ctx, app, 2, newIntAst_items);
-              }
-              newStar = mk_star(t, regex, newIntAst, tempAssert);
-            }
-            and_items[1] = Z3_mk_eq(ctx, left, newStar);
-          }
-          else{// Case 2: var = Concat (Star xx)
-            Z3_ast cc1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, right), 0);
-            Z3_ast cc2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, right), 1);
-            Z3_ast newConcat;
-            if (isStarFunc(t, cc1) && !isStarFunc(t, cc2)){
-              Z3_ast regex = Z3_get_app_arg(ctx, Z3_to_app(ctx, cc1), 0);
-              Z3_ast intAst = Z3_get_app_arg(ctx, Z3_to_app(ctx, cc1), 1);
-              Z3_ast newStar;
-              if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) == 1){
-	        newStar = mk_star(t, regex, mk_int(ctx,i), tempAssert);
-              }
-              else{ 
-                Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
-                Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
-                Z3_func_decl app = Z3_get_app_decl(ctx, Z3_to_app(ctx,intAst));
-                Z3_ast newIntAst = NULL;
-	        if (getNodeType(t, nn1) == my_Z3_Int_Var && getNodeType(t, nn2) != my_Z3_Int_Var){ 
-                  Z3_ast newIntAst_items[2];
-                  newIntAst_items[0] = mk_int(ctx,i);
-                  newIntAst_items[1] = nn2;
-	          newIntAst = Z3_mk_app(ctx, app, 2, newIntAst_items);
-                }
-                if (getNodeType(t, nn2) == my_Z3_Int_Var && getNodeType(t, nn1) != my_Z3_Int_Var){ 
-                  Z3_ast newIntAst_items[2];
-                  newIntAst_items[1] = mk_int(ctx,i);
-                  newIntAst_items[0] = nn1;
-	          newIntAst = Z3_mk_app(ctx, app, 2, newIntAst_items);
-                }
-                newStar = mk_star(t, regex, newIntAst, tempAssert);
-              }
-              newConcat = mk_concat(t, newStar, cc2); 
-            }
-            else{
-              Z3_ast regex = Z3_get_app_arg(ctx, Z3_to_app(ctx, cc2), 0);
-              Z3_ast intAst = Z3_get_app_arg(ctx, Z3_to_app(ctx, cc2), 1);
-              Z3_ast newStar;
-              if (Z3_get_app_num_args(ctx, Z3_to_app(ctx, intAst)) == 1){
-	        newStar = mk_star(t, regex, mk_int(ctx,i), tempAssert);
-              }
-              else{ 
-                Z3_ast nn1 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 0);
-                Z3_ast nn2 = Z3_get_app_arg(ctx, Z3_to_app(ctx, intAst), 1);
-                Z3_func_decl app = Z3_get_app_decl(ctx, Z3_to_app(ctx,intAst));
-                Z3_ast newIntAst = NULL;
-	        if (getNodeType(t, nn1) == my_Z3_Int_Var && getNodeType(t, nn2) != my_Z3_Int_Var){ 
-                  Z3_ast newIntAst_items[2];
-                  newIntAst_items[0] = mk_int(ctx,i);
-                  newIntAst_items[1] = nn2;
-	          newIntAst = Z3_mk_app(ctx, app, 2, newIntAst_items);
-                }
-                if (getNodeType(t, nn2) == my_Z3_Int_Var && getNodeType(t, nn1) != my_Z3_Int_Var){ 
-                  Z3_ast newIntAst_items[2];
-                  newIntAst_items[1] = mk_int(ctx,i);
-                  newIntAst_items[0] = nn1;
-	          newIntAst = Z3_mk_app(ctx, app, 2, newIntAst_items);
-                }
-                newStar = mk_star(t, regex, newIntAst, tempAssert);
-              }
-              newConcat = mk_concat(t, cc1, newStar); 
-            }
-            and_items[1] = Z3_mk_eq(ctx, left, newConcat);
-          }
-        }
-        orList.push_back(Z3_mk_and(ctx, 2, and_items));
-      }  
-      Z3_ast * or_items = new Z3_ast[orList.size()];
-      for (int i = 0; i < (int) orList.size(); i++) {
-        or_items[i] = orList[i];
-      }
-      Z3_ast toAssert = Z3_mk_or(ctx, orList.size(), or_items);
-      addAxiom(t, toAssert, __LINE__, false);
-      ;
-      delete[] or_items;
-      printZ3Node(t, toAssert);
-      __debugPrint(logFile, "\n"); 
+      for (int j = 0; j < (int) varToStarMap[freeVar].size(); j++){
+          Z3_ast star = varToStarMap[freeVar][j];
+	  printZ3Node(t, star);
+          __debugPrint(logFile,"\n");
+      } 
     }
   __debugPrint(logFile, "\n###########################################################\n\n");
   }
