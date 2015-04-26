@@ -208,7 +208,13 @@ void cb_new_eq(Z3_theory t, Z3_ast n1, Z3_ast n2);
 Z3_ast genFreeVarOptions(Z3_theory t, Z3_ast freeVar, Z3_ast len_indicator, std::string indicatorStr,
                                       Z3_ast valTesterInCbEq, std::string valTesterValueStr);
 
-Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterInCbEq, std::string lenTesterValue);
+Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterInCbEq, std::string lenTesterValue, bool isStar);
+
+Z3_ast genLenTestOptions(Z3_theory t, Z3_ast freeVar, Z3_ast indicator, int tries, bool isStar);
+
+Z3_ast genVarForStar(Z3_theory t, Z3_context ctx, Z3_ast intAst, int i);
+
+Z3_ast getVarFromStar(Z3_theory t, Z3_context ctx, Z3_ast starAst);
 
 Z3_bool cb_final_check(Z3_theory t);
 
@@ -262,14 +268,21 @@ void print_relevant_length(Z3_theory t, std::map<Z3_ast, int> & wanted);
 
 void print_All_Eqc(Z3_theory t);
 
-int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & varAppearMap,
-    std::map<Z3_ast, int> & concatMap,
-    std::map<Z3_ast, Z3_ast> & aliasIndexMap, std::map<Z3_ast, Z3_ast> & var_eq_constStr_map,
-    std::map<Z3_ast, std::map<Z3_ast, int> > & var_eq_concat_map,
-    std::map<Z3_ast, Z3_ast> & concat_eq_constStr_map,
-    std::map<Z3_ast, std::map<Z3_ast, int> > & concat_eq_concat_map,
-    std::map<Z3_ast, int> & freeVarMap, std::map<Z3_ast, std::map<Z3_ast, int> > & depMap,
-    std::map<std::pair<Z3_ast, Z3_ast>, std::pair<Z3_ast, Z3_ast> > & toBreakMap);
+int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap, 
+	std::map<Z3_ast, int> & concatMap, 
+	std::map<Z3_ast, Z3_ast> & aliasIndexMap,
+	std::map<Z3_ast, Z3_ast> & var_eq_constStr_map, 
+	std::map<Z3_ast, std::map<Z3_ast, int> > & var_eq_concat_map,
+    	std::map<Z3_ast, Z3_ast> & concat_eq_constStr_map, 
+	std::map<Z3_ast, std::map<Z3_ast, int> > & concat_eq_concat_map,
+    	std::map<Z3_ast, int> & freeVarMap, 
+	std::map<Z3_ast, std::map<Z3_ast, int> > & depMap,
+    	std::map<std::pair<Z3_ast, Z3_ast>, 
+	std::pair<Z3_ast, Z3_ast> > & toBreakMap,
+    	std::map<Z3_ast, int> & starMap,
+	std::map<Z3_ast, std::map<Z3_ast, int> > & var_eq_star_map,
+	std::map<Z3_ast, std::map<Z3_ast, int> > & star_eq_star_map,
+	std::map<Z3_ast, std::map<Z3_ast, int> > & star_eq_concat_map);
 
 Z3_ast mk_length(Z3_theory t, Z3_ast n);
 
@@ -288,6 +301,7 @@ int canConcatEqConcat(Z3_theory t, Z3_ast concat1, Z3_ast concat2);
 void doubleCheckForNotContain(Z3_theory t);
 
 void pa_theory_example();
+Z3_ast reduce_star(Z3_theory t, Z3_ast const args[], Z3_ast & breakDownAssert);
 
 //Parser functions
 
