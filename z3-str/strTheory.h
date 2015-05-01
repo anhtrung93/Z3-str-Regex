@@ -208,9 +208,11 @@ void cb_new_eq(Z3_theory t, Z3_ast n1, Z3_ast n2);
 Z3_ast genFreeVarOptions(Z3_theory t, Z3_ast freeVar, Z3_ast len_indicator, std::string indicatorStr,
                                       Z3_ast valTesterInCbEq, std::string valTesterValueStr);
 
-Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterInCbEq, std::string lenTesterValue, bool isStar);
+Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterInCbEq, std::string lenTesterValue);
 
-Z3_ast genLenTestOptions(Z3_theory t, Z3_ast freeVar, Z3_ast indicator, int tries, bool isStar);
+Z3_ast genStarTestOptions(Z3_theory, Z3_ast freeVar, int i);
+
+Z3_ast genLenTestOptions(Z3_theory t, Z3_ast freeVar, Z3_ast indicator, int tries);
 
 Z3_ast genVarForStar(Z3_theory t, Z3_context ctx, Z3_ast intAst, int i);
 

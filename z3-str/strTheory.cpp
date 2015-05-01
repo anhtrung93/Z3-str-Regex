@@ -41,6 +41,8 @@ std::map<Z3_ast, std::map<int, std::vector<std::pair<int, Z3_ast> > > > fvarValu
 std::map<Z3_ast, std::vector<int> > valRangeMap;
 std::map<Z3_ast, Z3_ast> valueTesterFvarMap;
 
+std::map<Z3_ast, unsigned int> fvarStarCountMap;
+
 //----------------------------------------------------------------
 
 bool defaultCharSet = true;
@@ -3825,7 +3827,7 @@ int newEqCheck(Z3_theory t, Z3_ast nn1, Z3_ast nn2) {
 void moreLenTests(Z3_theory t, Z3_ast lenTester, std::string lenTesterValue) {
   if (lenTesterFvarMap.find(lenTester) != lenTesterFvarMap.end()) {
     Z3_ast fVar = lenTesterFvarMap[lenTester];
-    Z3_ast toAssert = genLenValOptionsForFreeVar(t, fVar, lenTester, lenTesterValue, false);
+    Z3_ast toAssert = genLenValOptionsForFreeVar(t, fVar, lenTester, lenTesterValue);
 
     addAxiom(t, toAssert, __LINE__, false);
 
@@ -4783,10 +4785,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
       Z3_ast varInt = getVarFromStar(t, ctx, star);
       if (depMap[var].find(varInt) == depMap[var].end()){
 		  depMap[var][varInt] = 6;
-		  std::string tmp("_t_star");
-		  std::string vName = std::string(Z3_ast_to_string(ctx, varInt));
-		  Z3_ast new_freeVar = my_mk_str_var(t, (tmp + vName).c_str());
-		  varToStarMap[new_freeVar] = std::make_pair(var, star);
+		  varToStarMap[varInt] = std::make_pair(var, star);
 	  }
     }
   }
@@ -4804,17 +4803,11 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
          Z3_ast int2 = getVarFromStar(t, ctx, starR);
          if (!isConstInt(t, int1) && depMap[int2].find(int1) == depMap[int2].end()){
 			 depMap[int2][int1] = 7;
-			 std::string tmp("_t_star");
-			 std::string vName = std::string(Z3_ast_to_string(ctx, int1));
-			 Z3_ast new_freeVar = my_mk_str_var(t, (tmp + vName).c_str());
-			 varToStarMap[new_freeVar] = std::make_pair(starR, starL);
+			 varToStarMap[int1] = std::make_pair(starR, starL);
          }
          if (!isConstInt(t, int2) && depMap[int1].find(int2) == depMap[int1].end()){
 			 depMap[int1][int2] = 7;
-			 std::string tmp("_t_star");
-			 std::string vName = std::string(Z3_ast_to_string(ctx, int2));
-			 Z3_ast new_freeVar = my_mk_str_var(t, (tmp + vName).c_str());
-			 varToStarMap[new_freeVar] = std::make_pair(starL, starR);
+			 varToStarMap[int2] = std::make_pair(starL, starR);
          } 
       }
     }
@@ -4847,10 +4840,7 @@ int ctxDepAnalysis(Z3_theory t, std::map<Z3_ast, int> & strVarMap,
 		     }
 		     if (!(depMap[var].find(intAst) != depMap[var].end() && depMap[var][intAst] == 1) && var ){
 				 depMap[var][intAst] = 8;
-				 std::string tmp("_t_star");
-				 std::string vName = std::string(Z3_ast_to_string(ctx, intAst));
-				 Z3_ast new_freeVar = my_mk_str_var(t, (tmp + vName).c_str());
-				 varToStarMap[new_freeVar] = std::make_pair(concatAst, starAst);
+				 varToStarMap[intAst] = std::make_pair(concatAst, starAst);
              }
            }
          }
@@ -5279,18 +5269,71 @@ inline bool isFreevarIndicator(Z3_theory t, Z3_ast node, std::string freeVarName
   }
 }
 
+/*
+ * OWN CODE
+ */
+
+
+Z3_ast genStarTestOptions(Z3_theory t, Z3_ast freeVar, int i){
+	Z3_context ctx = Z3_theory_get_context(t);
+	std::vector<Z3_ast> orList;
+	std::vector<Z3_ast> andList;
+	if (i == 0)
+		orList.push_back(Z3_mk_eq(ctx, varToStarMap[freeVar].first, my_mk_str_value(t, "")));
+	else {
+		std::pair<Z3_ast, Z3_ast> p = varToStarMap[freeVar];
+		Z3_ast star = p.second;
+		Z3_ast newStar = genVarForStar(t, ctx, star, i);
+		printZ3Node(t, newStar);
+		__debugPrint(logFile, "\n");
+		Z3_ast breakDownAst = NULL;
+		Z3_ast starArgs[2];
+		starArgs[0] = Z3_get_app_arg(ctx, Z3_to_app(ctx, newStar), 0);
+		starArgs[1] = Z3_get_app_arg(ctx, Z3_to_app(ctx, newStar), 1);
+		Z3_ast result = reduce_star(t, starArgs, breakDownAst);
+		if (result != NULL){
+#ifdef DEBUGLOG
+			__debugPrint(logFile, "\n===================\n");
+			__debugPrint(logFile, "** cb_reduce_app(): Star( ");
+			printZ3Node(t, starArgs[0]);
+			__debugPrint(logFile, ", ");
+			printZ3Node(t, starArgs[1]);
+			__debugPrint(logFile, " )");
+			__debugPrint(logFile, "  =>  ");
+			printZ3Node(t, result);
+			if( breakDownAst != NULL ){
+				__debugPrint(logFile, "\n-- ADD(@%d): \n", __LINE__);
+				printZ3Node(t, breakDownAst);
+			}
+			__debugPrint(logFile, "\n===================\n");
+#endif
+		}
+		if (breakDownAst != NULL) {
+			Z3_assert_cnstr(ctx, breakDownAst);
+		}
+		//std::string star = mk_num_of_str(getConstStrValue(t, p.second), i);
+		orList.push_back(Z3_mk_eq(ctx, p.first, result));
+	}
+	orList.push_back(Z3_mk_gt(ctx, freeVar, mk_int(ctx, i)));
+
+	Z3_ast * or_items = new Z3_ast[orList.size()];
+	for (int i = 0; i < (int) orList.size(); i++) {
+		or_items[i] = orList[i];
+	}
+	return Z3_mk_or(ctx, orList.size(), or_items);
+}
 
 /*
  *
  */
-Z3_ast genLenTestOptions(Z3_theory t, Z3_ast freeVar, Z3_ast indicator, int tries, bool isStar) {
+Z3_ast genLenTestOptions(Z3_theory t, Z3_ast freeVar, Z3_ast indicator, int tries) {
   Z3_context ctx = Z3_theory_get_context(t);
   std::vector<Z3_ast> orList;
   std::vector<Z3_ast> andList;
-  int distance = 3;
+  int distance = 1;
   int l = (tries - 1) * distance;
   int h = tries * distance;
-  if (isStar) {
+  /*if (isStar) {
 	for (int i = l; i < h; i++) {
 		if (i == 0)
 			orList.push_back(Z3_mk_eq(ctx, varToStarMap[freeVar].first, my_mk_str_value(t, "")));
@@ -5336,7 +5379,7 @@ Z3_ast genLenTestOptions(Z3_theory t, Z3_ast freeVar, Z3_ast indicator, int trie
 		or_items[i] = orList[i];
 	}
 	return Z3_mk_or(ctx, orList.size(), or_items);
-  }
+  }*/
   for (int i = l; i < h; i++) {
 	if (i == 0)
 		orList.push_back(Z3_mk_eq(ctx, freeVar, my_mk_str_value(t, "")));
@@ -5656,7 +5699,7 @@ Z3_ast genFreeVarOptions(Z3_theory t, Z3_ast freeVar, Z3_ast len_indicator, std:
 /*
  *
  */
-Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterInCbEq, std::string lenTesterValue, bool isStar) {
+Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterInCbEq, std::string lenTesterValue) {
   // -----------------------------------------------------------------------------------------------------
   // True branch will be taken in final_check:
   //   - When we discover a variable is "free" for the first time
@@ -5677,7 +5720,7 @@ Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterI
     fvarLenTesterMap[freeVar].push_back(indicator);
     lenTesterFvarMap[indicator] = freeVar;
 
-    Z3_ast lenTestAssert = genLenTestOptions(t, freeVar, indicator, testNum, isStar);
+    Z3_ast lenTestAssert = genLenTestOptions(t, freeVar, indicator, testNum);
     return lenTestAssert;
   } else {
     Z3_ast effectiveLenInd = NULL;
@@ -5733,7 +5776,7 @@ Z3_ast genLenValOptionsForFreeVar(Z3_theory t, Z3_ast freeVar, Z3_ast lenTesterI
         testNum = i + 1;
       }
 
-      Z3_ast lenTestAssert = genLenTestOptions(t, freeVar, indicator, testNum, isStar);
+      Z3_ast lenTestAssert = genLenTestOptions(t, freeVar, indicator, testNum);
       return lenTestAssert;
     } else {
       // length is fixed
@@ -5938,27 +5981,27 @@ star_eq_star_map, star_eq_concat_map);
   for (; freeVarItor != freeVar_map.end(); freeVarItor++) {
     Z3_ast freeVar = freeVarItor->first;
     Z3_ast toAssert = NULL;
-    std::string vName = std::string(Z3_ast_to_string(ctx, freeVar));
-    if (vName.length() >= 6 || getNodeType(t, freeVar) == my_Z3_Int_Var) {
-		std::string vPrefix = vName.substr(0, 6);
-		if (vPrefix == "_t_int" || getNodeType(t, freeVar) == my_Z3_Int_Var ) {
-			std::string tmp("_t_star");
-			Z3_ast new_freeVar = my_mk_str_var(t, (tmp + vName).c_str());
-			toAssert = genLenValOptionsForFreeVar(t, new_freeVar, NULL, "", true);
-			addAxiom(t, toAssert, __LINE__, false);
+    if (getNodeType(t, freeVar) == my_Z3_Int_Var) {
+		if (fvarStarCountMap.find(freeVar) == fvarStarCountMap.end()) {
+			fvarStarCountMap[freeVar] = 0;
+		}
+		else{
+			fvarStarCountMap[freeVar] = fvarStarCountMap[freeVar] + 1;
+		}
+		toAssert = genStarTestOptions(t, freeVar, fvarStarCountMap[freeVar]);
+		addAxiom(t, toAssert, __LINE__, false);
 #ifdef DEBUGLOG
-			__debugPrint(logFile, "\n---------------------\n");
-			__debugPrint(logFile, "Assertion for free int var: ");
-			printZ3Node(t, freeVar);
-			__debugPrint(logFile," (@%d, Level %d):\n ", __LINE__, sLevel);
-			printZ3Node(t, toAssert);
-			__debugPrint(logFile, "\n---------------------\n");
+		__debugPrint(logFile, "\n---------------------\n");
+		__debugPrint(logFile, "Assertion for free int var: ");
+		printZ3Node(t, freeVar);
+		__debugPrint(logFile," (@%d, Level %d):\n ", __LINE__, sLevel);
+		printZ3Node(t, toAssert);
+		__debugPrint(logFile, "\n---------------------\n");
 #endif
 			continue;
-		}
 	}
 	if (getNodeType(t, freeVar) != my_Z3_Int_Var){
-		toAssert = genLenValOptionsForFreeVar(t, freeVar, NULL, "", false);
+		toAssert = genLenValOptionsForFreeVar(t, freeVar, NULL, "");
 		addAxiom(t, toAssert, __LINE__, false);
 #ifdef DEBUGLOG
 		__debugPrint(logFile, "\n---------------------\n");
