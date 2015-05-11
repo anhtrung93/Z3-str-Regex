@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (In x (Concat (Union "a" (Union "b" (Union "c" (Union "d" (Union "e" (Union "f" "g")))))) "aa")))
+(assert (= x "aaa") )
+  
+(check-sat)
+(get-model)

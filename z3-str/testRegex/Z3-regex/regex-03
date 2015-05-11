@@ -1,0 +1,7 @@
+(declare-variable s String)
+
+(assert (= s "ababab"))
+(assert (= true (Matches s '(ab)*')))
+
+(check-sat)
+(get-model)

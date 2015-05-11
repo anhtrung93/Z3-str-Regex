@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (= true (Matches x '[abcdefg]aa') ) )
+(assert (= x "aaa") )
+  
+(check-sat)
+(get-model)

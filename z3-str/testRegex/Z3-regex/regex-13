@@ -1,0 +1,7 @@
+(declare-variable x String)
+
+(assert (= true (Matches x '(asb[ags]bc){5}|nag*|sdag?|dfah+') ) )
+  
+(check-sat)
+(get-model)
+

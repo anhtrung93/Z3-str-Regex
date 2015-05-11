@@ -1,0 +1,10 @@
+(declare-variable x String)
+(declare-variable y String)
+(declare-variable n Int)
+(declare-variable m Int)
+
+(assert (= (Star 'abc|abcabe' n) (Concat y x) ) )
+  
+(check-sat)
+(get-model)
+

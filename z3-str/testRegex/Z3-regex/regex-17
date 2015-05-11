@@ -1,0 +1,22 @@
+
+
+
+(declare-fun cookie () String)
+(declare-fun cookie_part1 () String)
+(declare-fun cookie_part2 () String)
+(declare-fun cookie_part3 () String)
+(declare-fun l1 () String)
+
+(assert (= cookie  (Concat cookie_part1 (Concat cookie_part2 cookie_part3) ) ) )
+
+(assert (= true (Matches cookie_part2 '(\?|;)searchLang=[abcdefghijklmn]*')))
+
+(assert (implies (not (= "" cookie_part3) ) (= cookie_part3 (Concat ";" l1) ) ) )
+
+(assert (> (Length cookie_part2) 11) )
+
+(assert (= cookie "expires=Thu, 18 Dec 2013 12:00:00 UTC;searchLang=nb;domain=local;") )
+
+
+(check-sat)
+(get-model)
