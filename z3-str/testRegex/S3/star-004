@@ -1,7 +1,0 @@
-(declare-variable x String)
-
-(assert (In x (Union (Union (Concat (Concat "asb" (Concat (Star (Union (Union "a" "g") "s") ) "bc") ) (Concat (Concat (Concat "asb" (Concat (Star (Union (Union "a" "g") "s") ) "bc") )(Concat "asb" (Concat (Star (Union (Union "a" "g") "s") ) "bc") ) ) (Concat (Concat "asb" (Concat (Star (Union (Union "a" "g") "s") ) "bc") ) (Concat "asb" (Concat (Star (Union (Union "a" "g") "s") ) "bc") ) ) ) ) (Concat "na" (Star "g") ) ) (Union (Concat "sda" (Union "g" "") ) (Concat "dfah" (Star "h") ) ) ) ) )
-  
-(check-sat)
-(get-model)
-
