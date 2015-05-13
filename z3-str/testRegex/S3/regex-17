@@ -9,7 +9,12 @@
 
 (assert (= cookie  (Concat cookie_part1 (Concat cookie_part2 cookie_part3) ) ) )
 
-(assert (= true (Matches cookie_part2 '(\?|;)searchLang=[abcdefghijklmn]*')))
+(assert (In cookie_part2 (Concat (Concat (Union "\?" ";" ) 
+                                                        "searchLang=" ) 
+                                           (Star (Union "a" (Union "b" (Union "c" (Union "d" (Union "e" (Union "f" (Union "g" (Union "h" (Union "i" (Union "j" (Union "k" (Union "l" (Union "m" "n") ) ) ) ) ) ) ) ) ) ) ) ) ) 
+                              )
+        )
+)
 
 (assert (implies (not (= "" cookie_part3) ) (= cookie_part3 (Concat ";" l1) ) ) )
 

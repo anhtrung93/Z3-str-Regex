@@ -10,7 +10,7 @@
 
 
 (assert (= selKeyword_value (Concat p1 (Concat p2 p3) ) ) )
-(assert (= true (Matches p1 '( |\t)*')))
+(assert (In p1 (Star "( \t)*")))
 (assert (= p1 p2))
 
 (assert (not (StartsWith p2 " " ) ) )

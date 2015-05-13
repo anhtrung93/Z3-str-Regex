@@ -2,7 +2,8 @@
 (declare-variable n Int)
 (declare-variable m Int)
 
-(assert (= (Star '[abcd]' n) (Star 'abc' m) ) )
+(assert (In x (Star (Union "a" (Union "b" (Union "c" "d"))))))
+(assert (In x (Star "abc" )))
 (assert (> n 0) )
   
 (check-sat)

@@ -2,7 +2,7 @@
 (declare-variable y String)
 (declare-variable n Int)
 
-(assert (= (Star 'abc|dbcabc' n ) (Concat x "bcabc") ) )
+(assert (In (Concat x "bcabc") (Star (Union "abc" "dbcabc"))) )
   
 (check-sat)
 (get-model)

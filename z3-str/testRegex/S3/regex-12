@@ -2,7 +2,7 @@
 (declare-variable n Int)
 (declare-variable b Int)
 
-(assert (= true (Matches x 'colou?r') ) )
+(assert (= x (Concat "colo" (Concat (Union "u" "") "r"))))
 (assert (= true (EndsWith x "ur") ) )
   
 (check-sat)
